@@ -96,7 +96,7 @@ Status: **in development.** These steps will be finalised, with testnet contract
 
 | Component | Status |
 |---|---|
-| Core contract (`cashflow`) | In progress |
+| Core contract (`cashflow`) | Sandbox-tested (11 tests); not yet on testnet |
 | Position NFTs (`positions`) | In progress |
 | Underwriter agent | In progress |
 | Tidepool payments + watcher | In progress |
