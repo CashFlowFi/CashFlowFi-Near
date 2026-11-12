@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "./ThemeToggle";
 import { CONTRACT, REPO_URL, accountUrl } from "@/lib/config";
 
 export function Footer() {
@@ -10,7 +11,7 @@ export function Footer() {
         <Link href="/insurance" className="hover:text-ink">Insurance</Link>
         <a href={accountUrl(CONTRACT)} target="_blank" rel="noreferrer" className="hover:text-ink">Contract</a>
         <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-ink">Source</a>
-        <span className="ml-auto">NEAR testnet</span>
+        <span className="ml-auto flex items-center gap-3">NEAR testnet<span className="sm:hidden"><ThemeToggle /></span></span>
       </div>
     </footer>
   );

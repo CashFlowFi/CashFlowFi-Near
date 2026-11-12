@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Eyebrow } from "@/components/Ambient";
 import type { Metadata } from "next";
 import { getAllPools, getConfig, getInsurance, view } from "@/lib/chain";
 import { coverProposalFor, summarizeProposal, type SputnikProposal } from "@/lib/dao";
@@ -19,7 +20,7 @@ async function getProposals(dao: string): Promise<SputnikProposal[]> {
 }
 
 const Metric = ({ label, value, tip }: { label: string; value: React.ReactNode; tip: string }) => (
-  <div className="rounded-lg border border-line bg-surface p-4">
+  <div className="card p-4">
     <dt className="text-xs text-muted">{label}<Info text={tip} /></dt>
     <dd className="mt-1 text-lg font-semibold">{value}</dd>
   </div>
@@ -32,7 +33,8 @@ export default async function InsurancePage() {
   } catch (e) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Insurance</h1>
+        <Eyebrow>Protection fund and DAO</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Insurance</h1>
         <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load the insurance fund" detail={(e as Error).message} /></div>
       </>
     );
@@ -44,7 +46,8 @@ export default async function InsurancePage() {
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Insurance</h1>
+        <Eyebrow>Protection fund and DAO</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Insurance</h1>
         <p className="mt-1 text-sm text-muted">Half of every pool fee funds investor cover, and larger covers are approved by the insurance DAO.</p>
       </header>
 
@@ -62,9 +65,9 @@ export default async function InsurancePage() {
         {defaulted.length === 0 ? (
           <p className="text-sm text-muted">Every pool is in good standing.</p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+          <div className="overflow-x-auto card">
             <table className="w-full min-w-[620px] text-sm">
-              <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+              <thead className="border-b border-line text-left text-xs font-mono uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Pool</th>
                   <th scope="col" className="px-4 py-3 text-right font-medium">Receivable</th>
@@ -114,7 +117,7 @@ export default async function InsurancePage() {
         ) : (
           <ul className="space-y-3">
             {proposals.map((p) => (
-              <li key={p.id} className="rounded-lg border border-line bg-surface p-4 text-sm">
+              <li key={p.id} className="card p-4 text-sm">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="font-medium">#{p.id}</span>
                   <span>{p.description}</span>

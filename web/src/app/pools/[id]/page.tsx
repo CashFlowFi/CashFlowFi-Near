@@ -29,7 +29,7 @@ export default async function PoolPage({ params }: Props) {
     if ((e as { digest?: string }).digest?.startsWith("NEXT_")) throw e;
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Pool #{id}</h1>
+        <h1 className="text-3xl sm:text-4xl tracking-tight">Pool #{id}</h1>
         <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load this pool" detail={(e as Error).message} /></div>
       </>
     );

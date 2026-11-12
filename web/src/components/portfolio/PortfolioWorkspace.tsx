@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Eyebrow } from "@/components/Ambient";
 import { useCallback, useEffect, useState } from "react";
 import { CONTRACT, TOKEN } from "@/lib/config";
 import { sum, toBig } from "@/lib/amount";
@@ -41,7 +42,8 @@ export function PortfolioWorkspace({ demoAccount, demoAccounts }: { demoAccount:
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Portfolio</h1>
+          <Eyebrow>Position NFTs</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Portfolio</h1>
           <p className="mt-1 text-sm text-muted">
             {own ? <>Position NFTs held by <span className="font-medium text-ink">{viewing}</span>.</> : "Showing the position NFTs of a demo investor account. Sign in to see your own."}
           </p>
@@ -93,7 +95,7 @@ function PositionCard({ token, own, accountId, onDone }: { token: NftToken; own:
   const validTo = isAccountId(to) && to !== accountId;
 
   return (
-    <li className="overflow-hidden rounded-lg border border-line bg-surface">
+    <li className="overflow-hidden card">
       <Link href={`/pools/${pool}`} className="block hover:opacity-90">
         {token.metadata.media?.startsWith("data:image/svg+xml") ? (
           // The contract renders this card from live pool state.

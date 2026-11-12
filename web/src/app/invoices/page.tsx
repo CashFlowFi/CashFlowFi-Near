@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Eyebrow } from "@/components/Ambient";
 import type { Metadata } from "next";
 import { getAllOrders } from "@/lib/chain";
 import { formatNs } from "@/lib/format";
@@ -14,18 +15,20 @@ export default async function InvoicesPage() {
   } catch (e) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
+        <Eyebrow>On-chain receivables</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Invoices</h1>
         <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load invoices" detail={(e as Error).message} /></div>
       </>
     );
   }
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Invoices</h1>
+      <Eyebrow>On-chain receivables</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Invoices</h1>
       <p className="mt-1 text-sm text-muted">Credit sales recorded on-chain, newest first.</p>
-      <div className="mt-6 overflow-x-auto rounded-lg border border-line bg-surface">
+      <div className="mt-6 overflow-x-auto card">
         <table className="w-full min-w-[680px] text-sm">
-          <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+          <thead className="border-b border-line text-left text-xs font-mono uppercase tracking-[0.08em] text-muted">
             <tr>
               <th scope="col" className="px-4 py-3 font-medium">Invoice</th>
               <th scope="col" className="px-4 py-3 font-medium">Status</th>

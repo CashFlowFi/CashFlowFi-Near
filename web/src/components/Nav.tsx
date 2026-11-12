@@ -32,7 +32,7 @@ export function Nav() {
                 key={l.href}
                 href={l.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-md px-2 py-1.5 text-[13px] sm:px-3 sm:text-sm ${active ? "bg-sunken text-ink" : "text-muted hover:text-ink"}`}
+                className={`rounded-md px-1.5 py-1.5 text-[13px] sm:px-3 sm:text-sm ${active ? "bg-sunken text-ink" : "text-muted hover:text-ink"}`}
               >
                 {l.label}
               </Link>
@@ -40,7 +40,7 @@ export function Nav() {
           })}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <ThemeToggle />
+          <span className="hidden sm:block"><ThemeToggle /></span>
           <WalletButton />
         </div>
       </nav>

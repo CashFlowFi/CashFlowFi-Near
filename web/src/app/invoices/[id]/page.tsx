@@ -23,7 +23,7 @@ export default async function InvoicePage({ params }: Props) {
   } catch (e) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Invoice #{raw}</h1>
+        <h1 className="text-3xl sm:text-4xl tracking-tight">Invoice #{raw}</h1>
         <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load this invoice" detail={(e as Error).message} /></div>
       </>
     );
@@ -32,12 +32,12 @@ export default async function InvoicePage({ params }: Props) {
   const pool = order.pool_id === null ? null : await getPool(order.pool_id).catch(() => null);
   return (
     <div className="max-w-2xl">
-      <p className="text-sm text-muted"><Link href="/invoices" className="hover:text-ink">Invoices</Link> / #{order.id}</p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight">Invoice {order.invoice_no}</h1>
-      <div className="mt-6 rounded-lg border border-line bg-surface p-5">
+      <p className="eyebrow mb-2"><Link href="/invoices" className="hover:text-ink">Invoices</Link> / #{order.id}</p>
+      <h1 className="mt-1 text-3xl sm:text-4xl tracking-tight">Invoice {order.invoice_no}</h1>
+      <div className="mt-6 card p-5">
         <InvoiceActions order={order} pool={pool} />
       </div>
-      <div className="mt-4 rounded-lg border border-line bg-surface p-5">
+      <div className="mt-4 card p-5">
         <Rows
           rows={[
             ["Status", order.status],

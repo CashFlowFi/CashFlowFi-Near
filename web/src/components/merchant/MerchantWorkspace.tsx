@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { Eyebrow } from "@/components/Ambient";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CONTRACT, TOKEN } from "@/lib/config";
 import { sum, toBig } from "@/lib/amount";
@@ -50,7 +51,8 @@ export function MerchantWorkspace({ demo }: { demo: boolean }) {
   if (!viewing) {
     return (
       <section className="max-w-xl py-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Merchant</h1>
+        <Eyebrow>Merchant desk</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Merchant</h1>
         <p className="mt-1 text-sm text-muted">Sign in to create invoices, follow their verdicts and open pools.</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" onClick={signIn} disabled={!ready} className={BTN}>Sign in</button>
@@ -64,7 +66,8 @@ export function MerchantWorkspace({ demo }: { demo: boolean }) {
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Merchant</h1>
+          <Eyebrow>Merchant desk</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Merchant</h1>
           <p className="mt-1 text-sm text-muted">
             {own ? <>Signed in as <span className="font-medium text-ink">{viewing}</span>.</> : <>Viewing the demo merchant account <span className="font-medium text-ink">{viewing}</span>.</>}
           </p>
@@ -80,16 +83,16 @@ export function MerchantWorkspace({ demo }: { demo: boolean }) {
       {!data && !error && <div aria-busy="true" className="h-64 animate-pulse rounded-lg bg-sunken" />}
       {data && (
         <>
-          <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
             <Invoices data={data} own={own} onDone={load} />
             <aside className="space-y-4 self-start">
               {own ? (
-                <div className="rounded-lg border border-line bg-surface p-5">
+                <div className="card p-5">
                   <h2 className="font-semibold">New invoice</h2>
                   <div className="mt-3"><NewInvoiceForm onDone={load} /></div>
                 </div>
               ) : (
-                <div className="rounded-lg border border-line bg-surface p-5">
+                <div className="card p-5">
                   <h2 className="font-semibold">New invoice</h2>
                   <p className="mt-1 text-sm text-muted">Sign in with your own account to create invoices.</p>
                   <button type="button" onClick={signIn} className={`${BTN} mt-3 w-full`}>Sign in</button>
@@ -117,7 +120,7 @@ function Invoices({ data, own, onDone }: { data: Data; own: boolean; onDone: () 
   const terms = useMemo(() => poolTerms(sum(...chosen.map((o) => o.amount)), data.tier), [chosen, data.tier]);
 
   return (
-    <section className="rounded-lg border border-line bg-surface">
+    <section className="card">
       <h2 className="px-5 pt-5 font-semibold">Invoices</h2>
       {data.orders.length === 0 ? (
         <p className="px-5 pb-5 pt-2 text-sm text-muted">Your invoices appear here once created.</p>
@@ -197,7 +200,7 @@ function Invoices({ data, own, onDone }: { data: Data; own: boolean; onDone: () 
 function Withdraw({ amount, onDone }: { amount: string; onDone: () => void }) {
   const tx = useTx();
   return (
-    <div className="rounded-lg border border-line bg-surface p-5">
+    <div className="card p-5">
       <h2 className="font-semibold">Residual ready</h2>
       <p className="mt-1 text-sm text-muted"><Usdc value={amount} /> from repaid pools is ready to withdraw.</p>
       <button type="button" disabled={tx.busy} onClick={() => tx.run(async () => [withdrawResidualTx(C)]).then(onDone)} className={`${BTN} mt-3 w-full`}>
@@ -210,7 +213,7 @@ function Withdraw({ amount, onDone }: { amount: string; onDone: () => void }) {
 
 function Pools({ pools }: { pools: Pool[] }) {
   return (
-    <section className="rounded-lg border border-line bg-surface">
+    <section className="card">
       <h2 className="px-5 pt-5 font-semibold">Pools</h2>
       {pools.length === 0 ? (
         <p className="px-5 pb-5 pt-2 text-sm text-muted">Pools you open appear here.</p>

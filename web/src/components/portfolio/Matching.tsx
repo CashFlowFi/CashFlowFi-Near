@@ -44,7 +44,7 @@ export function Matching() {
   };
 
   return (
-    <section className="rounded-lg border border-line bg-surface p-5">
+    <section className="card p-5">
       <h2 className="font-semibold">
         Find a tranche
         <Info text="Describe what you want. Open pools are filtered in code, then a NEAR AI model in a TEE ranks them. Your text is not stored." />

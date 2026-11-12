@@ -26,7 +26,7 @@ export function WalletButton() {
   }
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="h-9 max-w-[7rem] truncate rounded-md border border-line px-3 font-mono text-xs hover:bg-sunken sm:max-w-[16rem]">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="h-9 max-w-[5.5rem] truncate rounded-md border border-line px-3 font-mono text-xs hover:bg-sunken sm:max-w-[16rem]">
         {accountId}
       </button>
       {open && (

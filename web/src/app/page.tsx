@@ -39,10 +39,8 @@ export default async function Welcome() {
   const s = await stats();
   return (
     <div className="relative">
-      <div aria-hidden="true" className="aurora pointer-events-none absolute left-1/2 -top-24 h-[560px] w-screen -translate-x-1/2" />
-      <div aria-hidden="true" className="halftone pointer-events-none absolute left-1/2 -top-16 h-[520px] w-screen -translate-x-1/2" />
 
-      <section className="relative grid items-center gap-10 py-10 sm:py-16 lg:grid-cols-[1fr_360px]">
+      <section className="relative grid grid-cols-[minmax(0,1fr)] items-center gap-10 py-10 sm:py-16 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div>
           <p className="eyebrow flex items-center gap-2">
             <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-accent" /> Live on NEAR testnet
@@ -63,7 +61,7 @@ export default async function Welcome() {
           </div>
         </div>
 
-        <aside className="glass rounded-lg border border-line bg-surface p-6">
+        <aside className="glass card p-6">
           <p className="eyebrow">Protocol, live from chain</p>
           <p className="num mt-3 text-4xl font-medium text-accent">
             {s ? <Usdc value={s.repaid} unit={false} /> : "—"}
@@ -94,7 +92,7 @@ export default async function Welcome() {
         <ul className="mt-3 grid gap-3 sm:grid-cols-3">
           {AGENTS.map((a) => (
             <li key={a.title}>
-              <Link href={a.href} className="group block rounded-lg border border-line bg-surface p-4 hover:border-ai">
+              <Link href={a.href} className="group block card p-4 hover:border-ai">
                 <p className="flex items-center gap-2 text-sm font-medium">
                   <span aria-hidden="true" className="text-ai">◆</span>{a.title}
                   <span aria-hidden="true" className="ml-auto text-muted transition-transform group-hover:translate-x-0.5">→</span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Eyebrow } from "@/components/Ambient";
 import type { Metadata } from "next";
 import { getAllOrders } from "@/lib/chain";
 import { API_URL, repoFileUrl, txUrl } from "@/lib/config";
@@ -32,7 +33,8 @@ export default async function AgentsPage() {
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Agents</h1>
+        <Eyebrow ai>AI at work</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Agents</h1>
         <p className="mt-1 text-sm text-muted">The underwriter scores every invoice on-chain, and the collections agent writes reminders inside a TEE.</p>
       </header>
 
@@ -41,9 +43,9 @@ export default async function AgentsPage() {
         {error ? (
           <ErrorPanel title="Waiting for NEAR testnet to load verdicts" detail={error} />
         ) : (
-          <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+          <div className="overflow-x-auto card">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+              <thead className="border-b border-line text-left text-xs font-mono uppercase tracking-[0.08em] text-muted">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-medium">Invoice</th>
                   <th scope="col" className="px-4 py-3 font-medium">Verdict</th>
@@ -78,7 +80,7 @@ export default async function AgentsPage() {
         ) : (
           <ul className="space-y-3">
             {tiers.map((t) => (
-              <li key={t.file} className="rounded-lg border border-line bg-surface p-4 text-sm">
+              <li key={t.file} className="card p-4 text-sm">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <Account id={t.merchant} />
                   <span className="font-medium">Tier {t.old_tier} → {t.new_tier}</span>
@@ -103,7 +105,7 @@ export default async function AgentsPage() {
         ) : (
           <ul className="grid gap-4 lg:grid-cols-2">
             {reminders.map((r) => (
-              <li key={r.file} className="rounded-lg border border-line bg-surface p-4 text-sm">
+              <li key={r.file} className="card p-4 text-sm">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <Link href={`/invoices/${r.order_id}`} className="font-medium underline decoration-line underline-offset-2">Invoice #{r.order_id}</Link>
                   <Usdc value={r.amount_due} />

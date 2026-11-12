@@ -81,10 +81,10 @@ export function PoolWorkspace(props: WorkspaceProps) {
     <div className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm text-muted">
+          <p className="eyebrow mb-2">
             <Link href="/pools" className="hover:text-ink">Pools</Link> / #{pool.id}
           </p>
-          <h1 className="mt-1 flex flex-wrap items-center gap-3 text-2xl font-semibold tracking-tight">
+          <h1 className="mt-1 flex flex-wrap items-center gap-3 text-3xl sm:text-4xl tracking-tight">
             Pool #{pool.id} <StatusBadge status={pool.status} />
           </h1>
         </div>
@@ -97,14 +97,14 @@ export function PoolWorkspace(props: WorkspaceProps) {
 
       <StageSelector stages={view.stages} open={open} onOpen={(k) => { setReplaying(false); setOpen(k); }} />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <section role="tabpanel" aria-labelledby={`tab-${open}`} aria-live={replaying ? "polite" : undefined} className="self-start rounded-lg border border-line bg-surface p-5">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section role="tabpanel" aria-labelledby={`tab-${open}`} aria-live={replaying ? "polite" : undefined} className="self-start card p-5">
           <StageBody stage={open} state={view.stages.find((s) => s.key === open)!.state} settled={view.settled} {...props} />
         </section>
 
         <aside className="space-y-4">
-          <div className="rounded-lg border border-line bg-surface p-5">
-            <label htmlFor="view-as" className="text-xs font-medium uppercase tracking-wide text-muted">View as</label>
+          <div className="card p-5">
+            <label htmlFor="view-as" className="text-xs font-medium font-mono uppercase tracking-[0.08em] text-muted">View as</label>
             <select
               id="view-as"
               value={role}
@@ -121,7 +121,7 @@ export function PoolWorkspace(props: WorkspaceProps) {
           <button
             type="button"
             onClick={() => setDrawer(true)}
-            className="flex w-full items-center justify-between rounded-lg border border-line bg-surface px-5 py-3 text-sm font-medium hover:bg-sunken"
+            className="flex w-full items-center justify-between card px-5 py-3 text-sm font-medium hover:bg-sunken"
           >
             Activity &amp; receipts
             <span className="text-muted">{props.receipts.reduce((n, r) => n + r.steps.length, 0) || ""} →</span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Eyebrow } from "@/components/Ambient";
 import type { Metadata } from "next";
 import { getAllPools } from "@/lib/chain";
 import { formatNs } from "@/lib/format";
@@ -15,21 +16,23 @@ export default async function PoolsPage() {
   } catch (e) {
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Pools</h1>
+        <Eyebrow>Live from chain</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Pools</h1>
         <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load pools" detail={(e as Error).message} /></div>
       </>
     );
   }
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Pools</h1>
+      <Eyebrow>Live from chain</Eyebrow>
+<h1 className="text-3xl sm:text-4xl tracking-tight">Pools</h1>
       <p className="mt-1 text-sm text-muted">Every pool on the contract, read live from NEAR testnet.</p>
       {pools.length === 0 ? (
         <p className="mt-8 text-muted">No pools yet.</p>
       ) : (
-        <div className="mt-6 overflow-x-auto rounded-lg border border-line bg-surface">
+        <div className="mt-6 overflow-x-auto card">
           <table className="w-full min-w-[640px] text-sm">
-            <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+            <thead className="border-b border-line text-left text-xs font-mono uppercase tracking-[0.08em] text-muted">
               <tr>
                 <th scope="col" className="px-4 py-3 font-medium">Pool</th>
                 <th scope="col" className="px-4 py-3 font-medium">Status</th>
