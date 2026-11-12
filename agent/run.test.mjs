@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, readdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { runOnce, fetchAll, loadConfig } from './run.mjs';
+import { runOnce, fetchAll, loadConfig, exposureByMerchant } from './run.mjs';
 import { reasonHash } from './underwriter.mjs';
 
 const NOW = 1_700_000_000_000_000_000n;
@@ -68,7 +68,7 @@ test('Reject verdict is still attested on-chain', async () => {
   assert.equal(f.calls.sign[0][1].score, 0);
   const e = JSON.parse(await readFile(path.join(ev, '4.json'), 'utf8'));
   assert.equal(e.verdict, 'Reject');
-  assert.deepEqual(e.reasons, ['Customer and merchant are the same account']);
+  assert.deepEqual(e.reasons, ['Customer and merchant are the same account or sub-accounts of each other']);
 });
 
 test('low model score gives Reject and is attested', async () => {
@@ -162,4 +162,24 @@ test('config refuses mainnet and missing vars', () => {
   assert.throws(() => loadConfig({ ...env, CASHFLOW_CONTRACT: 'c.near' }), /testnet only/);
   assert.throws(() => loadConfig({ ...env, NEAR_RPC: 'https://rpc.mainnet.near.org' }), /testnet only/);
   assert.throws(() => loadConfig({ ...env, AGENT_PRIVATE_KEY: '' }), /missing env: AGENT_PRIVATE_KEY/);
+});
+
+test('exposure accumulates across orders of one merchant in a single pass', async () => {
+  // Two orders at the per-order cap from the same merchant: the first fills the exposure cap.
+  const big = (id) => order(id, 'CustomerApproved', { amount: (100_000n * 1_000_000n).toString(), invoice_no: `INV-${id}` });
+  const f = fakes({ orders: [big(20), big(21)] });
+  const s = await runOnce(base(f, await dir()));
+  assert.deepEqual(s.attested, [20, 21]);
+  assert.equal(f.calls.sign[0][1].verdict, 'Approve');
+  assert.equal(f.calls.sign[1][1].verdict, 'Reject');
+});
+
+test('exposureByMerchant counts open approvals minus payments', () => {
+  const m = exposureByMerchant([
+    { merchant: 'a', status: 'Attested', verdict: 'Approve', amount: '100', paid: '0' },
+    { merchant: 'a', status: 'Pooled', verdict: 'Approve', amount: '50', paid: '20' },
+    { merchant: 'a', status: 'Attested', verdict: 'Flag', amount: '999', paid: '0' },
+    { merchant: 'a', status: 'Paid', verdict: 'Approve', amount: '999', paid: '999' },
+  ]);
+  assert.equal(m.get('a'), 130n);
 });

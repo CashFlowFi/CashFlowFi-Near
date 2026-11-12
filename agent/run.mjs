@@ -3,27 +3,31 @@
 //   node agent/run.mjs --once        single pass (demo scripts)
 //   node agent/run.mjs [--interval 15] [--tiers]
 import { existsSync } from 'node:fs';
-import { mkdir, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { Account, JsonRpcProvider } from 'near-api-js';
 import { createNearAiClient, merchantTier, underwrite } from './underwriter.mjs';
+import { DEFAULT_RPC, PAGE, fetchAll, evidencePath, writeJsonAtomic, assertTestnet, createView, createSigner } from './near.mjs';
 
-export const DEFAULT_RPC = 'https://test.rpc.fastnear.com';
-export const PAGE = 100; // contract caps get_orders / get_pools at 100 per call
-const GAS = 30_000_000_000_000n;
+export { DEFAULT_RPC, PAGE, fetchAll, evidencePath, createView, createSigner };
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const EVIDENCE_DIR = path.join(ROOT, 'evidence', 'attestations');
 
-/** Read every page of a paginated view method. */
-export async function fetchAll(view, method, pageSize = PAGE) {
-  const out = [];
-  for (let from = 0; ; from += pageSize) {
-    const page = await view(method, { from_index: from, limit: pageSize });
-    if (!Array.isArray(page)) throw new Error(`${method} returned non-array`);
-    out.push(...page);
-    if (page.length < pageSize) return out;
+/** Approved, unpaid receivables per merchant (base units): attested Approve or pooled, minus what is paid. */
+export function exposureByMerchant(orders) {
+  const m = new Map();
+  for (const o of orders) {
+    const open = (o.status === 'Attested' && o.verdict === 'Approve') || o.status === 'Pooled';
+    if (!open) continue;
+    m.set(o.merchant, (m.get(o.merchant) ?? 0n) + BigInt(o.amount) - BigInt(o.paid ?? '0'));
   }
+  return m;
+}
+
+/** Orders each customer has paid in full (on-chain status Paid). */
+export function paidByCustomer(orders) {
+  const m = new Map();
+  for (const o of orders) if (o.status === 'Paid' && o.customer) m.set(o.customer, (m.get(o.customer) ?? 0) + 1);
+  return m;
 }
 
 /** Per-merchant repayment history from on-chain pools. */
@@ -38,18 +42,6 @@ export function historyByMerchant(pools) {
   return h;
 }
 
-export const evidencePath = (dir, id) => {
-  if (!Number.isSafeInteger(id) || id < 0) throw new Error(`bad order id ${id}`);
-  return path.join(dir, `${id}.json`);
-};
-
-async function writeJsonAtomic(file, data) {
-  await mkdir(path.dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
-  await writeFile(tmp, JSON.stringify(data, null, 2) + '\n');
-  await rename(tmp, file);
-}
-
 /**
  * One pass. All I/O is injected:
  *   view(method, args) -> parsed JSON      sign(method, args) -> { txHash }
@@ -60,14 +52,20 @@ export async function runOnce({ view, sign, complete, model, contract, agent, ev
   const summary = { attested: [], skipped: [], failed: [], tiers: [] };
   const orders = await fetchAll(view, 'get_orders', pageSize);
   const history = historyByMerchant(await fetchAll(view, 'get_pools', pageSize));
+  const exposure = exposureByMerchant(orders);
+  const customerPaid = paidByCustomer(orders);
 
   for (const order of orders) {
     if (order.status !== 'CustomerApproved') continue;
     try {
       const file = evidencePath(evidenceDir, order.id);
       if (existsSync(file)) { summary.skipped.push(order.id); continue; } // attested, RPC may lag
-      const { args, evidence } = await underwrite({ order, history: history.get(order.merchant) ?? {}, complete, nowNs: nowNs() });
+      const outstanding = exposure.get(order.merchant) ?? 0n;
+      const { args, evidence } = await underwrite({ order, history: { ...(history.get(order.merchant) ?? {}), outstanding,
+        customerPaidOrders: customerPaid.get(order.customer) ?? 0 }, complete, nowNs: nowNs() });
       const { txHash } = await sign('attest_receipt', args);
+      // Count this approval before the next order of the same merchant is scored.
+      if (args.verdict === 'Approve') exposure.set(order.merchant, outstanding + BigInt(order.amount));
       await writeJsonAtomic(file, { ...evidence, reason_hash: args.reason_hash, model, contract, agent,
         tx_hash: txHash, timestamp: new Date().toISOString() });
       summary.attested.push(order.id);
@@ -95,30 +93,12 @@ export async function runOnce({ view, sign, complete, model, contract, agent, ev
   return summary;
 }
 
-// ---------- real NEAR wiring ----------
-
-export function createView({ rpcUrl, contractId }) {
-  const provider = new JsonRpcProvider({ url: rpcUrl });
-  return (method, args) => provider.callFunction({ contractId, method, args });
-}
-
-/** Signs as the agent with its function-call key. Throws on on-chain failure (contract panic). */
-export function createSigner({ rpcUrl, accountId, privateKey, contractId }) {
-  const account = new Account(accountId, new JsonRpcProvider({ url: rpcUrl }), privateKey);
-  return async (methodName, args) => {
-    const r = await account.callFunctionRaw({ contractId, methodName, args, gas: GAS, deposit: 0n });
-    return { txHash: r.transaction_outcome.id };
-  };
-}
-
 export function loadConfig(env = process.env) {
   const need = ['CASHFLOW_CONTRACT', 'AGENT_ACCOUNT', 'AGENT_PRIVATE_KEY', 'NEARAI_API_KEY', 'NEARAI_MODEL'];
   const missing = need.filter((k) => !env[k]);
   if (missing.length) throw new Error(`missing env: ${missing.join(', ')}`);
   const rpcUrl = env.NEAR_RPC || DEFAULT_RPC;
-  const testnetOnly = [env.CASHFLOW_CONTRACT, env.AGENT_ACCOUNT].every((a) => a.endsWith('.testnet'))
-    && !/mainnet/i.test(rpcUrl) && (env.NEAR_NETWORK ?? 'testnet') === 'testnet';
-  if (!testnetOnly) throw new Error('testnet only: accounts must end in .testnet and NEAR_RPC must not be mainnet');
+  assertTestnet({ accounts: [env.CASHFLOW_CONTRACT, env.AGENT_ACCOUNT], rpcUrl, network: env.NEAR_NETWORK ?? 'testnet' });
   return { rpcUrl, contract: env.CASHFLOW_CONTRACT, agent: env.AGENT_ACCOUNT, privateKey: env.AGENT_PRIVATE_KEY,
     apiKey: env.NEARAI_API_KEY, model: env.NEARAI_MODEL, intervalSec: Number(env.AGENT_POLL_SECONDS || 15), maxInferences: Number(env.AGENT_MAX_INFERENCES || 200) };
 }
