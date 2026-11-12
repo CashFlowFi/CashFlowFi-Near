@@ -1,0 +1,8 @@
+[package]
+name = "cashflow-core"
+version = "0.1.0"
+edition = "2021"
+description = "Pure pool accounting for Cashflow Fi: terms, tranche funding, waterfall, claims, insurance cover. No NEAR dependency, so it is unit-testable natively."
+license = "MIT"
+
+[dependencies]

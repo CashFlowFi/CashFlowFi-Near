@@ -1,0 +1,25 @@
+[package]
+name = "cashflow"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Pin to the near-sdk 5.x release listed on docs.near.org at build time.
+near-sdk = "5"
+near-contract-standards = "5"
+cashflow-core = { path = "../cashflow-core" }
+
+[dev-dependencies]
+near-sdk = { version = "5", features = ["unit-testing"] }
+
+[profile.release]
+codegen-units = 1
+opt-level = "z"
+lto = true
+debug = false
+panic = "abort"
+overflow-checks = true
