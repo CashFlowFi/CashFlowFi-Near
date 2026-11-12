@@ -3,7 +3,7 @@
 // Run manually (not part of npm test):  npm run attacks:onchain
 // Writes evidence/attacks/onchain.json. Keys come from ~/.near-credentials/testnet and are never printed.
 //
-// Guard order (contracts/cashflow/src/lib.rs) decides what each attack needs:
+// Guard order (contracts/cashflow/src/*.rs) decides what each attack needs:
 //   attest_receipt, set_merchant_tier, ft_on_transfer, approve_cover check the caller first -> any id works.
 //   approve_receipt, create_pool look the order up first -> need a real order (one create_order setup tx).
 //   claim looks the position up first -> needs a real position (exists only after a pool is funded).

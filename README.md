@@ -45,7 +45,7 @@ You will see one function-call key (`ed25519:HKeuj...`) limited to `attest_recei
 
 | Component | Path | Role |
 |---|---|---|
-| Contract | `contracts/cashflow` | NEAR contract: orders, pools, NEP-171 positions, insurance; near-workspaces sandbox tests in `tests/sandbox.rs` |
+| Contract | `contracts/cashflow` | NEAR contract: orders, pools, NEP-171 positions, insurance; near-workspaces sandbox tests in `tests/` (one file per area, shared fixture in `tests/common/`) |
 | Pool engine | `contracts/cashflow-core` | Pure Rust pool accounting (terms, waterfall, cover), unit-tested natively |
 | Test token | `contracts/test-token` | NEP-141 used only by the sandbox tests |
 | Underwriter agent | `agent/underwriter.mjs`, `agent/run.mjs` | Hard rules, NEAR AI call, strict parse, signs `attest_receipt` |
@@ -90,7 +90,7 @@ Requirements: Node 22 or newer, then `npm ci`. For contracts: Rust stable (pinne
 | Run | See |
 |---|---|
 | `npm test` | `tests 114`, `pass 114`, `fail 0` (agent, API, watcher, forwarder, relayer, attack cases) |
-| `cd contracts/cashflow && cargo test --test sandbox` | `test result: ok. 13 passed` (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
+| `cd contracts/cashflow && cargo test --tests` | every `test result: ok`: 13 sandbox tests across 7 files plus 2 unit tests (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
 | `npm run test:contracts` | `test result: ok. 14 passed` (pure pool engine) |
 | `npm run attacks` | 16 cases, each `[HELD]` with the defense; rewrites `evidence/attacks/offchain.json` |
 
@@ -116,7 +116,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 
 | Component | Status |
 |---|---|
-| Contract `cashflow` with NEP-171 positions | Deployed on testnet; 12 sandbox tests, 14 engine tests |
+| Contract `cashflow` with NEP-171 positions | Deployed on testnet; 13 sandbox tests, 14 engine tests |
 | Underwriter agent (NEAR AI Cloud, function-call key) | Live: attestations for orders 2 to 8 in `evidence/attestations/` |
 | Tidepool payment + forwarder | Live run done (order 6) |
 | Collections agent | Live: `mark_default` on pool 5 |

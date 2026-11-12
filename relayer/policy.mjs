@@ -11,7 +11,7 @@ const ACCOUNT_ID = /^(?=.{2,64}$)(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z
 const FT_MSG_KEYS = new Set(['invest', 'pay', 'repay', 'seed_insurance']);
 
 /**
- * Allowlist, checked against contracts/cashflow/src/lib.rs:
+ * Allowlist, checked against the contract methods in contracts/cashflow/src/:
  *   - only nft_transfer is #[payable] (NEP-171 asserts exactly 1 yocto); claim and create_pool are not payable,
  *     so any deposit would panic on-chain anyway. ft_transfer_call (NEP-141) asserts exactly 1 yocto.
  *   - gas caps follow docs/INTERFACE.md (30 TGas default, claim 100) and scripts/demo.mjs (ft_transfer_call 300).
