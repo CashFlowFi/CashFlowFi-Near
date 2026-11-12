@@ -1,6 +1,6 @@
-# Interface contract (v0.1, frozen for the frontend)
+# Interface contract (v0.2)
 
-The frontend builds against this file, mocking the contract until the testnet deploy lands. Any change goes through a PR to this file.
+The frontend builds against this file. Everything below is deployed on NEAR testnet. Any change goes through a PR to this file.
 
 - **Amounts** are `string` base units (U128). The token has **6 decimals**, so `"1000000000"` = 1,000 USDC.
 - **Timestamps** are `string` nanoseconds (U64).
@@ -10,9 +10,14 @@ The frontend builds against this file, mocking the contract until the testnet de
 
 | Name | Account | Notes |
 |---|---|---|
-| Core contract | `cashflow.<team>.testnet` | Placeholder; filled in at deploy |
+| Core contract | `cashflow.cashflowfi.testnet` | Orders, pools, insurance, claims |
 | Position NFTs | same as the core contract | NEP-171 is implemented inside `cashflow`, so `nft_*` methods are called on the core contract |
 | Token | `usdc.tidepool-sandbox.testnet` | 6 decimals |
+| Underwriter agent | `agent.cashflowfi.testnet` | Calls `attest_receipt` / `set_merchant_tier` |
+| Insurance DAO | `dao.cashflowfi.testnet` | Sputnik DAO v2.3.1; calls `approve_cover` |
+| Payment forwarder | `payments.cashflowfi.testnet` | Receives Tidepool deliveries and pays orders |
+| Owner / relayer | `cashflowfi.testnet` | Contract owner; also pays gas for relayed calls |
+| Demo users | `merchant.`, `customer.`, `alice.`, `bob.`, `carol.cashflowfi.testnet` | Used by the scripts and evidence |
 
 ## Enums
 
@@ -36,6 +41,7 @@ get_position({ token_id }): Position | null
 get_positions_by_owner({ owner }): Position[]   // reads owners from the positions contract
 get_insurance(): { balance: string, total_paid: string, treasury: string }
 get_tier({ merchant }): Tier
+get_withdrawable({ account_id }): string        // residual owed to a merchant whose direct transfer failed
 get_config(): { token_id, positions_id, agent_id, dao_id, grace_ns: string, dao_threshold: string, paused: boolean }
 ```
 
@@ -53,7 +59,7 @@ interface Pool {
   senior_face: string; junior_face: string; senior_target: string; junior_target: string;
   senior_funded: string; junior_funded: string;
   senior_repaid: string; junior_repaid: string; residual_paid: string;
-  insurance_paid: string; pending_cover: string;
+  insurance_paid: string; insurance_refilled: string; pending_cover: string;
   status: PoolStatus; due_date: string; created_at: string;
 }
 interface Position {
@@ -70,10 +76,14 @@ interface Position {
 | `approve_receipt` | `{ id }` | customer (not the merchant) |
 | `create_pool` | `{ order_ids: number[] }` → `number`. No deposit (the method is not payable) | merchant |
 | `claim` | `{ token_id }`. 100 TGas | position owner |
+| `nft_transfer` | `{ receiver_id, token_id }`. **1 yoctoNEAR** | position owner (sells or gives the position; future payouts follow the NFT) |
+| `retry_advance` | `{ pool_id }`. 300 TGas | anyone, when a full pool is back in `Funding` because the advance transfer failed (e.g. merchant not registered on the token) |
+| `withdraw_residual` | `{}`. 300 TGas | merchant, when `get_withdrawable` > 0 |
 | `mark_default` | `{ pool_id }` | anyone, after due date + grace |
 | `attest_receipt` | `{ id, verdict, score, reason_hash }` | agent only |
 | `set_merchant_tier` | `{ merchant, tier }` | agent only |
 | `approve_cover` | `{ pool_id }` | DAO only |
+| `set_paused`, `override_attestation`, `withdraw_treasury` | see `contracts/cashflow/src` | owner only (admin, not needed by the UI) |
 
 ### Money in: always through the token's `ft_transfer_call`
 
@@ -100,7 +110,7 @@ Before the first transfer, the user must be registered on the token: `storage_de
 
 ## Events (NEP-297 logs, `EVENT_JSON:` prefix, standard `cashflow`, version `1.0.0`)
 
-The events are: `order_created`, `receipt_approved`, `receipt_attested`, `pool_created`, `invested`, `pool_activated`, `payment_applied`, `claimed`, `pool_defaulted`, `insurance_cover`.
+The events are: `order_created`, `receipt_approved`, `receipt_attested`, `pool_created`, `invested`, `pool_activated`, `payment_applied`, `claimed`, `pool_defaulted`, `insurance_cover`, `advance_failed`, `claim_failed`.
 
 Each event's `data` holds the relevant ids and amounts, for example:
 
@@ -112,9 +122,9 @@ Each event's `data` holds the relevant ids and amounts, for example:
 
 | Endpoint | Returns |
 |---|---|
-| `POST /api/pay/quote` `{ order_id, origin_asset, refund_to }` | Signed Tidepool quote: `depositAddress`, `amountIn`, `deadline` |
-| `GET /api/pay/status?depositAddress=` | `{ status, originTx, destinationTx, nearTx, evidence }` |
-| `GET /api/agent/verdicts?order_id=` | `{ verdict, score, reasons[], attestation: { verified, model, report_url } }` |
+| `POST /api/pay/quote` `{ order_id, origin_asset: "arb-sepolia-usdc", refund_to: "0x…" }` | `{ depositAddress, amountIn, minAmountOut, deadline, dry, order_id }`. `refund_to` is the payer's EVM address. With `dry: true` (server without `TIDEPOOL_LIVE=1`) the quote is a price preview only. Errors: 409 `ORDER_NOT_PAYABLE` / `POOL_NOT_ACTIVE` / `ORDER_ALREADY_PAID` |
+| `GET /api/pay/status?depositAddress=` | `{ status, originTx, destinationTx, nearTx, evidence, reason? }`. `status`: `pending` → `forwarding` → `delivered`, or `refunded` / `failed` / `ambiguous`. Poll every 5–10 s |
+| `GET /api/agent/verdicts?order_id=` | `{ verdict, score, reasons[], attestation: { verified, model, report_url } }`. `verdict`/`score` come from chain; `reasons` only if they hash to the on-chain `reason_hash`; `verified: true` only when the saved TEE signature re-checks and is bound to this on-chain verdict; `report_url` is the evidence file path in this repo. 404 `NOT_ATTESTED` before the agent has scored the order |
 | `GET /api/ledger/payments` | Watcher ledger rows (CSV at `?format=csv`) |
 | `POST /api/invest/match` `{ intent, filters }` | Ranked tranche suggestions plus a `privacy` block (below) |
 
@@ -156,9 +166,13 @@ The investor describes what they want in free text. The server reads open pools 
 - If the model is unavailable, the TEE checks fail before the prompt is sent, or its answer fails the strict parse, the response is a **fallback** ranking: underwriter score (high first), then tier, then days to due, then pool id, Senior before Junior, each for as much as the filters and room allow.
 - Reproduce from the CLI: `npm run match -- "<intent>" --filters '{"tranche":"Senior"}' [--save]`. The live run is in `evidence/privacy/match-run.json`.
 
+## Gasless relayer (NEP-366)
+
+`relayer/server.mjs` (port 8788). `POST /relay { signedDelegate: base64 }` → `{ txHash, status }`; `GET /relay/health`. Only these calls are relayed: on the core contract `create_order`, `approve_receipt`, `create_pool`, `claim`, `nft_transfer` (1 yocto); on the token `ft_transfer_call` to the core contract with an `invest` / `pay` / `repay` / `seed_insurance` msg. Build the signed delegate with `relayer/client.mjs` (`signDelegate`, `signDelegateFor`, `submitToRelayer`; no Node-only APIs).
+
 ## Mock fixture (receivable 1,000 USDC, tier B)
 
-The frontend uses these values while mocking:
+Use these values for mocks and storybook states:
 
 ```json
 {"receivable":"1000000000","advance":"800000000","fee":"8000000","claim":"850000000",
