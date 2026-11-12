@@ -1,0 +1,34 @@
+{
+  "order_id": 30,
+  "deposit_address": "0x01CDfD9807a7b26A1B3255b1bAb01eb550db5F1D",
+  "origin_tx": "0x02d2a79fb8dd7a23db3d88248290f02456a65309750c8e0587c8a9aaa58e8bbd",
+  "min_amount_out": "1974852",
+  "provider_status": "SUCCESS",
+  "delivery_id": "535B495f2bhgHNtUdagv7P99BzQTftzt2K36BP57RXbb-GPzVtGr8MhYs14sv3vhgeFvgZiG4Q27zRgVuYG3HuZRP",
+  "delivery_tx": "535B495f2bhgHNtUdagv7P99BzQTftzt2K36BP57RXbb",
+  "delivery_receipt": "GPzVtGr8MhYs14sv3vhgeFvgZiG4Q27zRgVuYG3HuZRP",
+  "delivered_amount": "1994800",
+  "evidence": "provider-linked-near-receipt",
+  "stage": "delivered",
+  "forward_tx": "DTi9GozmQ3SFt6fZFatgH15LXzfKzhbt1joHFh2ruxrq",
+  "forward_signed_tx": "GwAAAHBheW1lbnRzLmNhc2hmbG93ZmkudGVzdG5ldABR3FRUlQ+q9FiKr6xfmcov2+2LHkox6JvKmqoMetd094RY+VdC/AAAHQAAAHVzZGMudGlkZXBvb2wtc2FuZGJveC50ZXN0bmV0fmOIVibi/fH3nzwtByvhjofxJEhjtoedoTbPGtV5+0gBAAAAAhAAAABmdF90cmFuc2Zlcl9jYWxsZAAAAHsicmVjZWl2ZXJfaWQiOiJjYXNoZmxvdy5jYXNoZmxvd2ZpLnRlc3RuZXQiLCJhbW91bnQiOiIxOTk0ODAwIiwibXNnIjoie1wicGF5XCI6e1wib3JkZXJfaWRcIjozMH19In0AYLeYbIgAAAEAAAAAAAAAAAAAAAAAAAAAnOCDtiQ1r3KbZ5sXl5XkTQriQDEsSEVMNt1naEQUG4j8eD7kThvVFV2HWAmbYEVQhcSSnv4I6tHpWSXDxsA4Cg==",
+  "contract": "cashflow.cashflowfi.testnet",
+  "forwarder": "payments.cashflowfi.testnet",
+  "claimed_at": "2026-11-12T16:29:24.000Z",
+  "applied_amount": "1994800",
+  "surplus_refunded_to_forwarder": "0",
+  "events": [
+    {
+      "pool_id": 18,
+      "order_id": 30,
+      "amount": "1994800",
+      "senior": "956250",
+      "junior": "318750",
+      "merchant": "719800",
+      "insurance_refill": "0"
+    }
+  ],
+  "ft_on_transfer_receipt": "Bbdm27h6DvjSnv4dWrEC4ei5mC91xNtzz717j3JwfPah",
+  "forward_explorer": "https://testnet.nearblocks.io/txns/DTi9GozmQ3SFt6fZFatgH15LXzfKzhbt1joHFh2ruxrq",
+  "finished_at": "2026-11-12T16:29:24.000Z"
+}

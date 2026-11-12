@@ -2,24 +2,24 @@
   "scenario": "underwriter verdict from a verified TEE",
   "network": "testnet",
   "contract": "cashflow.cashflowfi.testnet",
-  "started_at": "2026-11-12T16:12:34.102Z",
+  "started_at": "2026-11-12T16:49:34.807Z",
   "steps": [
     {
       "step": "merchant creates order (25 USDC, 30 days)",
-      "tx": "ECntoJ8fqAeuqmETHeEqqgt1aDYDDhu6KGGjSiqoT2hr",
-      "explorer": "https://testnet.nearblocks.io/txns/ECntoJ8fqAeuqmETHeEqqgt1aDYDDhu6KGGjSiqoT2hr",
-      "order_id": 22
+      "tx": "2MMaGey4JABnJ1HA2fz7K2BXBHu4R5MAeRYyMPNCXVdX",
+      "explorer": "https://testnet.nearblocks.io/txns/2MMaGey4JABnJ1HA2fz7K2BXBHu4R5MAeRYyMPNCXVdX",
+      "order_id": 42
     },
     {
       "step": "customer approves receipt",
-      "tx": "jyuQXGvTaJDDih4BWiLxQDv3MpDoB9YY8jBb7Degvit",
-      "explorer": "https://testnet.nearblocks.io/txns/jyuQXGvTaJDDih4BWiLxQDv3MpDoB9YY8jBb7Degvit"
+      "tx": "EttQ8cExoe3gBpLa7F2g2BnZWHZ3PF6Pmo9YHWQ65eJ9",
+      "explorer": "https://testnet.nearblocks.io/txns/EttQ8cExoe3gBpLa7F2g2BnZWHZ3PF6Pmo9YHWQ65eJ9"
     },
     {
       "step": "agent attests Approve (score 92) from a TEE completion",
-      "tx": "3aDe99iRN2Th4mZENRih1zRKgmpkwBUgfAXU7NkwwSMf",
-      "explorer": "https://testnet.nearblocks.io/txns/3aDe99iRN2Th4mZENRih1zRKgmpkwBUgfAXU7NkwwSMf",
-      "evidence": "evidence/attestations/22.json"
+      "tx": "49G6MguB6GvYQH7CUHNtvvnvevsFPKseQ18uT3MwfNxG",
+      "explorer": "https://testnet.nearblocks.io/txns/49G6MguB6GvYQH7CUHNtvvnvevsFPKseQ18uT3MwfNxG",
+      "evidence": "evidence/attestations/42.json"
     }
   ],
   "checks": [
@@ -63,5 +63,5 @@
     ]
   },
   "ok": true,
-  "finished_at": "2026-11-12T16:12:52.750Z"
+  "finished_at": "2026-11-12T16:49:58.730Z"
 }

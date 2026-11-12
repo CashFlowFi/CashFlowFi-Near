@@ -1,28 +1,28 @@
 {
   "network": "testnet",
   "contract": "cashflow.cashflowfi.testnet",
-  "started_at": "2026-11-12T15:08:53.404Z",
+  "started_at": "2026-11-12T16:48:52.044Z",
   "results": [
     {
       "attack": "Merchant approves its own invoice (fake customer receipt)",
       "attacker": "merchant.cashflowfi.testnet",
       "call": "cashflow.cashflowfi.testnet.approve_receipt",
       "args": {
-        "id": 20
+        "id": 41
       },
       "defense": "approve_receipt rejects the order's merchant as customer",
       "expected_error": "Merchant cannot approve own order",
       "observed_error": "Merchant cannot approve own order",
       "result": "blocked",
-      "tx": "HaMrPcD3aVDAjpR7DM6XcoSXqtRYA7uXWSkrmSYRuEEA",
-      "explorer": "https://testnet.nearblocks.io/txns/HaMrPcD3aVDAjpR7DM6XcoSXqtRYA7uXWSkrmSYRuEEA"
+      "tx": "884CMUJyrEGm686LutqxLdiczchxd8E4Kjqscvk7SfC",
+      "explorer": "https://testnet.nearblocks.io/txns/884CMUJyrEGm686LutqxLdiczchxd8E4Kjqscvk7SfC"
     },
     {
       "attack": "Merchant attests its own order as Approve/100 (bypass the AI)",
       "attacker": "merchant.cashflowfi.testnet",
       "call": "cashflow.cashflowfi.testnet.attest_receipt",
       "args": {
-        "id": 20,
+        "id": 41,
         "verdict": "Approve",
         "score": 100,
         "reason_hash": "0000000000000000000000000000000000000000000000000000000000000000"
@@ -31,8 +31,8 @@
       "expected_error": "Only the underwriter agent",
       "observed_error": "Only the underwriter agent",
       "result": "blocked",
-      "tx": "2QVCXkuMeRg2EmCxsXKTdH1zPViYGUMkMrRzvFGvcfG4",
-      "explorer": "https://testnet.nearblocks.io/txns/2QVCXkuMeRg2EmCxsXKTdH1zPViYGUMkMrRzvFGvcfG4"
+      "tx": "CqTiWp7AXSZRBLRpVEAAMv2AMm8MaqEYLPNTsStAx8px",
+      "explorer": "https://testnet.nearblocks.io/txns/CqTiWp7AXSZRBLRpVEAAMv2AMm8MaqEYLPNTsStAx8px"
     },
     {
       "attack": "Merchant upgrades its own risk tier to A (better terms)",
@@ -46,8 +46,8 @@
       "expected_error": "Only the underwriter agent",
       "observed_error": "Only the underwriter agent",
       "result": "blocked",
-      "tx": "BaJJj3EHtQhkX48mGeaokWptMS7kz2f3woHKqAiAVLkC",
-      "explorer": "https://testnet.nearblocks.io/txns/BaJJj3EHtQhkX48mGeaokWptMS7kz2f3woHKqAiAVLkC"
+      "tx": "4eKZobumqdfb1xHaYJXP8kUUpyZaWyArM6rNufu5xFU5",
+      "explorer": "https://testnet.nearblocks.io/txns/4eKZobumqdfb1xHaYJXP8kUUpyZaWyArM6rNufu5xFU5"
     },
     {
       "attack": "Merchant pools an order the underwriter never approved",
@@ -55,15 +55,15 @@
       "call": "cashflow.cashflowfi.testnet.create_pool",
       "args": {
         "order_ids": [
-          20
+          41
         ]
       },
       "defense": "create_pool requires status Attested and verdict Approve",
       "expected_error": "Order not approved by underwriter",
       "observed_error": "Order not approved by underwriter",
       "result": "blocked",
-      "tx": "6HxZAmovTArGfcfqwxbJmDCThnU5XTrtnB2ua9XYvu51",
-      "explorer": "https://testnet.nearblocks.io/txns/6HxZAmovTArGfcfqwxbJmDCThnU5XTrtnB2ua9XYvu51"
+      "tx": "H8aNwCTTE9LDxZdULyq5kuXXLpQevvo6V5ar3dDUDgSv",
+      "explorer": "https://testnet.nearblocks.io/txns/H8aNwCTTE9LDxZdULyq5kuXXLpQevvo6V5ar3dDUDgSv"
     },
     {
       "attack": "Spoofed deposit: call ft_on_transfer directly with fake 1M USDC",
@@ -78,8 +78,8 @@
       "expected_error": "Only the configured USDC token",
       "observed_error": "Only the configured USDC token",
       "result": "blocked",
-      "tx": "FXeca8ta1FCaib7jUSJSsacT6zUQUwXi6Ntp8Uhrs9Pk",
-      "explorer": "https://testnet.nearblocks.io/txns/FXeca8ta1FCaib7jUSJSsacT6zUQUwXi6Ntp8Uhrs9Pk"
+      "tx": "8wXyy2QvH7ThoCwYTkGvH68qq3LL3gMavYcieafSGqmf",
+      "explorer": "https://testnet.nearblocks.io/txns/8wXyy2QvH7ThoCwYTkGvH68qq3LL3gMavYcieafSGqmf"
     },
     {
       "attack": "Non-DAO account releases insurance cover",
@@ -92,8 +92,8 @@
       "expected_error": "Only the DAO",
       "observed_error": "Only the DAO",
       "result": "blocked",
-      "tx": "4epYKm7rHLZ4MpFm1Js8WX7KoVMjMH29nd6DiWNWE5FN",
-      "explorer": "https://testnet.nearblocks.io/txns/4epYKm7rHLZ4MpFm1Js8WX7KoVMjMH29nd6DiWNWE5FN"
+      "tx": "UfAVfH9Jaj54cNELArhFBeSsVj8JVPGzHJNi1HaKchq",
+      "explorer": "https://testnet.nearblocks.io/txns/UfAVfH9Jaj54cNELArhFBeSsVj8JVPGzHJNi1HaKchq"
     },
     {
       "attack": "Non-owner claims someone else's position payout",
@@ -106,10 +106,10 @@
       "expected_error": "Only the position owner can claim",
       "observed_error": "Only the position owner can claim",
       "result": "blocked",
-      "tx": "81Q7cvPyBDv7bxaN16gZxkdota6b3XDrrUUsrdm3zSZJ",
-      "explorer": "https://testnet.nearblocks.io/txns/81Q7cvPyBDv7bxaN16gZxkdota6b3XDrrUUsrdm3zSZJ"
+      "tx": "Bk8pJxyGBgx8jaP71avkLohubB4fGQL6VDsh4S8XPZKi",
+      "explorer": "https://testnet.nearblocks.io/txns/Bk8pJxyGBgx8jaP71avkLohubB4fGQL6VDsh4S8XPZKi"
     }
   ],
-  "setup_order_id": 20,
+  "setup_order_id": 41,
   "ok": true
 }

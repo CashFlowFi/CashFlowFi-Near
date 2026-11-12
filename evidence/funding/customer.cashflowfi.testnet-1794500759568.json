@@ -1,0 +1,45 @@
+{
+  "mode": "fund",
+  "target": "customer.cashflowfi.testnet",
+  "network": {
+    "origin": "arbitrum-sepolia",
+    "destination": "near-testnet"
+  },
+  "request": {
+    "dry": false,
+    "swapType": "EXACT_INPUT",
+    "slippageTolerance": 100,
+    "originAsset": "nep141:arb-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+    "depositType": "ORIGIN_CHAIN",
+    "destinationAsset": "nep141:usdc.tidepool-sandbox.testnet",
+    "amount": "40000000",
+    "recipient": "customer.cashflowfi.testnet",
+    "recipientType": "DESTINATION_CHAIN",
+    "refundTo": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+    "refundType": "ORIGIN_CHAIN",
+    "deadline": "2026-11-12T16:55:59.000Z"
+  },
+  "quote": {
+    "depositAddress": "0x523EbEB2fA1fAE51E3fC1bB54BA573de963BE4Cf",
+    "amountIn": "40000000",
+    "minAmountOut": "39497040",
+    "signatureVerified": true
+  },
+  "origin_tx": "0x70d2d34394f995c890a5af573fee886d444aa758af94f663edd8cfd9d653c253",
+  "origin_explorer": "https://sepolia.arbiscan.io/tx/0x70d2d34394f995c890a5af573fee886d444aa758af94f663edd8cfd9d653c253",
+  "nonce": 14,
+  "stage": "done",
+  "created_at": "2026-11-12T16:26:03.067Z",
+  "origin_block": "328557942",
+  "deposit_submit": 200,
+  "provider_status": "SUCCESS",
+  "near_hashes": [
+    "4MHKpvGRA3Qpe6PedshSuDHxnkvHRnNatrjogT7uU8qD"
+  ],
+  "near_tx": "4MHKpvGRA3Qpe6PedshSuDHxnkvHRnNatrjogT7uU8qD",
+  "delivered_amount": "39896000",
+  "outcome": "delivered",
+  "evidence": "provider-linked-near-receipt",
+  "near_explorer": "https://testnet.nearblocks.io/txns/4MHKpvGRA3Qpe6PedshSuDHxnkvHRnNatrjogT7uU8qD",
+  "finished_at": "2026-11-12T16:26:26.310Z"
+}

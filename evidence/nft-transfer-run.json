@@ -2,84 +2,84 @@
   "scenario": "position NFT transfer mid-payout",
   "network": "testnet",
   "contract": "cashflow.cashflowfi.testnet",
-  "started_at": "2026-11-12T15:07:17.393Z",
+  "started_at": "2026-11-12T16:47:16.984Z",
   "steps": [
     {
       "step": "merchant creates order",
-      "tx": "BJzKaHKawoMgQLirHGHyAo81W3WT1tirkFuNxvZhBmXM",
-      "explorer": "https://testnet.nearblocks.io/txns/BJzKaHKawoMgQLirHGHyAo81W3WT1tirkFuNxvZhBmXM",
-      "order_id": 18
+      "tx": "A5tjYRV88RyYnJaqiaHnRR9HyKk8EuH3JMuHYdgNVDLT",
+      "explorer": "https://testnet.nearblocks.io/txns/A5tjYRV88RyYnJaqiaHnRR9HyKk8EuH3JMuHYdgNVDLT",
+      "order_id": 39
     },
     {
       "step": "customer approves receipt",
-      "tx": "EqpXAwG52bq3JpiVJUTB9nBv9pxww1CqoE485yt8Vq7Y",
-      "explorer": "https://testnet.nearblocks.io/txns/EqpXAwG52bq3JpiVJUTB9nBv9pxww1CqoE485yt8Vq7Y"
+      "tx": "FaxPTMbN9jdhacU8BxMQ5ARtvQ6zuoqFFNijojHftExm",
+      "explorer": "https://testnet.nearblocks.io/txns/FaxPTMbN9jdhacU8BxMQ5ARtvQ6zuoqFFNijojHftExm"
     },
     {
-      "step": "agent attests Approve (score 92)",
-      "tx": "8bXi9EMXJFngTFF6T6gyK7KEuZZpwphVoAPqaz772T7v",
-      "explorer": "https://testnet.nearblocks.io/txns/8bXi9EMXJFngTFF6T6gyK7KEuZZpwphVoAPqaz772T7v",
+      "step": "agent attests Approve (score 95)",
+      "tx": "6XMfxrrQE37KBRA56KdVCNeZJKj2A8KBeHhXWBkFWKpr",
+      "explorer": "https://testnet.nearblocks.io/txns/6XMfxrrQE37KBRA56KdVCNeZJKj2A8KBeHhXWBkFWKpr",
       "verdict": "Approve",
-      "score": 92,
+      "score": 95,
       "model": "Qwen/Qwen3.6-35B-A3B-FP8"
     },
     {
       "step": "merchant opens pool",
-      "tx": "NkZhHgVBNaE6EgQt1LShQQvMJ7tfg5n4N6n4BF7cufC",
-      "explorer": "https://testnet.nearblocks.io/txns/NkZhHgVBNaE6EgQt1LShQQvMJ7tfg5n4N6n4BF7cufC",
-      "pool_id": 12
+      "tx": "Fcj54ATwJ5RQnbmdCxDVy5w4QTcmPwweFcT2prgE7EVH",
+      "explorer": "https://testnet.nearblocks.io/txns/Fcj54ATwJ5RQnbmdCxDVy5w4QTcmPwweFcT2prgE7EVH",
+      "pool_id": 24
     },
     {
       "step": "senior investor funds",
-      "tx": "EfJXY9T6N4nvkdon2T4ahcpXx6x2QDnjdp2xWjFjj27R",
-      "explorer": "https://testnet.nearblocks.io/txns/EfJXY9T6N4nvkdon2T4ahcpXx6x2QDnjdp2xWjFjj27R"
+      "tx": "Bn8WktCaG5nA2NJCvAoqEvw4c8Q6GgATo9yzoAUCettz",
+      "explorer": "https://testnet.nearblocks.io/txns/Bn8WktCaG5nA2NJCvAoqEvw4c8Q6GgATo9yzoAUCettz"
     },
     {
       "step": "junior investor funds (activates pool, pays advance)",
-      "tx": "EWqpSZQnSVmJ6kUyxPGEXe1tNtu1ZzWv53psYv1P8enJ",
-      "explorer": "https://testnet.nearblocks.io/txns/EWqpSZQnSVmJ6kUyxPGEXe1tNtu1ZzWv53psYv1P8enJ"
+      "tx": "C4WA44FB6RkuQU2zA7bDAGThi6184BzNVQn29UKf7ToX",
+      "explorer": "https://testnet.nearblocks.io/txns/C4WA44FB6RkuQU2zA7bDAGThi6184BzNVQn29UKf7ToX"
     },
     {
-      "step": "customer pays half",
-      "tx": "3o9gbqJtYfU64WwjNVwxxx387WVRZnnUcYSL3rS2YDaC",
-      "explorer": "https://testnet.nearblocks.io/txns/3o9gbqJtYfU64WwjNVwxxx387WVRZnnUcYSL3rS2YDaC"
+      "step": "customer pays 2.390625 USDC",
+      "tx": "55Cr7WY3Lh2R9B2cw1mCu12QgGNvUz3TSk68Ti2rBmPU",
+      "explorer": "https://testnet.nearblocks.io/txns/55Cr7WY3Lh2R9B2cw1mCu12QgGNvUz3TSk68Ti2rBmPU"
     },
     {
-      "step": "senior holder claims the first half",
-      "tx": "4NbML5Pr1F7cnb2SWtmGqxLYKytvy8VcojZbT9p8r6cp",
-      "explorer": "https://testnet.nearblocks.io/txns/4NbML5Pr1F7cnb2SWtmGqxLYKytvy8VcojZbT9p8r6cp"
+      "step": "senior holder claims the first payment",
+      "tx": "PWd1GLW8RWEifeA6ydQuxqJiS1rKFnm4VbeNf6SJe69",
+      "explorer": "https://testnet.nearblocks.io/txns/PWd1GLW8RWEifeA6ydQuxqJiS1rKFnm4VbeNf6SJe69"
     },
     {
       "step": "senior NFT sold to carol.cashflowfi.testnet",
-      "tx": "5SWibbc4MV3eeuVNWRxYD3GfLsMcD2fvXfTDFB7UWiwo",
-      "explorer": "https://testnet.nearblocks.io/txns/5SWibbc4MV3eeuVNWRxYD3GfLsMcD2fvXfTDFB7UWiwo"
+      "tx": "GEq9W2Cs6fbxu1oT84CRvXWfzam6LWrRDSVvLBH1DomR",
+      "explorer": "https://testnet.nearblocks.io/txns/GEq9W2Cs6fbxu1oT84CRvXWfzam6LWrRDSVvLBH1DomR"
     },
     {
       "step": "customer pays the rest",
-      "tx": "9sm2WFkUKJked8fKkuJnsJan2uYB6iJNahgRZoRQ1p1o",
-      "explorer": "https://testnet.nearblocks.io/txns/9sm2WFkUKJked8fKkuJnsJan2uYB6iJNahgRZoRQ1p1o"
+      "tx": "5krxYNGBV5QFrADNjWBu2Xzz8ZUw5FMCMpoGyUvyHnxu",
+      "explorer": "https://testnet.nearblocks.io/txns/5krxYNGBV5QFrADNjWBu2Xzz8ZUw5FMCMpoGyUvyHnxu"
     },
     {
       "step": "new holder claims the senior remainder",
-      "tx": "82NTPKK2YYMhKqTQSHjibsM39PPANfSX1pjC5Vf67nWw",
-      "explorer": "https://testnet.nearblocks.io/txns/82NTPKK2YYMhKqTQSHjibsM39PPANfSX1pjC5Vf67nWw"
+      "tx": "BTkTbEJx9oRaY1TEpWwSJNrPZbnDVGdnuTL54fTmKEwq",
+      "explorer": "https://testnet.nearblocks.io/txns/BTkTbEJx9oRaY1TEpWwSJNrPZbnDVGdnuTL54fTmKEwq"
     },
     {
       "step": "junior NFT sold to carol.cashflowfi.testnet with its payout unclaimed",
-      "tx": "FmZKtecvgw3LZKPdsEE6jit9gtUZSbrRVwoAqhipEYk1",
-      "explorer": "https://testnet.nearblocks.io/txns/FmZKtecvgw3LZKPdsEE6jit9gtUZSbrRVwoAqhipEYk1"
+      "tx": "HmWMvnHiGLgxQB7gGfk7VgzecMnDN4YNtxuwkeV6xqsp",
+      "explorer": "https://testnet.nearblocks.io/txns/HmWMvnHiGLgxQB7gGfk7VgzecMnDN4YNtxuwkeV6xqsp"
     },
     {
       "step": "new holder claims the whole junior payout",
-      "tx": "87pdTDKYBUUG8MqAMHD4RNTiZF3iW5uDL8HqjK86qBxw",
-      "explorer": "https://testnet.nearblocks.io/txns/87pdTDKYBUUG8MqAMHD4RNTiZF3iW5uDL8HqjK86qBxw"
+      "tx": "7bnT2MPuQepo2KhFkQJxaynBfjUywcGrGyRKoSTB3PQi",
+      "explorer": "https://testnet.nearblocks.io/txns/7bnT2MPuQepo2KhFkQJxaynBfjUywcGrGyRKoSTB3PQi"
     }
   ],
   "checks": [
     {
       "label": "alice.cashflowfi.testnet received",
-      "got": "5000000",
-      "want": "5000000",
+      "got": "2390625",
+      "want": "2390625",
       "ok": true
     },
     {
@@ -90,14 +90,14 @@
     },
     {
       "label": "carol.cashflowfi.testnet received",
-      "got": "1375000",
-      "want": "1375000",
+      "got": "2390625",
+      "want": "2390625",
       "ok": true
     },
     {
       "label": "senior claimed in total",
-      "got": "6375000",
-      "want": "6375000",
+      "got": "4781250",
+      "want": "4781250",
       "ok": true
     },
     {
@@ -108,8 +108,8 @@
     },
     {
       "label": "carol.cashflowfi.testnet received",
-      "got": "2125000",
-      "want": "2125000",
+      "got": "1593750",
+      "want": "1593750",
       "ok": true
     },
     {
@@ -119,10 +119,10 @@
       "ok": true
     }
   ],
-  "order_id": 18,
-  "pool_id": 12,
-  "senior_token": "12-21",
-  "junior_token": "12-22",
+  "order_id": 39,
+  "pool_id": 24,
+  "senior_token": "24-45",
+  "junior_token": "24-46",
   "ok": true,
-  "finished_at": "2026-11-12T15:08:39.516Z"
+  "finished_at": "2026-11-12T16:48:39.843Z"
 }

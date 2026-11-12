@@ -2,87 +2,100 @@
   "scenario": "default + DAO cover",
   "network": "testnet",
   "contract": "cashflow.cashflowfi.testnet",
-  "started_at": "2026-11-12T15:09:33.865Z",
+  "started_at": "2026-11-12T16:49:58.821Z",
   "steps": [
     {
       "step": "merchant creates order",
-      "tx": "BUpU6bjVqUzrx1u5yFW44bRQGPV9ZjBgxHhvnpng7kUW",
-      "explorer": "https://testnet.nearblocks.io/txns/BUpU6bjVqUzrx1u5yFW44bRQGPV9ZjBgxHhvnpng7kUW",
-      "order_id": 21
+      "tx": "Div612rDD9AWUa1BSNvSGBJowfVDTh86Zc6TR8ECy2hA",
+      "explorer": "https://testnet.nearblocks.io/txns/Div612rDD9AWUa1BSNvSGBJowfVDTh86Zc6TR8ECy2hA",
+      "order_id": 43
     },
     {
       "step": "customer approves receipt",
-      "tx": "H3q6Jvtwc8MfeXyDTUpNBRW3fh1debPEwV7jkLVSeP1g",
-      "explorer": "https://testnet.nearblocks.io/txns/H3q6Jvtwc8MfeXyDTUpNBRW3fh1debPEwV7jkLVSeP1g"
+      "tx": "8b26H8wfx519kKhSnjDqXzgPKbmBoPJqeKMmGt2zUZh3",
+      "explorer": "https://testnet.nearblocks.io/txns/8b26H8wfx519kKhSnjDqXzgPKbmBoPJqeKMmGt2zUZh3"
     },
     {
-      "step": "agent attests Approve (score 95)",
-      "tx": "Nrj71ia16dFoxCHGUYFUW5i2gWDwcsni7kf9WhS3Jns",
-      "explorer": "https://testnet.nearblocks.io/txns/Nrj71ia16dFoxCHGUYFUW5i2gWDwcsni7kf9WhS3Jns",
+      "step": "agent attests Approve (score 100)",
+      "tx": "FSz5faLGLw3XaP9znCvxYmAAacoB8PnMS1ZtzUaTCSsi",
+      "explorer": "https://testnet.nearblocks.io/txns/FSz5faLGLw3XaP9znCvxYmAAacoB8PnMS1ZtzUaTCSsi",
       "verdict": "Approve",
-      "score": 95,
+      "score": 100,
       "model": "Qwen/Qwen3.6-35B-A3B-FP8"
     },
     {
       "step": "merchant opens pool",
-      "tx": "2QLAM6SHXERF1nugyQ7VtrLNeMcd8uKa2TjdwA4wc7zf",
-      "explorer": "https://testnet.nearblocks.io/txns/2QLAM6SHXERF1nugyQ7VtrLNeMcd8uKa2TjdwA4wc7zf",
-      "pool_id": 13
+      "tx": "26hWNBHCCbC1sDGNQLr2QXdbadEgtkaTMq7J72x6Tv95",
+      "explorer": "https://testnet.nearblocks.io/txns/26hWNBHCCbC1sDGNQLr2QXdbadEgtkaTMq7J72x6Tv95",
+      "pool_id": 25
     },
     {
       "step": "senior investor funds",
-      "tx": "8N3pCpHAD1tJzZs8WEWEQ16aScRYFKYe3AFaGpEyFFzX",
-      "explorer": "https://testnet.nearblocks.io/txns/8N3pCpHAD1tJzZs8WEWEQ16aScRYFKYe3AFaGpEyFFzX"
+      "tx": "FM1SXLJLcTvxu49hwN8Etp48ukeuzz5awU2VMSYPeiuQ",
+      "explorer": "https://testnet.nearblocks.io/txns/FM1SXLJLcTvxu49hwN8Etp48ukeuzz5awU2VMSYPeiuQ"
     },
     {
       "step": "junior investor funds (activates pool, pays advance)",
-      "tx": "EatFbgcrEFW7fs7d6cLwaFRKeEjrX2H4BpM7jJLHCBAa",
-      "explorer": "https://testnet.nearblocks.io/txns/EatFbgcrEFW7fs7d6cLwaFRKeEjrX2H4BpM7jJLHCBAa"
+      "tx": "8SrWRYvhmQrv29jq5jEw8vcrpZywe8Fn78CAStGyXM75",
+      "explorer": "https://testnet.nearblocks.io/txns/8SrWRYvhmQrv29jq5jEw8vcrpZywe8Fn78CAStGyXM75"
     },
     {
-      "step": "customer pays only 7 USDC",
-      "tx": "Av92i1wPRwhSMnbJy1AUUbKSMZ24WaAdaFSL8Nvqi5q6",
-      "explorer": "https://testnet.nearblocks.io/txns/Av92i1wPRwhSMnbJy1AUUbKSMZ24WaAdaFSL8Nvqi5q6"
+      "step": "customer pays only 5.179687 USDC, then goes silent",
+      "tx": "EzBjg2nURZzKg7VsDrCp9EiY6qLpvzrpN3yQGQP2ewNE",
+      "explorer": "https://testnet.nearblocks.io/txns/EzBjg2nURZzKg7VsDrCp9EiY6qLpvzrpN3yQGQP2ewNE"
     },
     {
       "step": "owner seeds insurance 3 USDC",
-      "tx": "BdVkUyXxZKpxg12iDHdmojGPCR62EbLbbpyggRsHvUUj",
-      "explorer": "https://testnet.nearblocks.io/txns/BdVkUyXxZKpxg12iDHdmojGPCR62EbLbbpyggRsHvUUj"
+      "tx": "3McAwVQWQRtpcvQSFLhRrix6GtzUVBTYuusRjWFnKPQY",
+      "explorer": "https://testnet.nearblocks.io/txns/3McAwVQWQRtpcvQSFLhRrix6GtzUVBTYuusRjWFnKPQY"
+    },
+    {
+      "step": "collections agent reminds the customer (model)",
+      "tx": null,
+      "explorer": null,
+      "evidence": "evidence/collections/43.json",
+      "subject": "Payment Reminder: Invoice DFLT-1794502199115"
     },
     {
       "step": "collections agent marks default",
-      "tx": "6GGyAEqVSuCbDTStLcYYWxP5GjJ3K9ueReJKcW1mQCbW",
-      "explorer": "https://testnet.nearblocks.io/txns/6GGyAEqVSuCbDTStLcYYWxP5GjJ3K9ueReJKcW1mQCbW",
-      "cover": "1000000",
+      "tx": "5bv37fK9ssGpwMPANd6wL1dN4PQfuY6FhSv5Wkancy6m",
+      "explorer": "https://testnet.nearblocks.io/txns/5bv37fK9ssGpwMPANd6wL1dN4PQfuY6FhSv5Wkancy6m",
+      "cover": "796875",
       "needs_dao": true
     },
     {
-      "step": "council proposes approve_cover (proposal 3)",
-      "tx": "B1xG2kmuq4y25wv4QqVxZ5FLG8suJM71mTDXBtxYHDzB",
-      "explorer": "https://testnet.nearblocks.io/txns/B1xG2kmuq4y25wv4QqVxZ5FLG8suJM71mTDXBtxYHDzB"
+      "step": "council proposes approve_cover (proposal 5)",
+      "tx": "7JC6aJa66P1oQus8Qghf3gXM756UmF1bN7PowoZPyF43",
+      "explorer": "https://testnet.nearblocks.io/txns/7JC6aJa66P1oQus8Qghf3gXM756UmF1bN7PowoZPyF43"
     },
     {
       "step": "cashflowfi.testnet votes approve",
-      "tx": "3evwNmrXbucJumxznnZvDsPRXcaHww49oF4bTdmQMg3q",
-      "explorer": "https://testnet.nearblocks.io/txns/3evwNmrXbucJumxznnZvDsPRXcaHww49oF4bTdmQMg3q"
+      "tx": "5ef7roq8BPUQJd9sze6SJjgYcszYdTDdJvPBMPwYRUn2",
+      "explorer": "https://testnet.nearblocks.io/txns/5ef7roq8BPUQJd9sze6SJjgYcszYdTDdJvPBMPwYRUn2"
     },
     {
       "step": "alice.cashflowfi.testnet votes approve",
-      "tx": "36JEMx8UgrCpcWkxr1E8MeQzrFVbX6CFhwo9wkqrHAio",
-      "explorer": "https://testnet.nearblocks.io/txns/36JEMx8UgrCpcWkxr1E8MeQzrFVbX6CFhwo9wkqrHAio"
+      "tx": "8UFE5DUG46TrKcVgaLkE4PrR71UeWRByp2aM6u6dNjFF",
+      "explorer": "https://testnet.nearblocks.io/txns/8UFE5DUG46TrKcVgaLkE4PrR71UeWRByp2aM6u6dNjFF"
     },
     {
       "step": "senior holder claims",
-      "tx": "9MA8sdqcpvQshRrr2cVNh4GSv9Rsa37g52hxok171MEo",
-      "explorer": "https://testnet.nearblocks.io/txns/9MA8sdqcpvQshRrr2cVNh4GSv9Rsa37g52hxok171MEo"
+      "tx": "HuLmMZyvzCdL142yb5xdi4XTDco98wWT2XLZjF4bGXXE",
+      "explorer": "https://testnet.nearblocks.io/txns/HuLmMZyvzCdL142yb5xdi4XTDco98wWT2XLZjF4bGXXE"
     },
     {
       "step": "junior holder claims (includes cover)",
-      "tx": "5s2MQSs3Jtxc6v7sxtABCE1tLagqcqxFfL3FBKrRpTU7",
-      "explorer": "https://testnet.nearblocks.io/txns/5s2MQSs3Jtxc6v7sxtABCE1tLagqcqxFfL3FBKrRpTU7"
+      "tx": "7sZe2yUM9sFYH5CGFQenp3GBgAsUjrFMQKYqU7zogznK",
+      "explorer": "https://testnet.nearblocks.io/txns/7sZe2yUM9sFYH5CGFQenp3GBgAsUjrFMQKYqU7zogznK"
     }
   ],
   "checks": [
+    {
+      "label": "reminder written by the model in a verified TEE",
+      "got": "true",
+      "want": "true",
+      "ok": true
+    },
     {
       "label": "pool status",
       "got": "Defaulted",
@@ -91,8 +104,8 @@
     },
     {
       "label": "pending cover (waits for DAO)",
-      "got": "1000000",
-      "want": "1000000",
+      "got": "796875",
+      "want": "796875",
       "ok": true
     },
     {
@@ -103,8 +116,8 @@
     },
     {
       "label": "cover paid",
-      "got": "1000000",
-      "want": "1000000",
+      "got": "796875",
+      "want": "796875",
       "ok": true
     },
     {
@@ -115,32 +128,32 @@
     },
     {
       "label": "alice.cashflowfi.testnet claimable",
-      "got": "6375000",
-      "want": "6375000",
+      "got": "4781250",
+      "want": "4781250",
       "ok": true
     },
     {
       "label": "alice.cashflowfi.testnet received",
-      "got": "6375000",
-      "want": "6375000",
+      "got": "4781250",
+      "want": "4781250",
       "ok": true
     },
     {
       "label": "bob.cashflowfi.testnet claimable",
-      "got": "1625000",
-      "want": "1625000",
+      "got": "1195312",
+      "want": "1195312",
       "ok": true
     },
     {
       "label": "bob.cashflowfi.testnet received",
-      "got": "1625000",
-      "want": "1625000",
+      "got": "1195312",
+      "want": "1195312",
       "ok": true
     }
   ],
-  "order_id": 21,
-  "pool_id": 13,
-  "proposal_id": 3,
+  "order_id": 43,
+  "pool_id": 25,
+  "proposal_id": 5,
   "ok": true,
-  "finished_at": "2026-11-12T15:16:52.340Z"
+  "finished_at": "2026-11-12T16:58:18.746Z"
 }

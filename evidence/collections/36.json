@@ -1,0 +1,54 @@
+{
+  "order_id": 36,
+  "pool_id": 21,
+  "invoice_no": "DFLT-1794501272150",
+  "merchant": "merchant.cashflowfi.testnet",
+  "customer": "customer.cashflowfi.testnet",
+  "amount_due": "4820313",
+  "currency": "USDC",
+  "due_date": "1794501422148000000",
+  "window_start": "1794242222148000000",
+  "pay_url": "http://localhost:3000/pay/36",
+  "message": {
+    "subject": "Payment Reminder: Invoice DFLT-1794501272150",
+    "body": "Dear customer.cashflowfi.testnet,\n\nThis is a polite reminder that the payment for invoice DFLT-1794501272150 is now due. The amount due is 4.820313 USDC.\n\nPlease complete your payment at your earliest convenience using the link below:\nhttp://localhost:3000/pay/36\n\nThank you for your business.",
+    "source": "model",
+    "model_error": null,
+    "privacy": {
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "nonce_bound": true,
+      "signature_valid": true,
+      "signer_matches_attestation": true,
+      "signature_kind": "provider_tee",
+      "gpu_attested": true,
+      "tdx_quote_verified": true,
+      "verified_private": true,
+      "intent_stored": false,
+      "not_verified": [
+        "gateway attestation and TLS binding: the cloud-api.near.ai gateway terminates TLS and relays the request",
+        "RTMR3 event-log replay and app_compose measurement (MRCONFIGID)",
+        "signature of the NVIDIA NRAS token (the verdict is read over TLS from nras.attestation.nvidia.com)"
+      ],
+      "evidence": {
+        "nonce": "d114754d72b879ad923cecf37ebabc73700341de20829686d2a2cb5837ed85b9",
+        "chat_id": "53e3288867714459a3b48c442069cefd",
+        "attested_signers": [
+          "0xfdbd7952498b333206f360d71d97a1e0961e8ddf"
+        ],
+        "tdx_tcb_status": [
+          "UpToDate"
+        ],
+        "request_sha256": "d24e14e648f0e946681ea9effe125b7aaf986ce5e56fc3c3911ab69e0fdfc809",
+        "response_sha256": "f2b0aa6fb8dfacede2b298eadd1de59054662bff36b36165aeed3a8d9c5abe6e",
+        "signed_text": "Qwen/Qwen3.6-35B-A3B-FP8:d24e14e648f0e946681ea9effe125b7aaf986ce5e56fc3c3911ab69e0fdfc809:f2b0aa6fb8dfacede2b298eadd1de59054662bff36b36165aeed3a8d9c5abe6e",
+        "signature": "0x066f3e325ec52cb4a1a71a6ecb5a51b6bc586403930a3042ecffc6bef1b636883c0fa8bfdf280dbe19a03e9f4bb6d0ec38bf6a4e3ed4f102ff4ddef2b8db3faf1c",
+        "signing_address": "0xfdbd7952498b333206f360d71d97a1e0961e8ddf"
+      }
+    }
+  },
+  "quote": null,
+  "channel": null,
+  "contract": "cashflow.cashflowfi.testnet",
+  "collector": "cashflowfi.testnet",
+  "reminded_at": "2026-11-12T16:35:26.457Z"
+}

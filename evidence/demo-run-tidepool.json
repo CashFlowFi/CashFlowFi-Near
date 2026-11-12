@@ -2,76 +2,76 @@
   "scenario": "happy path, cross-chain payment",
   "network": "testnet",
   "contract": "cashflow.cashflowfi.testnet",
-  "started_at": "2026-11-12T15:05:47.410Z",
+  "started_at": "2026-11-12T16:45:44.965Z",
   "steps": [
     {
       "step": "merchant creates order",
-      "tx": "4K75MaRezs2TZdoXQEp4QYDC1Pa5ACpnpBQPLF8bHWQT",
-      "explorer": "https://testnet.nearblocks.io/txns/4K75MaRezs2TZdoXQEp4QYDC1Pa5ACpnpBQPLF8bHWQT",
-      "order_id": 17
+      "tx": "DCVUhRjZGSxw4WUimQ5nv5NTjRdLzRzycdYSN1pwTiui",
+      "explorer": "https://testnet.nearblocks.io/txns/DCVUhRjZGSxw4WUimQ5nv5NTjRdLzRzycdYSN1pwTiui",
+      "order_id": 38
     },
     {
       "step": "customer approves receipt",
-      "tx": "AyxC7kVinpXZpqjxP2GfFf1zuu6ChtbKmMBu24w6vZVi",
-      "explorer": "https://testnet.nearblocks.io/txns/AyxC7kVinpXZpqjxP2GfFf1zuu6ChtbKmMBu24w6vZVi"
+      "tx": "yH4cfLpJ2syEpf9eg197LDinAveMzCWFhxBPngrvaWF",
+      "explorer": "https://testnet.nearblocks.io/txns/yH4cfLpJ2syEpf9eg197LDinAveMzCWFhxBPngrvaWF"
     },
     {
-      "step": "agent attests Approve (score 92)",
-      "tx": "3CpGxmrj8LNa6FSH5ggg21LXXokjqLATjDSWigJqCdYa",
-      "explorer": "https://testnet.nearblocks.io/txns/3CpGxmrj8LNa6FSH5ggg21LXXokjqLATjDSWigJqCdYa",
+      "step": "agent attests Approve (score 85)",
+      "tx": "2Xs7TrwTSaG3P4PqbpCbjP82NWczPDG4xEMVD5MhoWWs",
+      "explorer": "https://testnet.nearblocks.io/txns/2Xs7TrwTSaG3P4PqbpCbjP82NWczPDG4xEMVD5MhoWWs",
       "verdict": "Approve",
-      "score": 92,
+      "score": 85,
       "model": "Qwen/Qwen3.6-35B-A3B-FP8"
     },
     {
       "step": "merchant opens pool",
-      "tx": "6VCiwXLp7FHKuT27xTqp5LYckGYdbBkkNFSxBvgQTKEp",
-      "explorer": "https://testnet.nearblocks.io/txns/6VCiwXLp7FHKuT27xTqp5LYckGYdbBkkNFSxBvgQTKEp",
-      "pool_id": 11
+      "tx": "HG4dYth89tyAMaZbSGdpqbpBSkxZUBUHRHpoPEwzfgM9",
+      "explorer": "https://testnet.nearblocks.io/txns/HG4dYth89tyAMaZbSGdpqbpBSkxZUBUHRHpoPEwzfgM9",
+      "pool_id": 23
     },
     {
       "step": "senior investor funds",
-      "tx": "9NT2Ji8bt2igfHoMSYS3oQVkofFN3LZGHX3wXfVNopAg",
-      "explorer": "https://testnet.nearblocks.io/txns/9NT2Ji8bt2igfHoMSYS3oQVkofFN3LZGHX3wXfVNopAg"
+      "tx": "BwNCa5Qyt84DaxWwmpCiL5XBYAgFWWN4hDCEpqSWapSp",
+      "explorer": "https://testnet.nearblocks.io/txns/BwNCa5Qyt84DaxWwmpCiL5XBYAgFWWN4hDCEpqSWapSp"
     },
     {
       "step": "junior investor funds (activates pool, pays advance)",
-      "tx": "CLb1g6giwtscsgDvasmP31raDJGduxYze9kaM3UisTtf",
-      "explorer": "https://testnet.nearblocks.io/txns/CLb1g6giwtscsgDvasmP31raDJGduxYze9kaM3UisTtf"
+      "tx": "H2Z5HDSKHupKbjJKQbvPjnnqwFuALF2chRPZy36YXZDH",
+      "explorer": "https://testnet.nearblocks.io/txns/H2Z5HDSKHupKbjJKQbvPjnnqwFuALF2chRPZy36YXZDH"
     },
     {
       "step": "customer deposits on Arbitrum Sepolia",
-      "tx": "0x39937ab52e863cc8579ad094d3ad37e88a0940bde2f14f2878c307e9fa894c68",
-      "explorer": "https://sepolia.arbiscan.io/tx/0x39937ab52e863cc8579ad094d3ad37e88a0940bde2f14f2878c307e9fa894c68",
-      "deposit_address": "0x50124a38DA2f179Ba9B0346a515D616B1DF94727"
+      "tx": "0x5cd1178475ff43ed1d496ee00f6bdcf81990825d09906289642ad2fdbf0ef07e",
+      "explorer": "https://sepolia.arbiscan.io/tx/0x5cd1178475ff43ed1d496ee00f6bdcf81990825d09906289642ad2fdbf0ef07e",
+      "deposit_address": "0x89eaee74BA9a82df0598e3a506fc3D1Db379F7c3"
     },
     {
       "step": "Tidepool delivers to the forwarder on NEAR",
-      "tx": "J6Rt9TyiXG6ovUK6zswZoad9hb4tzRazyMkQgiEPZxMz",
-      "explorer": "https://testnet.nearblocks.io/txns/J6Rt9TyiXG6ovUK6zswZoad9hb4tzRazyMkQgiEPZxMz",
+      "tx": "sbw561CiNdF6Wkx3MT6WQPKBTZon6QgZ1y6xmXCMpAy",
+      "explorer": "https://testnet.nearblocks.io/txns/sbw561CiNdF6Wkx3MT6WQPKBTZon6QgZ1y6xmXCMpAy",
       "amount": "1994800"
     },
     {
       "step": "forwarder pays the order (ft_transfer_call {\"pay\"})",
-      "tx": "2ASQ7BmFPtyZY1vWyyibBu4g7VeRz5i4SEFYr9veZJZX",
-      "explorer": "https://testnet.nearblocks.io/txns/2ASQ7BmFPtyZY1vWyyibBu4g7VeRz5i4SEFYr9veZJZX",
+      "tx": "7MknHLUsjbtbJE5T1Btzxe4QA9BPS3orM6Rkfi8i9oCg",
+      "explorer": "https://testnet.nearblocks.io/txns/7MknHLUsjbtbJE5T1Btzxe4QA9BPS3orM6Rkfi8i9oCg",
       "outcome": "delivered",
       "applied": "1994800"
     },
     {
       "step": "customer settles remaining 0.0052 USDC on NEAR",
-      "tx": "3jBChbwpqxn44CeidwRcuyXChjDP1Zo2FMiZ9JCvsRV6",
-      "explorer": "https://testnet.nearblocks.io/txns/3jBChbwpqxn44CeidwRcuyXChjDP1Zo2FMiZ9JCvsRV6"
+      "tx": "6GyWou8aL6gTxG6KwAJqF7k1RN8zHwKWbbee5HsbjByN",
+      "explorer": "https://testnet.nearblocks.io/txns/6GyWou8aL6gTxG6KwAJqF7k1RN8zHwKWbbee5HsbjByN"
     },
     {
       "step": "senior holder claims",
-      "tx": "chjMZaJg4zDnnqUmnVHU225qN969bP94FGjk6ZTw99b",
-      "explorer": "https://testnet.nearblocks.io/txns/chjMZaJg4zDnnqUmnVHU225qN969bP94FGjk6ZTw99b"
+      "tx": "FGhe3BDgfmgwg4S42vcKd61cjnfcbZuF9MDhP8pMwDZB",
+      "explorer": "https://testnet.nearblocks.io/txns/FGhe3BDgfmgwg4S42vcKd61cjnfcbZuF9MDhP8pMwDZB"
     },
     {
       "step": "junior holder claims",
-      "tx": "F6d3FKbVv8CEk34YcpeTBjafqyxTpoBKEFUPkYbYT87s",
-      "explorer": "https://testnet.nearblocks.io/txns/F6d3FKbVv8CEk34YcpeTBjafqyxTpoBKEFUPkYbYT87s"
+      "tx": "ELLbBA43PdckavSxJZpFhhoEyAMrMRgGnRSd7TxDLVMF",
+      "explorer": "https://testnet.nearblocks.io/txns/ELLbBA43PdckavSxJZpFhhoEyAMrMRgGnRSd7TxDLVMF"
     }
   ],
   "checks": [
@@ -83,8 +83,8 @@
     },
     {
       "label": "merchant received advance - fee",
-      "got": "1584000",
-      "want": "1584000",
+      "got": "1188000",
+      "want": "1188000",
       "ok": true
     },
     {
@@ -101,38 +101,38 @@
     },
     {
       "label": "senior repaid",
-      "got": "1275000",
-      "want": "1275000",
+      "got": "956250",
+      "want": "956250",
       "ok": true
     },
     {
       "label": "junior repaid",
-      "got": "425000",
-      "want": "425000",
+      "got": "318750",
+      "want": "318750",
       "ok": true
     },
     {
       "label": "merchant residual",
-      "got": "300000",
-      "want": "300000",
+      "got": "725000",
+      "want": "725000",
       "ok": true
     },
     {
       "label": "alice.cashflowfi.testnet received",
-      "got": "1275000",
-      "want": "1275000",
+      "got": "956250",
+      "want": "956250",
       "ok": true
     },
     {
       "label": "bob.cashflowfi.testnet received",
-      "got": "425000",
-      "want": "425000",
+      "got": "318750",
+      "want": "318750",
       "ok": true
     }
   ],
   "tidepool_delivered": "1994800",
-  "order_id": 17,
-  "pool_id": 11,
+  "order_id": 38,
+  "pool_id": 23,
   "ok": true,
-  "finished_at": "2026-11-12T15:07:17.283Z"
+  "finished_at": "2026-11-12T16:47:16.870Z"
 }
