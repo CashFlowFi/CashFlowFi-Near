@@ -25,7 +25,8 @@ const SCENARIOS = [
   { name: 'outside attacker against the contract guards', cmd: ['scripts/attacks/onchain.mjs'], evidence: 'evidence/attacks/onchain.json', pass: allBlocked },
   { name: 'private pool matching with verified TEE', cmd: ['scripts/match.mjs', 'Low-risk, short-dated, senior only', '--filters', '{"tranche":"Senior","max_usdc":5}', '--save'],
     evidence: 'evidence/privacy/match-run.json', pass: (r) => r.response?.privacy?.verified_private === true },
-  { name: 'default, collections agent, Sputnik DAO cover', cmd: ['scripts/insurance-demo.mjs'], evidence: 'evidence/insurance-run.json', pass: (r) => r.ok },
+  { name: 'underwriter verdict from a verified TEE, re-proved offline', cmd: ['scripts/tee-underwrite.mjs'], evidence: 'evidence/tee-underwrite-run.json', pass: (r) => r.ok },
+  { name: 'default, TEE-written reminder, collections agent, Sputnik DAO cover', cmd: ['scripts/insurance-demo.mjs'], evidence: 'evidence/insurance-run.json', pass: (r) => r.ok },
 ];
 
 /** The deployment must be the one recorded in deployments/testnet.json, running this repo's code. */

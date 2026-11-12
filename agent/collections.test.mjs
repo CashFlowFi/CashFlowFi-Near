@@ -85,6 +85,7 @@ test('reminder file has pay link, amount due and quote', async () => {
   assert.equal(r.window_start, String(NOW + HOUR - WINDOW));
   assert.equal(r.quote.dry, true);
   assert.equal(r.quote.amountIn, '1000000000');
+  assert.deepEqual([r.message.source, r.message.body.includes('https://cashflow.example/pay/7 '), r.message.body.endsWith('/pay/7')], ['template', false, true]);
   assert.doesNotMatch(raw, /ed25519:|private/i);
 });
 
@@ -95,6 +96,12 @@ test('default pay url and no quote when quoting is off', async () => {
   const r = JSON.parse(await readFile(path.join(d.remindersDir, '3.json'), 'utf8'));
   assert.equal(r.pay_url, 'http://localhost:3000/pay/3');
   assert.equal(r.quote, null);
+  // an injected writer (the TEE-backed one in production) words the message
+  const g = fakes({ pools: [pool(1, 'Active', NOW + HOUR)], orders: [order(4, 1, NOW + HOUR)] });
+  const d2 = await deps(g);
+  await runCollections({ ...d2, writeReminder: async (o, c) => ({ subject: 's', body: `pay ${c.payUrl}`, source: 'model', seen: o.id }) });
+  const m = JSON.parse(await readFile(path.join(d2.remindersDir, '4.json'), 'utf8')).message;
+  assert.deepEqual(m, { subject: 's', body: 'pay http://localhost:3000/pay/4', source: 'model', seen: 4 });
 });
 
 test('no duplicate reminder: second pass skips and does not re-quote', async () => {

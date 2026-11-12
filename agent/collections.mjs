@@ -11,6 +11,8 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createApp } from '../api/app.mjs';
+import { createReminderWriter } from './reminder.mjs';
+import { createAttestedChat } from './tee-quote.mjs';
 import { DEFAULT_RPC, PAGE, fetchAll, evidencePath, writeJsonAtomic, assertTestnet, resolvePrivateKey, createView, createSigner } from './near.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -57,8 +59,9 @@ export function createApiQuoter({ handler, refundTo, originAsset = 'arb-sepolia-
  *   view(method, args) -> parsed JSON
  *   sign(method, args) -> { txHash, logs }         (logs emitted by our contract)
  *   quote(orderId) -> /api/pay/quote response, or null to record reminders without a quote
+ *   writeReminder(order, { payUrl, nowNs }) -> message (agent/reminder.mjs); default: the template
  */
-export async function runCollections({ view, sign, quote = null, contract, collector,
+export async function runCollections({ view, sign, quote = null, writeReminder = createReminderWriter({ chat: null }), contract, collector,
   remindersDir = COLLECTIONS_DIR, defaultsDir = DEFAULTS_DIR, windowNs = BigInt(DEFAULT_WINDOW_SECONDS) * NS,
   payUrlBase = DEFAULT_PAY_URL_BASE, nowNs = () => BigInt(Date.now()) * 1_000_000n, log = console.log, pageSize = PAGE }) {
   const summary = { reminded: [], defaulted: [], skipped: [], failed: [] };
@@ -99,16 +102,18 @@ export async function runCollections({ view, sign, quote = null, contract, colle
         const file = evidencePath(remindersDir, order.id);
         if (existsSync(file)) { summary.skipped.push({ order_id: order.id }); continue; }
         const q = quote ? await quote(order.id) : null;
+        const url = payUrl(payUrlBase, order.id);
+        const message = await writeReminder(order, { payUrl: url, nowNs: now });
         await writeJsonAtomic(file, {
           order_id: order.id, pool_id: pool.id, invoice_no: order.invoice_no, merchant: order.merchant, customer: order.customer,
           amount_due: (BigInt(order.amount) - BigInt(order.paid)).toString(), currency: order.currency,
           due_date: order.due_date, window_start: (due - windowNs).toString(),
-          pay_url: payUrl(payUrlBase, order.id),
+          pay_url: url, message,
           quote: q && { dry: q.dry, depositAddress: q.depositAddress ?? null, amountIn: q.amountIn, minAmountOut: q.minAmountOut, deadline: q.deadline },
           channel: null, contract, collector, reminded_at: new Date().toISOString(),
         });
         summary.reminded.push(order.id);
-        log(`order ${order.id}: reminder ${payUrl(payUrlBase, order.id)}${q ? ` quote=${q.dry ? 'dry' : q.depositAddress}` : ''}`);
+        log(`order ${order.id}: reminder (${message.source}) ${url}${q ? ` quote=${q.dry ? 'dry' : q.depositAddress}` : ''}`);
       } catch (e) {
         summary.failed.push({ order_id: order.id, error: e.message });
         log(`order ${order.id}: FAILED ${e.message}`);
@@ -133,6 +138,7 @@ export function loadConfig(env = process.env, { home } = {}) {
     rpcUrl, contract: env.CASHFLOW_CONTRACT, collector: env.COLLECTOR_ACCOUNT,
     privateKey: resolvePrivateKey(env.COLLECTOR_ACCOUNT, env.COLLECTOR_PRIVATE_KEY, home ? { home } : {}),
     windowNs: BigInt(windowSec) * NS, payUrlBase: env.PAY_URL_BASE || DEFAULT_PAY_URL_BASE, refundTo,
+    apiKey: env.NEARAI_API_KEY || null, model: env.NEARAI_MODEL || null,
     live: env.TIDEPOOL_LIVE === '1', intervalSec: Number(env.COLLECTIONS_POLL_SECONDS || 30),
   };
 }
@@ -151,6 +157,7 @@ async function main(argv) {
     view: createView({ rpcUrl: cfg.rpcUrl, contractId: cfg.contract }),
     sign: createSigner({ rpcUrl: cfg.rpcUrl, accountId: cfg.collector, privateKey: cfg.privateKey, contractId: cfg.contract }),
     quote: cfg.refundTo ? createApiQuoter({ handler, refundTo: cfg.refundTo }) : null,
+    writeReminder: createReminderWriter({ chat: cfg.apiKey && cfg.model ? createAttestedChat({ apiKey: cfg.apiKey, model: cfg.model }) : null }),
     contract: cfg.contract, collector: cfg.collector, windowNs: cfg.windowNs, payUrlBase: cfg.payUrlBase,
   };
   console.log(`collections agent ${cfg.collector} -> ${cfg.contract} via ${cfg.rpcUrl}, quotes=${!deps.quote ? 'off (COLLECTIONS_REFUND_TO unset)' : cfg.live ? 'LIVE' : 'dry'}${once ? ' (once)' : ` every ${intervalSec}s`}`);

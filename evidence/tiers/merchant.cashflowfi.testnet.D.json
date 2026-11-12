@@ -1,0 +1,47 @@
+{
+  "merchant": "merchant.cashflowfi.testnet",
+  "old_tier": "B",
+  "new_tier": "D",
+  "repaid_pools": 8,
+  "defaults": 3,
+  "reason": "Moved from tier B to tier D: 8 repaid pools and 3 defaults.",
+  "source": "template",
+  "model_error": "TIER_REASON_TIER",
+  "privacy": {
+    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+    "nonce_bound": true,
+    "signature_valid": true,
+    "signer_matches_attestation": true,
+    "signature_kind": "provider_tee",
+    "gpu_attested": true,
+    "tdx_quote_verified": true,
+    "verified_private": true,
+    "intent_stored": false,
+    "not_verified": [
+      "gateway attestation and TLS binding: the cloud-api.near.ai gateway terminates TLS and relays the request",
+      "RTMR3 event-log replay and app_compose measurement (MRCONFIGID)",
+      "signature of the NVIDIA NRAS token (the verdict is read over TLS from nras.attestation.nvidia.com)"
+    ],
+    "evidence": {
+      "nonce": "4f7ef3b3ac330ee875d87994d3af97c9c8a18d2151665b6ded9f624feab671aa",
+      "chat_id": "3d872cadc7de4b6985e37d11e7cad52f",
+      "attested_signers": [
+        "0xfdbd7952498b333206f360d71d97a1e0961e8ddf"
+      ],
+      "tdx_tcb_status": [
+        "UpToDate"
+      ],
+      "request_sha256": "56f959f9644b3cfbd69e5046c0ef96359893e0dd091614fb7cf7d5361e9a0248",
+      "response_sha256": "fe8633918823ce5438e0693b50f84e4b12d916b1ff47506ce93faefb23aa158f",
+      "signed_text": "Qwen/Qwen3.6-35B-A3B-FP8:56f959f9644b3cfbd69e5046c0ef96359893e0dd091614fb7cf7d5361e9a0248:fe8633918823ce5438e0693b50f84e4b12d916b1ff47506ce93faefb23aa158f",
+      "signature": "0x8bdba560b72df257d994228580b8f135550b2c5d8268086ebf985806b1bfd8bf75fc64c5076e9b738814cbd5af304c72c8af126bc9500389b0923ac2a68e76011b",
+      "signing_address": "0xfdbd7952498b333206f360d71d97a1e0961e8ddf"
+    }
+  },
+  "reason_hash": "1bff6d72d8ac52acc5b1839c1f1eed9c7cbbdb6b0983a60002712ad9833ceffb",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "contract": "cashflow.cashflowfi.testnet",
+  "agent": "agent.cashflowfi.testnet",
+  "tx_hash": "BCSpFsXf2JLp1ikhngT2kPgE4dxCEadbPhfWL9QujKvE",
+  "timestamp": "2026-11-12T16:19:51.822Z"
+}

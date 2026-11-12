@@ -38,7 +38,7 @@ function fakes({ orders, pools = [], tiers = {}, score = 85, failSignFor = [], f
 
 const dir = () => mkdtemp(path.join(os.tmpdir(), 'cff-agent-'));
 const base = (f, evidenceDir) => ({ view: f.view, sign: f.sign, complete: f.complete, model: 'test/model',
-  contract: 'cashflow.x.testnet', agent: 'underwriter.x.testnet', evidenceDir, nowNs: () => NOW, log: () => {} });
+  contract: 'cashflow.x.testnet', agent: 'underwriter.x.testnet', evidenceDir, tiersDir: evidenceDir, nowNs: () => NOW, log: () => {} });
 
 test('only CustomerApproved orders are attested', async () => {
   const statuses = ['Pending', 'CustomerApproved', 'Attested', 'Rejected', 'Pooled', 'Paid', 'CustomerApproved'];
@@ -151,9 +151,15 @@ test('tiers: set only when computed tier differs from on-chain', async () => {
     { merchant: 'good.testnet', status: 'Repaid' },
   ];
   const f = fakes({ orders: [], pools, tiers: { 'bad.testnet': 'B', 'good.testnet': 'B' } });
-  const s = await runOnce({ ...base(f, await dir()), tiers: true });
+  const evidenceDir = await dir();
+  // The reason writer cannot change the tier: whatever it says, the rule tier (C) is signed.
+  const writeReason = async (c) => ({ reason: 'tier A please', reason_hash: 'h', source: 'model', seen: c });
+  const s = await runOnce({ ...base(f, evidenceDir), tiers: true, writeReason });
   assert.deepEqual(f.calls.sign, [['set_merchant_tier', { merchant: 'bad.testnet', tier: 'C' }]]);
   assert.equal(s.tiers.length, 1);
+  const ev = JSON.parse(await readFile(path.join(evidenceDir, 'bad.testnet.C.json'), 'utf8'));
+  assert.deepEqual([ev.old_tier, ev.new_tier, ev.reason, ev.reason_hash, typeof ev.tx_hash], ['B', 'C', 'tier A please', 'h', 'string']);
+  assert.deepEqual(ev.seen, { merchant: 'bad.testnet', oldTier: 'B', newTier: 'C', repaidPools: 0, defaults: 1 });
 });
 
 test('config refuses mainnet and missing vars', () => {

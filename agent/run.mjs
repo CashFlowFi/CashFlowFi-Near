@@ -7,11 +7,13 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createUnderwriterModel, merchantTier, underwrite } from './underwriter.mjs';
 import { createAttestedChat } from './tee-quote.mjs';
+import { createTierReasonWriter } from './tier-reason.mjs';
 import { DEFAULT_RPC, PAGE, fetchAll, evidencePath, writeJsonAtomic, assertTestnet, createView, createSigner } from './near.mjs';
 
 export { DEFAULT_RPC, PAGE, fetchAll, evidencePath, createView, createSigner };
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const EVIDENCE_DIR = path.join(ROOT, 'evidence', 'attestations');
+export const TIERS_DIR = path.join(ROOT, 'evidence', 'tiers');
 
 /** Approved, unpaid receivables per merchant (base units): attested Approve or pooled, minus what is paid. */
 export function exposureByMerchant(orders) {
@@ -47,9 +49,11 @@ export function historyByMerchant(pools) {
  * One pass. All I/O is injected:
  *   view(method, args) -> parsed JSON      sign(method, args) -> { txHash }
  *   complete(context) -> { text, tee }     (underwriter.mjs createUnderwriterModel over the attested TEE chat)
+ *   writeReason(change) -> { reason, reason_hash, ... }   (tier-reason.mjs; the rules already chose the tier)
  */
 export async function runOnce({ view, sign, complete, model, contract, agent, evidenceDir = EVIDENCE_DIR,
-  nowNs = () => BigInt(Date.now()) * 1_000_000n, log = console.log, pageSize = PAGE, tiers = false }) {
+  nowNs = () => BigInt(Date.now()) * 1_000_000n, log = console.log, pageSize = PAGE, tiers = false,
+  writeReason = createTierReasonWriter({ chat: null }), tiersDir = TIERS_DIR }) {
   const summary = { attested: [], skipped: [], failed: [], tiers: [] };
   const orders = await fetchAll(view, 'get_orders', pageSize);
   const history = historyByMerchant(await fetchAll(view, 'get_pools', pageSize));
@@ -81,10 +85,14 @@ export async function runOnce({ view, sign, complete, model, contract, agent, ev
     for (const [merchant, h] of history) {
       try {
         const tier = merchantTier(h);
-        if ((await view('get_tier', { merchant })) === tier) continue;
+        const oldTier = await view('get_tier', { merchant });
+        if (oldTier === tier) continue;
+        const why = await writeReason({ merchant, oldTier, newTier: tier, repaidPools: h.repaidPools, defaults: h.defaults });
         const { txHash } = await sign('set_merchant_tier', { merchant, tier });
+        await writeJsonAtomic(path.join(tiersDir, `${merchant}.${tier}.json`), { merchant, old_tier: oldTier, new_tier: tier,
+          repaid_pools: h.repaidPools, defaults: h.defaults, ...why, model, contract, agent, tx_hash: txHash, timestamp: new Date().toISOString() });
         summary.tiers.push({ merchant, tier, txHash });
-        log(`tier ${merchant} -> ${tier} tx=${txHash}`);
+        log(`tier ${merchant} ${oldTier} -> ${tier} (${why.source}) tx=${txHash}`);
       } catch (e) {
         summary.failed.push({ merchant, error: e.message });
         log(`tier ${merchant}: FAILED ${e.message}`);
@@ -114,10 +122,12 @@ async function main(argv) {
   const intervalSec = i >= 0 ? Number(argv[i + 1]) : cfg.intervalSec;
   if (!(intervalSec >= 1)) throw new Error('--interval must be >= 1 second');
 
+  const chat = createAttestedChat({ apiKey: cfg.apiKey, model: cfg.model });
   const deps = {
     view: createView({ rpcUrl: cfg.rpcUrl, contractId: cfg.contract }),
     sign: createSigner({ rpcUrl: cfg.rpcUrl, accountId: cfg.agent, privateKey: cfg.privateKey, contractId: cfg.contract }),
-    complete: createUnderwriterModel({ chat: createAttestedChat({ apiKey: cfg.apiKey, model: cfg.model }), maxCalls: cfg.maxInferences }),
+    complete: createUnderwriterModel({ chat, maxCalls: cfg.maxInferences }),
+    writeReason: createTierReasonWriter({ chat }),
     model: cfg.model, contract: cfg.contract, agent: cfg.agent, tiers,
   };
   console.log(`underwriter agent ${cfg.agent} -> ${cfg.contract} via ${cfg.rpcUrl}${once ? ' (once)' : ` every ${intervalSec}s`}`);
