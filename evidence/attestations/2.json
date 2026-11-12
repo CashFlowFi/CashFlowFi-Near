@@ -1,0 +1,16 @@
+{
+  "order_id": 2,
+  "verdict": "Flag",
+  "score": 0,
+  "reasons": [
+    "Model unavailable; human review required"
+  ],
+  "source": "fallback",
+  "model_error": "INFERENCE_INCOMPLETE",
+  "reason_hash": "5415e563e815c05375d431401d13c33840aad913d3767de0daed20daec638e25",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "contract": "cashflow.cashflowfi.testnet",
+  "agent": "agent.cashflowfi.testnet",
+  "tx_hash": "5V2XFhwSwY2TPiRHNHKBhCt3VQt6RVu3AWZsMUz6hUL4",
+  "timestamp": "2026-11-12T12:12:11.041Z"
+}

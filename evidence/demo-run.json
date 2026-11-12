@@ -1,0 +1,128 @@
+{
+  "network": "testnet",
+  "contract": "cashflow.cashflowfi.testnet",
+  "token": "usdc.tidepool-sandbox.testnet",
+  "started_at": "2026-11-12T12:14:03.952Z",
+  "steps": [
+    {
+      "step": "1. merchant creates order",
+      "signer": "merchant.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.create_order",
+      "tx": "9yN6ZSSncdbHLtRCgENieDTmsZK8JBjfYX1YpFFFbuMX",
+      "explorer": "https://testnet.nearblocks.io/txns/9yN6ZSSncdbHLtRCgENieDTmsZK8JBjfYX1YpFFFbuMX"
+    },
+    {
+      "step": "2. customer approves receipt",
+      "signer": "customer.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.approve_receipt",
+      "tx": "AjiEcS8AQ2mjRj2hoatSH52f3k13sLA6fRZs3PDrtD7Y",
+      "explorer": "https://testnet.nearblocks.io/txns/AjiEcS8AQ2mjRj2hoatSH52f3k13sLA6fRZs3PDrtD7Y"
+    },
+    {
+      "step": "3. agent attests verdict on-chain",
+      "signer": "agent.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.attest_receipt",
+      "tx": "2Scu7EPzbyxKjuMx3hx43j9mGAN2Wf5cSX8Eej9WWRoU",
+      "explorer": "https://testnet.nearblocks.io/txns/2Scu7EPzbyxKjuMx3hx43j9mGAN2Wf5cSX8Eej9WWRoU",
+      "verdict": "Approve",
+      "score": 95,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8"
+    },
+    {
+      "step": "4. merchant opens pool",
+      "signer": "merchant.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.create_pool",
+      "tx": "CnxL8rK7MX6KfB9hT2iKvVaFp6qVxhiW8BVphZSGbvXL",
+      "explorer": "https://testnet.nearblocks.io/txns/CnxL8rK7MX6KfB9hT2iKvVaFp6qVxhiW8BVphZSGbvXL"
+    },
+    {
+      "step": "5a. investor funds senior tranche",
+      "signer": "alice.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "Ch9WP5RMQinowFKv7jNFBTKeRZPXF68WEp3CibjYLajf",
+      "explorer": "https://testnet.nearblocks.io/txns/Ch9WP5RMQinowFKv7jNFBTKeRZPXF68WEp3CibjYLajf"
+    },
+    {
+      "step": "5b. investor funds junior tranche (activates pool, pays advance)",
+      "signer": "bob.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "EenGn6W12EkKdj8UirnGdZyTJ8SdBBq4LFQKyxW5pbCp",
+      "explorer": "https://testnet.nearblocks.io/txns/EenGn6W12EkKdj8UirnGdZyTJ8SdBBq4LFQKyxW5pbCp"
+    },
+    {
+      "step": "6. customer pays invoice (waterfall)",
+      "signer": "customer.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "BwUcf7dbNBRRabkrm8PUTDLERBMYumV2CU3JEpU3EkGz",
+      "explorer": "https://testnet.nearblocks.io/txns/BwUcf7dbNBRRabkrm8PUTDLERBMYumV2CU3JEpU3EkGz"
+    },
+    {
+      "step": "7a. senior holder claims",
+      "signer": "alice.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.claim",
+      "tx": "J4Tnp7wEPoiCUebWegRH2nmyYRxP6yDwgrYMAhS119hP",
+      "explorer": "https://testnet.nearblocks.io/txns/J4Tnp7wEPoiCUebWegRH2nmyYRxP6yDwgrYMAhS119hP"
+    },
+    {
+      "step": "7b. junior holder claims",
+      "signer": "bob.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.claim",
+      "tx": "DLtY5MNZQRyziDx4YZZ4RERgBu1o35gKCncE5zX9ZpbV",
+      "explorer": "https://testnet.nearblocks.io/txns/DLtY5MNZQRyziDx4YZZ4RERgBu1o35gKCncE5zX9ZpbV"
+    }
+  ],
+  "checks": [
+    {
+      "label": "pool status",
+      "got": "Active",
+      "want": "Active",
+      "ok": true
+    },
+    {
+      "label": "merchant received advance - fee",
+      "got": "7920000",
+      "want": "7920000",
+      "ok": true
+    },
+    {
+      "label": "pool status",
+      "got": "Repaid",
+      "want": "Repaid",
+      "ok": true
+    },
+    {
+      "label": "senior repaid",
+      "got": "6375000",
+      "want": "6375000",
+      "ok": true
+    },
+    {
+      "label": "junior repaid",
+      "got": "2125000",
+      "want": "2125000",
+      "ok": true
+    },
+    {
+      "label": "merchant residual",
+      "got": "1500000",
+      "want": "1500000",
+      "ok": true
+    },
+    {
+      "label": "alice.cashflowfi.testnet claim",
+      "got": "6375000",
+      "want": "6375000",
+      "ok": true
+    },
+    {
+      "label": "bob.cashflowfi.testnet claim",
+      "got": "2125000",
+      "want": "2125000",
+      "ok": true
+    }
+  ],
+  "order_id": 4,
+  "pool_id": 2,
+  "finished_at": "2026-11-12T12:14:56.782Z",
+  "ok": true
+}

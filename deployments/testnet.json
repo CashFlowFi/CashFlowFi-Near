@@ -7,10 +7,31 @@
   "dao": "dao.cashflowfi.testnet",
   "merchant": "merchant.cashflowfi.testnet",
   "customer": "customer.cashflowfi.testnet",
-  "investors": ["alice.cashflowfi.testnet", "bob.cashflowfi.testnet"],
-  "init": { "grace_ns": "300000000000", "dao_threshold": "500000" },
+  "investors": [
+    "alice.cashflowfi.testnet",
+    "bob.cashflowfi.testnet"
+  ],
+  "init": {
+    "grace_ns": "300000000000",
+    "dao_threshold": "500000"
+  },
   "txs": {
     "deploy": "8SDfWzNgR8ksbniwV5PrvA1jt9hCBSVZPKddrsAp3WEt",
-    "init": "F7hLj8zMxpvnsjMiCH4entXGwiKiEuQrWwVYGYTnARmE"
+    "init": "F7hLj8zMxpvnsjMiCH4entXGwiKiEuQrWwVYGYTnARmE",
+    "dao_deploy": "9UTeteha2PXgeMSTAUZqXVtX1Dry3iu5VJXphJ2JbFkM",
+    "dao_wiring_check": {
+      "proposal": 0,
+      "note": "approve_cover(999) via DAO vote passed the Only-the-DAO guard and failed at Pool not found",
+      "final_vote": "95zHMGUvNmH2t3TKPiQ1PR8ZTtnHdpWeoy47FjH9Veds"
+    }
+  },
+  "dao_contract": {
+    "kind": "Sputnik DAO v2.3.1",
+    "code_hash": "AA4nA45vauiac3jdVwJTzSdUP3oj2r1fDaPAb2mHdgcH",
+    "council": [
+      "cashflowfi.testnet",
+      "alice.cashflowfi.testnet"
+    ],
+    "threshold": "2 of 2"
   }
 }

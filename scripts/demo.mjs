@@ -4,54 +4,23 @@
 
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { Account, JsonRpcProvider, getTransactionLastResult } from 'near-api-js';
+import { ROOT, TGAS, call as rawCall, dep, explorer, fmt, ftBalance as balance, view } from './lib/near.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dep = JSON.parse(readFileSync(path.join(ROOT, 'deployments/testnet.json'), 'utf8'));
-const RPC = process.env.NEAR_RPC || 'https://test.rpc.fastnear.com';
-const provider = new JsonRpcProvider({ url: RPC });
-const TGAS = 1_000_000_000_000n;
-const UNIT = 1_000_000n; // USDC 6 decimals
 const AMOUNT = BigInt(Math.round(Number(process.env.DEMO_USDC || '10') * 1e6)); // receivable
 const [investor1, investor2] = dep.investors;
 
-if (!dep.contract.endsWith('.testnet')) throw new Error('testnet only');
-
-const accounts = {};
-function account(id) {
-  if (!accounts[id]) {
-    const cred = JSON.parse(readFileSync(path.join(homedir(), '.near-credentials/testnet', `${id}.json`), 'utf8'));
-    accounts[id] = new Account(id, provider, cred.private_key);
-  }
-  return accounts[id];
-}
-
 const run = { network: 'testnet', contract: dep.contract, token: dep.token, started_at: new Date().toISOString(), steps: [] };
-const fmt = (u) => `${Number(u) / 1e6} USDC`;
 
-function failures(res) {
-  return res.receipts_outcome.filter((r) => r.outcome.status.Failure).map((r) => JSON.stringify(r.outcome.status.Failure));
+async function call(step, signer, contractId, methodName, args, opts) {
+  const r = await rawCall(signer, contractId, methodName, args, opts);
+  run.steps.push({ step, signer, method: `${contractId}.${methodName}`, tx: r.hash, explorer: explorer(r.hash) });
+  console.log(`✓ ${step}  ${r.hash}`);
+  return r.value;
 }
 
-async function call(step, signer, contractId, methodName, args, { deposit = 0n, gas = 100n * TGAS, allowReceiptFailure = false } = {}) {
-  const res = await account(signer).callFunctionRaw({ contractId, methodName, args, deposit, gas, waitUntil: 'FINAL' });
-  const fails = failures(res);
-  if (fails.length && !allowReceiptFailure) throw new Error(`${step}: receipt failed: ${fails.join('; ')}`);
-  const hash = res.transaction_outcome.id;
-  let value = null;
-  try { value = getTransactionLastResult(res); } catch { /* no return value */ }
-  run.steps.push({ step, signer, method: `${contractId}.${methodName}`, tx: hash, explorer: `https://testnet.nearblocks.io/txns/${hash}` });
-  console.log(`✓ ${step}  ${hash}`);
-  return value;
-}
-
-const view = (contractId, method, args = {}) => provider.callFunction({ contractId, method, args });
-const balance = async (id) => BigInt(await view(dep.token, 'ft_balance_of', { account_id: id }));
 const ftCall = (step, signer, amount, msg) =>
-  call(step, signer, dep.token, 'ft_transfer_call', { receiver_id: dep.contract, amount: amount.toString(), msg: JSON.stringify(msg) }, { deposit: 1n, gas: 300n * TGAS });
+  call(step, signer, dep.token, 'ft_transfer_call', { receiver_id: dep.contract, amount: amount.toString(), msg: JSON.stringify(msg) }, { deposit: 1n, gas: 150n * TGAS });
 
 function check(label, got, want) {
   const ok = got === want;
@@ -80,7 +49,7 @@ async function main() {
   execFileSync(process.execPath, ['--env-file-if-exists=.env', 'agent/run.mjs', '--once'], { cwd: ROOT, stdio: 'inherit' });
   const ev = JSON.parse(readFileSync(path.join(ROOT, 'evidence/attestations', `${orderId}.json`), 'utf8'));
   run.steps.push({ step: '3. agent attests verdict on-chain', signer: dep.agent, method: `${dep.contract}.attest_receipt`, tx: ev.tx_hash,
-    explorer: `https://testnet.nearblocks.io/txns/${ev.tx_hash}`, verdict: ev.verdict, score: ev.score, model: ev.model });
+    explorer: explorer(ev.tx_hash), verdict: ev.verdict, score: ev.score, model: ev.model });
   console.log(`✓ 3. verdict ${ev.verdict} (score ${ev.score})  ${ev.tx_hash}`);
   if (ev.verdict !== 'Approve') throw new Error(`underwriter did not approve (verdict ${ev.verdict}); cannot pool`);
 

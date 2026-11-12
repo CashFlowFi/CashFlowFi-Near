@@ -7,14 +7,19 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test watcher/*.test.mjs agent/*.test.mjs api/*.test.mjs",
+    "test": "node --test watcher/*.test.mjs agent/*.test.mjs api/*.test.mjs scripts/attacks/*.test.mjs relayer/*.test.mjs",
     "test:contracts": "cd contracts/cashflow-core && cargo test",
     "test:sandbox": "cd contracts/cashflow && cargo test --test sandbox",
     "api": "node --env-file-if-exists=.env api/server.mjs",
     "agent": "node --env-file-if-exists=.env agent/run.mjs",
-    "demo": "bash scripts/demo.sh"
+    "relayer": "node --env-file-if-exists=.env relayer/server.mjs",
+    "collections": "node --env-file-if-exists=.env agent/collections.mjs",
+    "demo": "bash scripts/demo.sh",
+    "attacks": "node scripts/attacks/prompt-injection.mjs",
+    "attacks:onchain": "node scripts/attacks/onchain.mjs"
   },
   "dependencies": {
-    "near-api-js": "7.4.0"
+    "near-api-js": "7.4.0",
+    "viem": "2.57.13"
   }
 }

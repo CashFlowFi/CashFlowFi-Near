@@ -57,12 +57,24 @@ export function payQuoteRequest({ contractId, orderId, amount, refundTo, origin 
   };
 }
 
+/**
+ * Build a quote that delivers `amount` of USDC to a NEAR account with a plain transfer (no msg).
+ * Used to fund demo accounts from Arbitrum Sepolia instead of the faucet.
+ */
+export function fundQuoteRequest({ recipient, ...rest }) {
+  const req = payQuoteRequest({ contractId: recipient, orderId: 1, ...rest });
+  delete req.customRecipientMsg;
+  return req;
+}
+
 /** Validate a provider response against the exact request we sent. Throws a code on any mismatch. */
-export function validatePayQuote(response, request, { now = Math.floor(Date.now() / 1000) } = {}) {
+export function validatePayQuote(response, request, { now = Math.floor(Date.now() / 1000), purpose = 'pay' } = {}) {
   check(stableStringify(response?.quoteRequest) === stableStringify(request), 'PAY_REQUEST_CHANGED');
   check(verifySignature(response).valid, 'PAY_SIGNATURE');
-  check(request.recipientType === 'DESTINATION_CHAIN' && request.destinationAsset === TIDEPOOL.destinationAsset
-    && typeof request.customRecipientMsg === 'string' && JSON.parse(request.customRecipientMsg).pay, 'PAY_ROUTE');
+  const routeOk = purpose === 'fund'
+    ? request.customRecipientMsg === undefined
+    : typeof request.customRecipientMsg === 'string' && JSON.parse(request.customRecipientMsg).pay;
+  check(request.recipientType === 'DESTINATION_CHAIN' && request.destinationAsset === TIDEPOOL.destinationAsset && routeOk, 'PAY_ROUTE');
   const generated = Date.parse(response.timestamp) / 1000;
   const expires = Date.parse(request.deadline) / 1000;
   check(Number.isFinite(generated) && generated <= now + 30 && now - generated <= 300 && expires > now, 'PAY_EXPIRED');
@@ -82,7 +94,7 @@ export function validatePayQuote(response, request, { now = Math.floor(Date.now(
   };
 }
 
-export async function fetchPayQuote(request, { fetchImpl = fetch, allowExecution = false } = {}) {
+export async function fetchPayQuote(request, { fetchImpl = fetch, allowExecution = false, purpose = 'pay' } = {}) {
   check(request.dry === true || allowExecution === true, 'PAY_EXECUTION_DISABLED');
   const r = await fetchImpl(`${TIDEPOOL.baseUrl}/v0/quote`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(request),
@@ -92,7 +104,7 @@ export async function fetchPayQuote(request, { fetchImpl = fetch, allowExecution
   const text = await r.text();
   check(text.length <= 1_000_000, 'PAY_RESPONSE_SIZE');
   const response = JSON.parse(text);
-  return { response, ...validatePayQuote(response, request) };
+  return { response, ...validatePayQuote(response, request, { purpose }) };
 }
 
 export const TERMINAL = Object.freeze(['SUCCESS', 'REFUNDED', 'FAILED']);
