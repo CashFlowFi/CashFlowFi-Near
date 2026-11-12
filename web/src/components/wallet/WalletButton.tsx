@@ -19,14 +19,14 @@ export function WalletButton() {
 
   if (!accountId) {
     return (
-      <button type="button" onClick={signIn} disabled={!ready} className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50">
-        {ready ? "Sign in" : "Loading…"}
+      <button type="button" onClick={signIn} disabled={!ready} className="flex h-9 items-center gap-3 border border-accent bg-accent px-3 text-sm font-medium text-accent-ink hover:opacity-90 disabled:opacity-50 sm:h-11 sm:px-5">
+        {ready ? <>Sign in <span aria-hidden="true" className="hidden sm:inline">↗</span></> : "Loading…"}
       </button>
     );
   }
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="max-w-[11rem] truncate rounded-md border border-line px-3 py-1.5 text-sm hover:bg-sunken sm:max-w-[16rem]">
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" className="h-9 max-w-[7rem] truncate border border-ink px-3 text-sm font-medium hover:bg-sunken sm:h-11 sm:max-w-[16rem]">
         {accountId}
       </button>
       {open && (

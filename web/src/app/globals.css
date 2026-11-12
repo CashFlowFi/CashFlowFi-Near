@@ -2,36 +2,41 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Palette, type and square corners follow the NEAR Hackathon site theme. */
 :root {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --sunken: #efefec;
-  --line: #e2e2dd;
-  --ink: #16181d;
-  --muted: #5d6270;
-  --accent: #1f5f4a;
-  --accent-ink: #ffffff;
-  --accent-soft: #e3efe9;
-  --warn: #9a5b00;
-  --warn-soft: #fbf0dc;
-  --bad: #a3302a;
-  --bad-soft: #f8e4e2;
+  --bg: #e9e1cd;
+  --surface: #eee7d6;
+  --sunken: #dcd2ba;
+  --line: #bdb199;
+  --ink: #322e25;
+  --muted: #655d4f;
+  --accent: #005fb0;
+  --accent-ink: #fff7e9;
+  --accent-soft: color-mix(in srgb, #005fb0 13%, #eee7d6);
+  --warn: #8a5300;
+  --warn-soft: color-mix(in srgb, #c98a1b 18%, #eee7d6);
+  --bad: #b53124;
+  --bad-soft: color-mix(in srgb, #b53124 13%, #eee7d6);
+  --dark-button: #322e25;
+  --dark-button-ink: #e9e1cd;
   color-scheme: light;
 }
 .dark {
-  --bg: #0f1113;
-  --surface: #171a1d;
-  --sunken: #1e2226;
-  --line: #2a2f35;
-  --ink: #e8e9eb;
-  --muted: #9aa0aa;
-  --accent: #5fc4a0;
-  --accent-ink: #0b1f18;
-  --accent-soft: #16302a;
+  --bg: #161a15;
+  --surface: #1c211a;
+  --sunken: #2c3327;
+  --line: #454d3d;
+  --ink: #e7dfca;
+  --muted: #b0b29d;
+  --accent: #0091fd;
+  --accent-ink: #181c16;
+  --accent-soft: color-mix(in srgb, #0091fd 18%, #1c211a);
   --warn: #e3a64b;
-  --warn-soft: #33270f;
-  --bad: #ef8a83;
-  --bad-soft: #3a1a18;
+  --warn-soft: color-mix(in srgb, #e3a64b 16%, #1c211a);
+  --bad: #ff8b84;
+  --bad-soft: color-mix(in srgb, #ff8b84 14%, #1c211a);
+  --dark-button: #e7dfca;
+  --dark-button-ink: #161a15;
   color-scheme: dark;
 }
 
@@ -49,21 +54,62 @@
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-dark-button: var(--dark-button);
+  --color-dark-button-ink: var(--dark-button-ink);
+  --font-sans: var(--font-plex-mono), ui-monospace, monospace;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-display: Arial, Helvetica, sans-serif;
+  /* Square corners everywhere, like the reference theme. */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-full: 0;
+  --shadow-sm: none;
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.12);
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
+  font-size: 15px;
+}
+
+/* Display headings: bold grotesk, tight tracking, upper case. */
+h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .num {
   font-variant-numeric: tabular-nums;
 }
 
+/* Graph-paper backdrop used on the welcome screen. */
+.grid-paper {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -1px -1px;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
 }
