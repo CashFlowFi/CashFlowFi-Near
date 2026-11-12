@@ -1,0 +1,247 @@
+{
+ "pools": {
+  "22": [
+   {
+    "file": "evidence/demo-run.json",
+    "scenario": "happy path",
+    "finished_at": "2026-11-12T16:45:44.850Z",
+    "steps": [
+     {
+      "step": "merchant creates order",
+      "tx": "sTBRzE47ZyBjUVXWuUFNDJqd5hWraroaq1z1Xcqsof7"
+     },
+     {
+      "step": "customer approves receipt",
+      "tx": "8CzbCjjFf9wFowRE1pvc8ppLCnobnnG39WC9xHbKSjhZ"
+     },
+     {
+      "step": "agent attests Approve (score 92)",
+      "tx": "4n6sT6auUh35yRnfccRxHff6eYbNyQQEazXtcUVPez4Q"
+     },
+     {
+      "step": "merchant opens pool",
+      "tx": "9ChjyiDudh2Mn9JR2nVgcDriSvsLzSknemCXTYQEaxKY"
+     },
+     {
+      "step": "senior investor funds",
+      "tx": "FEnmKDP5T3k2qaQ3z5VcFpoQKNsSdW65icRr3bkEjUDc"
+     },
+     {
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "5xCeWicAWLKzqnxi4vgZCRBFC9YJTEbmFjY2LefmV3Bs"
+     },
+     {
+      "step": "customer pays invoice (waterfall)",
+      "tx": "HayV6cv2ugZi4bwh6gbTuadYYq89DQHA5uVDc87BgA26"
+     },
+     {
+      "step": "senior holder claims",
+      "tx": "DvmvfsAHS255QxgxBYXpEegwhWVB2kqWkwufeTLNEaP6"
+     },
+     {
+      "step": "junior holder claims",
+      "tx": "Ctj1eTfZQcLZdzbPmkFMEzT3fcmNEzhchbFna39GW6LD"
+     }
+    ]
+   }
+  ],
+  "23": [
+   {
+    "file": "evidence/demo-run-tidepool.json",
+    "scenario": "happy path, cross-chain payment",
+    "finished_at": "2026-11-12T16:47:16.870Z",
+    "steps": [
+     {
+      "step": "merchant creates order",
+      "tx": "DCVUhRjZGSxw4WUimQ5nv5NTjRdLzRzycdYSN1pwTiui"
+     },
+     {
+      "step": "customer approves receipt",
+      "tx": "yH4cfLpJ2syEpf9eg197LDinAveMzCWFhxBPngrvaWF"
+     },
+     {
+      "step": "agent attests Approve (score 85)",
+      "tx": "2Xs7TrwTSaG3P4PqbpCbjP82NWczPDG4xEMVD5MhoWWs"
+     },
+     {
+      "step": "merchant opens pool",
+      "tx": "HG4dYth89tyAMaZbSGdpqbpBSkxZUBUHRHpoPEwzfgM9"
+     },
+     {
+      "step": "senior investor funds",
+      "tx": "BwNCa5Qyt84DaxWwmpCiL5XBYAgFWWN4hDCEpqSWapSp"
+     },
+     {
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "H2Z5HDSKHupKbjJKQbvPjnnqwFuALF2chRPZy36YXZDH"
+     },
+     {
+      "step": "Tidepool delivers to the forwarder on NEAR",
+      "tx": "sbw561CiNdF6Wkx3MT6WQPKBTZon6QgZ1y6xmXCMpAy"
+     },
+     {
+      "step": "forwarder pays the order (ft_transfer_call {\"pay\"})",
+      "tx": "7MknHLUsjbtbJE5T1Btzxe4QA9BPS3orM6Rkfi8i9oCg"
+     },
+     {
+      "step": "customer settles remaining 0.0052 USDC on NEAR",
+      "tx": "6GyWou8aL6gTxG6KwAJqF7k1RN8zHwKWbbee5HsbjByN"
+     },
+     {
+      "step": "senior holder claims",
+      "tx": "FGhe3BDgfmgwg4S42vcKd61cjnfcbZuF9MDhP8pMwDZB"
+     },
+     {
+      "step": "junior holder claims",
+      "tx": "ELLbBA43PdckavSxJZpFhhoEyAMrMRgGnRSd7TxDLVMF"
+     }
+    ]
+   }
+  ],
+  "24": [
+   {
+    "file": "evidence/nft-transfer-run.json",
+    "scenario": "position NFT transfer mid-payout",
+    "finished_at": "2026-11-12T16:48:39.843Z",
+    "steps": [
+     {
+      "step": "merchant creates order",
+      "tx": "A5tjYRV88RyYnJaqiaHnRR9HyKk8EuH3JMuHYdgNVDLT"
+     },
+     {
+      "step": "customer approves receipt",
+      "tx": "FaxPTMbN9jdhacU8BxMQ5ARtvQ6zuoqFFNijojHftExm"
+     },
+     {
+      "step": "agent attests Approve (score 95)",
+      "tx": "6XMfxrrQE37KBRA56KdVCNeZJKj2A8KBeHhXWBkFWKpr"
+     },
+     {
+      "step": "merchant opens pool",
+      "tx": "Fcj54ATwJ5RQnbmdCxDVy5w4QTcmPwweFcT2prgE7EVH"
+     },
+     {
+      "step": "senior investor funds",
+      "tx": "Bn8WktCaG5nA2NJCvAoqEvw4c8Q6GgATo9yzoAUCettz"
+     },
+     {
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "C4WA44FB6RkuQU2zA7bDAGThi6184BzNVQn29UKf7ToX"
+     },
+     {
+      "step": "customer pays 2.390625 USDC",
+      "tx": "55Cr7WY3Lh2R9B2cw1mCu12QgGNvUz3TSk68Ti2rBmPU"
+     },
+     {
+      "step": "senior holder claims the first payment",
+      "tx": "PWd1GLW8RWEifeA6ydQuxqJiS1rKFnm4VbeNf6SJe69"
+     },
+     {
+      "step": "senior NFT sold to carol.cashflowfi.testnet",
+      "tx": "GEq9W2Cs6fbxu1oT84CRvXWfzam6LWrRDSVvLBH1DomR"
+     },
+     {
+      "step": "customer pays the rest",
+      "tx": "5krxYNGBV5QFrADNjWBu2Xzz8ZUw5FMCMpoGyUvyHnxu"
+     },
+     {
+      "step": "new holder claims the senior remainder",
+      "tx": "BTkTbEJx9oRaY1TEpWwSJNrPZbnDVGdnuTL54fTmKEwq"
+     },
+     {
+      "step": "junior NFT sold to carol.cashflowfi.testnet with its payout unclaimed",
+      "tx": "HmWMvnHiGLgxQB7gGfk7VgzecMnDN4YNtxuwkeV6xqsp"
+     },
+     {
+      "step": "new holder claims the whole junior payout",
+      "tx": "7bnT2MPuQepo2KhFkQJxaynBfjUywcGrGyRKoSTB3PQi"
+     }
+    ]
+   }
+  ],
+  "25": [
+   {
+    "file": "evidence/insurance-run.json",
+    "scenario": "default + DAO cover",
+    "finished_at": "2026-11-12T16:58:18.746Z",
+    "steps": [
+     {
+      "step": "merchant creates order",
+      "tx": "Div612rDD9AWUa1BSNvSGBJowfVDTh86Zc6TR8ECy2hA"
+     },
+     {
+      "step": "customer approves receipt",
+      "tx": "8b26H8wfx519kKhSnjDqXzgPKbmBoPJqeKMmGt2zUZh3"
+     },
+     {
+      "step": "agent attests Approve (score 100)",
+      "tx": "FSz5faLGLw3XaP9znCvxYmAAacoB8PnMS1ZtzUaTCSsi"
+     },
+     {
+      "step": "merchant opens pool",
+      "tx": "26hWNBHCCbC1sDGNQLr2QXdbadEgtkaTMq7J72x6Tv95"
+     },
+     {
+      "step": "senior investor funds",
+      "tx": "FM1SXLJLcTvxu49hwN8Etp48ukeuzz5awU2VMSYPeiuQ"
+     },
+     {
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "8SrWRYvhmQrv29jq5jEw8vcrpZywe8Fn78CAStGyXM75"
+     },
+     {
+      "step": "customer pays only 5.179687 USDC, then goes silent",
+      "tx": "EzBjg2nURZzKg7VsDrCp9EiY6qLpvzrpN3yQGQP2ewNE"
+     },
+     {
+      "step": "owner seeds insurance 3 USDC",
+      "tx": "3McAwVQWQRtpcvQSFLhRrix6GtzUVBTYuusRjWFnKPQY"
+     },
+     {
+      "step": "collections agent marks default",
+      "tx": "5bv37fK9ssGpwMPANd6wL1dN4PQfuY6FhSv5Wkancy6m"
+     },
+     {
+      "step": "council proposes approve_cover (proposal 5)",
+      "tx": "7JC6aJa66P1oQus8Qghf3gXM756UmF1bN7PowoZPyF43"
+     },
+     {
+      "step": "cashflowfi.testnet votes approve",
+      "tx": "5ef7roq8BPUQJd9sze6SJjgYcszYdTDdJvPBMPwYRUn2"
+     },
+     {
+      "step": "alice.cashflowfi.testnet votes approve",
+      "tx": "8UFE5DUG46TrKcVgaLkE4PrR71UeWRByp2aM6u6dNjFF"
+     },
+     {
+      "step": "senior holder claims",
+      "tx": "HuLmMZyvzCdL142yb5xdi4XTDco98wWT2XLZjF4bGXXE"
+     },
+     {
+      "step": "junior holder claims (includes cover)",
+      "tx": "7sZe2yUM9sFYH5CGFQenp3GBgAsUjrFMQKYqU7zogznK"
+     }
+    ]
+   }
+  ]
+ },
+ "orders": {
+  "40": [
+   {
+    "file": "evidence/relayer-run.json",
+    "scenario": "",
+    "finished_at": null,
+    "steps": [
+     {
+      "step": "1. merchant creates order (gasless)",
+      "tx": "AbkC4U5sw7HtefofRrCYingRNvhZ2899uHg79PsGagKj"
+     },
+     {
+      "step": "2. customer approves receipt (gasless)",
+      "tx": "5gvUFCGqJ5aLvSCdVbtLgX7yYD7PyS1fdE1V94H7se3e"
+     }
+    ]
+   }
+  ]
+ }
+}

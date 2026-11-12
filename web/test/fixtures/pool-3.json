@@ -1,0 +1,68 @@
+{
+ "pool": {
+  "id": 3,
+  "merchant": "merchant.cashflowfi.testnet",
+  "order_ids": [
+   5
+  ],
+  "tier": "B",
+  "receivable": "10000000",
+  "advance": "8000000",
+  "fee": "80000",
+  "claim": "8500000",
+  "senior_face": "6375000",
+  "junior_face": "2125000",
+  "senior_target": "6000000",
+  "junior_target": "2000000",
+  "senior_funded": "6000000",
+  "junior_funded": "2000000",
+  "senior_repaid": "0",
+  "junior_repaid": "0",
+  "residual_paid": "0",
+  "insurance_paid": "0",
+  "insurance_refilled": "0",
+  "pending_cover": "0",
+  "status": "Active",
+  "due_date": "1797077753527000000",
+  "created_at": "1794485767741767215"
+ },
+ "orders": [
+  {
+   "id": 5,
+   "merchant": "merchant.cashflowfi.testnet",
+   "customer": "customer.cashflowfi.testnet",
+   "amount": "10000000",
+   "currency": "USDC",
+   "due_date": "1797077753527000000",
+   "invoice_no": "DEMO-1794485753527",
+   "customer_hash": "sha256:demo-customer",
+   "status": "Pooled",
+   "verdict": "Approve",
+   "score": 95,
+   "reason_hash": "2e5a27fc73402ec81b02fb137a6670942511deddb576483ab71d3db2cbb75e13",
+   "paid": "0",
+   "pool_id": 3,
+   "created_at": "1794485755077323914"
+  }
+ ],
+ "positions": [
+  {
+   "token_id": "3-3",
+   "pool_id": 3,
+   "tranche": "Senior",
+   "amount": "6000000",
+   "claimed": "0",
+   "claimable": "0",
+   "owner": "alice.cashflowfi.testnet"
+  },
+  {
+   "token_id": "3-4",
+   "pool_id": 3,
+   "tranche": "Junior",
+   "amount": "2000000",
+   "claimed": "0",
+   "claimable": "0",
+   "owner": "bob.cashflowfi.testnet"
+  }
+ ]
+}
