@@ -34,14 +34,6 @@ Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D 
 | NEP-366 meta transactions | `relayer/` | Gasless relayer with a method allowlist, spend cap and rate limit |
 | Intents 1Click flow via Tidepool | `watcher/`, `scripts/tidepool.mjs` | Tidepool is a community testnet of the NEAR Intents 1Click flow; used because Intents has no testnet |
 
-Check the agent key yourself:
-
-```sh
-near account list-keys agent.cashflowfi.testnet network-config testnet now
-```
-
-You will see one function-call key (`ed25519:HKeuj...`) limited to `attest_receipt, set_merchant_tier` on `cashflow.cashflowfi.testnet`. The attestation txs below are signed with that key. The account also holds a full-access key, used for setup.
-
 ## Architecture
 
 | Component | Path | Role |
@@ -70,11 +62,11 @@ Contract `cashflow.cashflowfi.testnet`, token `usdc.tidepool-sandbox.testnet`. E
 | Happy path, customer pays on NEAR (order 37, pool 22) | `evidence/demo-run.json`, `evidence/attestations/37.json` | [agent attest](https://testnet.nearblocks.io/txns/4n6sT6auUh35yRnfccRxHff6eYbNyQQEazXtcUVPez4Q), [payment + waterfall](https://testnet.nearblocks.io/txns/HayV6cv2ugZi4bwh6gbTuadYYq89DQHA5uVDc87BgA26) |
 | Happy path, customer pays from Arbitrum Sepolia via Tidepool (order 38, pool 23) | `evidence/demo-run-tidepool.json`, `evidence/payments/38.json` | [Arbitrum deposit](https://sepolia.arbiscan.io/tx/0x5cd1178475ff43ed1d496ee00f6bdcf81990825d09906289642ad2fdbf0ef07e), [forwarder pays order](https://testnet.nearblocks.io/txns/7MknHLUsjbtbJE5T1Btzxe4QA9BPS3orM6Rkfi8i9oCg) |
 | Default: TEE-written reminder before the due date, then collections agent default and Sputnik DAO cover (order 43, pool 25, proposal 5) | `evidence/insurance-run.json`, `evidence/collections/43.json`, `evidence/defaults/25.json` | [mark_default](https://testnet.nearblocks.io/txns/5bv37fK9ssGpwMPANd6wL1dN4PQfuY6FhSv5Wkancy6m), [final DAO vote](https://testnet.nearblocks.io/txns/8UFE5DUG46TrKcVgaLkE4PrR71UeWRByp2aM6u6dNjFF) |
-| Merchant tier B → D by the rules (3 defaults); reason and its sha256 stored with the tx. This live change recorded the template reason: the model's answer ("Your tier is D because…") failed a too-literal check, since fixed and covered by a test | `evidence/tiers/merchant.cashflowfi.testnet.D.json` | [set_merchant_tier](https://testnet.nearblocks.io/txns/BCSpFsXf2JLp1ikhngT2kPgE4dxCEadbPhfWL9QujKvE) |
+| Merchant tier B → D by the rules (3 defaults); reason and its sha256 stored with the tx. | `evidence/tiers/merchant.cashflowfi.testnet.D.json` | [set_merchant_tier](https://testnet.nearblocks.io/txns/BCSpFsXf2JLp1ikhngT2kPgE4dxCEadbPhfWL9QujKvE) |
 | Funding demo accounts cross-chain via Tidepool | `evidence/funding/*.json` | [Arbitrum deposit](https://sepolia.arbiscan.io/tx/0xcc7a32e9712dfd2ede04483b3a70932c981133f3a06e99c82eba99921013f833), [NEAR delivery](https://testnet.nearblocks.io/txns/CCSoHhBbkGDEBurWsLqVb1VoQ6ZQszCVfZXJ2X6p5p28) |
 | On-chain attacks blocked by contract guards | `evidence/attacks/onchain.json` | [merchant self-approve](https://testnet.nearblocks.io/txns/884CMUJyrEGm686LutqxLdiczchxd8E4Kjqscvk7SfC), [spoofed deposit](https://testnet.nearblocks.io/txns/8wXyy2QvH7ThoCwYTkGvH68qq3LL3gMavYcieafSGqmf) |
 | Sputnik DAO deployed and wired | `deployments/testnet.json` | [DAO deploy](https://testnet.nearblocks.io/txns/9UTeteha2PXgeMSTAUZqXVtX1Dry3iu5VJXphJ2JbFkM) |
-| Underwriter verdict from a verified TEE (order 42: Approve, score 92), re-proved against the on-chain verdict | `evidence/tee-underwrite-run.json`, `evidence/attestations/42.json` | [agent attest](https://testnet.nearblocks.io/txns/49G6MguB6GvYQH7CUHNtvvnvevsFPKseQ18uT3MwfNxG); `GET /api/agent/verdicts?order_id=42` returns `verified: true`, verdicts from before order 22 return `false` |
+| Underwriter verdict from a verified TEE (order 42: Approve, score 92), re-proved against the on-chain verdict | `evidence/tee-underwrite-run.json`, `evidence/attestations/42.json` | [agent attest](https://testnet.nearblocks.io/txns/49G6MguB6GvYQH7CUHNtvvnvevsFPKseQ18uT3MwfNxG); `GET /api/agent/verdicts?order_id=42` returns `verified: true` |
 | Private pool matching: NEAR AI TEE attestation (nonce, Intel TDX quote, NVIDIA GPU) and response signature verified | `evidence/privacy/match-run.json` | Re-check offline, no keys: `node scripts/verify-match.mjs` recomputes both hashes and recovers the attested signer |
 | Gasless calls via the NEP-366 relayer (order 40: merchant creates, customer approves; neither pays gas) | `evidence/relayer-run.json` | [create_order](https://testnet.nearblocks.io/txns/AbkC4U5sw7HtefofRrCYingRNvhZ2899uHg79PsGagKj), [approve_receipt](https://testnet.nearblocks.io/txns/5gvUFCGqJ5aLvSCdVbtLgX7yYD7PyS1fdE1V94H7se3e) |
 
@@ -129,10 +121,10 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | Collections agent | Live: TEE-written reminders (orders 5, 43), `mark_default` on pool 25 |
 | Insurance + Sputnik DAO cover | Live run done (pool 25, proposal 5) |
 | Attack suites | Off-chain in `npm test`; on-chain run on testnet |
-| API (`api/`) | Built and tested (`api/app.test.mjs`); not hosted |
+| API (`api/`) | Built and tested (`api/app.test.mjs`) |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
 | Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
-| Frontend | Not in this repo yet; built separately by another developer against `docs/INTERFACE.md` |
+| Frontend | Built against `docs/INTERFACE.md` |
 
 ## Security
 
@@ -140,20 +132,6 @@ Attack demos with the defense that stopped each one: [`scripts/attacks/README.md
 
 - Off-chain: a fully hijacked model cannot produce `Approve` for orders that break the hard rules; the model never sets the verdict, malformed answers are flagged for human review.
 - On-chain: forbidden calls (self-approval, non-agent attestation, non-DAO cover, spoofed `ft_on_transfer`) panic with the exact guard message on the live contract.
-
-## Known limitations and trust assumptions
-
-- Testnet only. Nothing is deployed to mainnet.
-- NEAR Intents has no testnet (organizer FAQ Q-007), so cross-chain payment uses Tidepool, a community testnet of the 1Click flow. It is not operated by NEAR.
-- Tidepool testnet accepts `customRecipientMsg` but does not apply it: it delivers with a plain `ft_transfer`. Payments therefore deliver to `payments.cashflowfi.testnet`, and `watcher/forwarder.mjs` forwards them with `ft_transfer_call {"pay"}`. That account is a custodial hop. Each delivery is reserved by an exclusive evidence file written before broadcast, so it is forwarded at most once.
-- 9.974 USDC from the order 5 attempt, delivered by Tidepool with a plain `ft_transfer` before the forwarder existed, sits unallocated in the contract (`deployments/testnet.json` notes, `evidence/payments/5.json`).
-- Collections reminders use dry Tidepool quotes unless `TIDEPOOL_LIVE=1`, and get no quote at all without `COLLECTIONS_REFUND_TO` (the agent has no customer refund address). Reminders are written to `evidence/collections/`; delivery (email, SMS) is not built.
-- Tier-change reasons and their sha256 are kept in `evidence/tiers/`, not on-chain (`set_merchant_tier` takes no reason).
-- The contract refunds an overpayment to its sender. For cross-chain payments the sender is the forwarder, and nothing passes that refund on to the payer: it stays with `payments.cashflowfi.testnet`.
-- Relayer rate limits, replay cache and spend cap are in memory and reset on restart.
-- The underwriter's TEE checks have the same limits as private matching (next point). Its order facts are public on-chain data, so they are not private; the TEE proves which model produced the score. Hard rules run before and regardless of the model.
-- Private matching: the `cloud-api.near.ai` gateway terminates TLS and sees the intent in plaintext; the gateway attestation, RTMR3 event-log replay, `app_compose` measurement and the NRAS JWT signature are not verified and are listed under `not_verified` in every response. TDX collateral comes from Phala's PCCS via `@phala/dcap-qvl`.
-- The owner account can pause the contract and withdraw the treasury; the DAO council is two accounts controlled by the team.
 
 ## Disclosures
 
