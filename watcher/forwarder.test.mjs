@@ -163,3 +163,16 @@ test('two concurrent runs on one store: the exclusive claim lets only one send',
   assert.equal(rs.filter((r) => r.outcome === 'delivered').length, 1);
   assert.equal(rs.filter((r) => r.record?.reason === 'CLAIMED_BY_ANOTHER_RUN').length, 2);
 });
+
+test('final refunded / failed / held outcomes are saved and not re-assessed on the next run', async () => {
+  for (const [opts, stage] of [[{ status: providerStatus('REFUNDED') }, 'refunded'], [{ status: providerStatus('FAILED') }, 'failed'],
+    [{ order: { status: 'Paid' } }, 'held']]) {
+    const h = await harness(opts);
+    assert.equal((await processDeposit(binding(), h.deps)).outcome, stage);
+    const pay = await readJson(join(h.dir, 'payments', '7.json'));
+    assert.deepEqual(pay.payments.map((p) => p.stage), [stage], stage);
+    // A second run returns the saved stage without asking the provider again.
+    h.deps.fetchStatus = async () => { throw new Error('provider must not be asked again'); };
+    assert.equal((await processDeposit(binding(), h.deps)).outcome, stage);
+  }
+});
