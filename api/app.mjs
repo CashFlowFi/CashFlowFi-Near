@@ -6,8 +6,10 @@ import * as tidepoolModule from '../watcher/tidepool.mjs';
 import { reasonHash } from '../agent/underwriter.mjs';
 import { DEFAULT_RPC, viewCall, txStatus, lookupTx } from './near.mjs';
 import { createFileStore, processDeposit } from '../watcher/forwarder.mjs';
-import { createMatchChat, loadPools, matchPools, parseMatchRequest } from '../agent/matcher.mjs';
+import { loadPools, matchPools, parseMatchRequest } from '../agent/matcher.mjs';
 import { DEFAULT_MATCH_MODEL } from '../agent/tee.mjs';
+import { createAttestedChat } from '../agent/tee-quote.mjs';
+import { verdictVerified } from '../agent/verdict-proof.mjs';
 
 const EVM = /^0x[0-9a-fA-F]{40}$/;
 const MAX_BODY = 16 * 1024;
@@ -60,7 +62,7 @@ export function createApp({
   now = () => Math.floor(Date.now() / 1000),
   matchModel = process.env.MATCH_MODEL || DEFAULT_MATCH_MODEL,
   // null -> deterministic fallback ranking. The intent is never stored or logged (agent/matcher.mjs).
-  matchChat = process.env.NEARAI_API_KEY ? createMatchChat({ apiKey: process.env.NEARAI_API_KEY, model: matchModel }) : null,
+  matchChat = process.env.NEARAI_API_KEY ? createAttestedChat({ apiKey: process.env.NEARAI_API_KEY, model: matchModel }) : null,
 } = {}) {
   const near = { rpcUrl, fetchImpl };
   const { TIDEPOOL } = tidepool;
@@ -144,14 +146,14 @@ export function createApp({
     if (!order.verdict) throw new HttpError(404, 'NOT_ATTESTED');
     // Verdict and score come from chain. Off-chain reasons are shown only if they hash to the on-chain reason_hash.
     const reasons = Array.isArray(file?.reasons) && order.reason_hash && reasonHash(file.reasons) === order.reason_hash ? file.reasons : [];
-    const tee = file?.attestation ?? file?.tee_attestation ?? null;
+    // verified is recomputed on every request (signature re-check + binding to this on-chain verdict), never read from the file.
+    const verified = await verdictVerified(file, order);
     return {
       verdict: order.verdict, score: order.score, reasons,
       attestation: {
-        // Only true when a TEE attestation is recorded as verified with a report. No attestation: no privacy claim.
-        verified: tee?.verified === true && typeof tee?.report_url === 'string',
+        verified,
         model: typeof file?.model === 'string' ? file.model : null,
-        report_url: typeof tee?.report_url === 'string' ? tee.report_url : null,
+        report_url: verified ? `evidence/attestations/${orderId}.json` : null,
       },
     };
   }

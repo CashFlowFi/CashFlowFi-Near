@@ -5,7 +5,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_RPC, writeJsonAtomic } from '../agent/near.mjs';
-import { createMatchChat, loadPools, matchPools, parseMatchRequest } from '../agent/matcher.mjs';
+import { loadPools, matchPools, parseMatchRequest } from '../agent/matcher.mjs';
+import { createAttestedChat } from '../agent/tee-quote.mjs';
 import { DEFAULT_MATCH_MODEL, NEAR_AI } from '../agent/tee.mjs';
 import { viewCall } from '../api/near.mjs';
 
@@ -21,7 +22,7 @@ const rpcUrl = process.env.NEAR_RPC || DEFAULT_RPC;
 const model = process.env.MATCH_MODEL || DEFAULT_MATCH_MODEL;
 if (!process.env.NEARAI_API_KEY) throw new Error('NEARAI_API_KEY missing (set it in .env)');
 
-const verifiedChat = createMatchChat({ apiKey: process.env.NEARAI_API_KEY, model });
+const verifiedChat = createAttestedChat({ apiKey: process.env.NEARAI_API_KEY, model });
 let transcript = null;
 const chat = async (req) => { const r = await verifiedChat(req); transcript = r.transcript; return r; };
 

@@ -126,3 +126,18 @@ export function createVerifiedChat({ apiKey, model, fetchImpl = fetch, verifyQuo
     return { text: choice.message.content, privacy, transcript: { request: requestBytes, response: responseBytes } };
   };
 }
+
+/** Offline re-check of a saved completion: recompute both hashes from the raw bodies and recover the signer. */
+export async function recheckSaved(privacy, raw) {
+  const ev = privacy?.evidence;
+  const signers = Array.isArray(ev?.attested_signers) ? ev.attested_signers : [];
+  if (!ev || typeof raw?.request_body !== 'string' || typeof raw?.response_body !== 'string') {
+    return { signature_valid: false, signer_matches_attestation: false, signature_kind: null };
+  }
+  return checkSignature({ model: privacy.model, candidates: signers.map((s) => ({ signing_address: typeof s === 'string' ? s : s?.signing_address })),
+    requestBytes: Buffer.from(raw.request_body, 'utf8'), responseBytes: Buffer.from(raw.response_body, 'utf8'),
+    signature: { text: ev.signed_text, signature: ev.signature, signing_address: ev.signing_address, signing_algo: 'ecdsa', signature_kind: privacy.signature_kind } });
+}
+
+/** A re-check passes only for a valid provider_tee signature by an attested signer. */
+export const recheckPasses = (r) => r.signature_valid && r.signer_matches_attestation && r.signature_kind === 'provider_tee';

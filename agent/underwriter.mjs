@@ -3,7 +3,6 @@
 // prompt-injected or malformed answer can never approve a receivable the rules reject.
 import { createHash } from 'node:crypto';
 
-export const NEAR_AI_ENDPOINT = 'https://cloud-api.near.ai/v1/chat/completions';
 export const APPROVE_AT = 70;
 export const FLAG_AT = 40;
 export const MAX_AMOUNT = 100_000n * 1_000_000n; // 100k test USDC per receivable
@@ -103,26 +102,20 @@ export function modelContext(order, history) {
   };
 }
 
-/** One bounded chat completion. No retries, no fallback to another model, credentials never logged. */
-export function createNearAiClient({ apiKey, model, fetchImpl = fetch, timeoutMs = 20000, maxCalls = 50 }) {
-  if (!apiKey || /[\r\n]/.test(apiKey)) fail('NEARAI_API_KEY missing');
-  if (typeof model !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9_./:-]{0,119}$/.test(model)) fail('NEARAI model id invalid');
+/**
+ * Production model: one completion through the verified TEE chat (agent/tee.mjs createAttestedChat). Bounded per
+ * process, no retries, no other model. A completion that is not verified_private is refused (the order is flagged,
+ * never approved), but its privacy block is still kept as evidence. The order facts sent are public on-chain data, so
+ * the raw request and response bodies are stored for an offline signature re-check.
+ */
+export function createUnderwriterModel({ chat, maxCalls = 50 }) {
   let calls = 0;
   return async function complete(context) {
     if (++calls > maxCalls) fail('INFERENCE_BUDGET_EXHAUSTED');
-    const r = await fetchImpl(NEAR_AI_ENDPOINT, {
-      method: 'POST', redirect: 'error', signal: AbortSignal.timeout(timeoutMs),
-      headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model, temperature: 0.1, max_tokens: 400, stream: false,
-        // Qwen3-style models spend the token budget on hidden reasoning unless thinking is off.
-        chat_template_kwargs: { enable_thinking: false },
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: JSON.stringify(context) }] }),
-    });
-    if (!r.ok) fail(`INFERENCE_HTTP_${r.status}`);
-    const payload = await r.json();
-    const choice = payload.choices?.[0];
-    if (choice?.finish_reason !== 'stop' || typeof choice?.message?.content !== 'string') fail('INFERENCE_INCOMPLETE');
-    return { text: choice.message.content, usage: payload.usage ?? null };
+    const r = await chat({ system: SYSTEM_PROMPT, user: JSON.stringify(context), maxTokens: 400 });
+    const tee = { privacy: r.privacy, raw: { request_body: r.transcript.request.toString('utf8'), response_body: r.transcript.response.toString('utf8') } };
+    if (r.privacy?.verified_private !== true) throw Object.assign(new Error('TEE_NOT_VERIFIED'), { tee });
+    return { text: r.text, tee };
   };
 }
 
@@ -130,14 +123,18 @@ export function createNearAiClient({ apiKey, model, fetchImpl = fetch, timeoutMs
 export async function underwrite({ order, history = {}, complete, nowNs }) {
   let model = null;
   let modelError = null;
+  let tee = null;
   const outstanding = history.outstanding ?? 0n;
   if (!hardRules(order, { nowNs, outstanding }).length && complete) {
-    try { model = parseModelAnswer((await complete(modelContext(order, history))).text); }
-    catch (e) { modelError = e.message; }
+    try {
+      const r = await complete(modelContext(order, history));
+      tee = r.tee ?? null;
+      model = parseModelAnswer(r.text);
+    } catch (e) { modelError = e.message; tee = e.tee ?? tee; }
   }
   const d = decide({ order, model, nowNs, outstanding });
   return {
     args: { id: order.id, verdict: d.verdict, score: d.score, reason_hash: reasonHash(d.reasons) },
-    evidence: { order_id: order.id, verdict: d.verdict, score: d.score, reasons: d.reasons, source: d.source, model_error: modelError },
+    evidence: { order_id: order.id, verdict: d.verdict, score: d.score, reasons: d.reasons, source: d.source, model_error: modelError, tee },
   };
 }

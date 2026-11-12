@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import * as realTidepool from '../watcher/tidepool.mjs';
 import { reasonHash } from '../agent/underwriter.mjs';
 import { createApp } from './app.mjs';
+import { signedVerdictFile } from '../agent/verdict-proof.fixtures.mjs';
 import { createFileStore, processDeposit } from '../watcher/forwarder.mjs';
 import { FWD, DELIVERY_TX, FORWARD_TX, deliveryTx, forwardTx, binding as fwdBinding, providerStatus as fwdStatus } from '../watcher/forwarder.fixtures.mjs';
 
@@ -260,6 +261,21 @@ test('verdicts: chain verdict, reasons only when they match the on-chain hash, n
   assert.deepEqual([notYet.status, notYet.body.error], [404, 'NOT_ATTESTED']);
   const bad = await call('/api/agent/verdicts?order_id=abc');
   assert.deepEqual([bad.status, bad.body.error], [400, 'ORDER_ID']);
+});
+
+test('verdicts: verified only when the saved TEE signature re-checks for this on-chain verdict', async (t) => {
+  const reasons = ['Repeat customer'];
+  const o = order({ reason_hash: reasonHash(reasons) });
+  const net = fakeNet({ orders: { 7: o, 8: order({ id: 8, invoice_no: 'INV-8', reason_hash: reasonHash(reasons) }) } });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await mkdir(join(evidenceDir, 'attestations'), { recursive: true });
+  const file = await signedVerdictFile(o, { reasons });
+  await writeFile(join(evidenceDir, 'attestations', '7.json'), JSON.stringify(file));
+  await writeFile(join(evidenceDir, 'attestations', '8.json'), JSON.stringify({ ...file, order_id: 8 })); // signed for order 7
+  const r = await call('/api/agent/verdicts?order_id=7');
+  assert.deepEqual(r.body.attestation, { verified: true, model: file.model, report_url: 'evidence/attestations/7.json' });
+  const copied = await call('/api/agent/verdicts?order_id=8');
+  assert.deepEqual([copied.body.reasons, copied.body.attestation.verified], [reasons, false]);
 });
 
 test('ledger: JSON rows and CSV with escaping', async (t) => {

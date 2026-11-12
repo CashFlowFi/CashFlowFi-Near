@@ -5,7 +5,8 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { createNearAiClient, merchantTier, underwrite } from './underwriter.mjs';
+import { createUnderwriterModel, merchantTier, underwrite } from './underwriter.mjs';
+import { createAttestedChat } from './tee-quote.mjs';
 import { DEFAULT_RPC, PAGE, fetchAll, evidencePath, writeJsonAtomic, assertTestnet, createView, createSigner } from './near.mjs';
 
 export { DEFAULT_RPC, PAGE, fetchAll, evidencePath, createView, createSigner };
@@ -45,7 +46,7 @@ export function historyByMerchant(pools) {
 /**
  * One pass. All I/O is injected:
  *   view(method, args) -> parsed JSON      sign(method, args) -> { txHash }
- *   complete(context) -> { text }          (NEAR AI client from underwriter.mjs)
+ *   complete(context) -> { text, tee }     (underwriter.mjs createUnderwriterModel over the attested TEE chat)
  */
 export async function runOnce({ view, sign, complete, model, contract, agent, evidenceDir = EVIDENCE_DIR,
   nowNs = () => BigInt(Date.now()) * 1_000_000n, log = console.log, pageSize = PAGE, tiers = false }) {
@@ -116,7 +117,7 @@ async function main(argv) {
   const deps = {
     view: createView({ rpcUrl: cfg.rpcUrl, contractId: cfg.contract }),
     sign: createSigner({ rpcUrl: cfg.rpcUrl, accountId: cfg.agent, privateKey: cfg.privateKey, contractId: cfg.contract }),
-    complete: createNearAiClient({ apiKey: cfg.apiKey, model: cfg.model, maxCalls: cfg.maxInferences }),
+    complete: createUnderwriterModel({ chat: createAttestedChat({ apiKey: cfg.apiKey, model: cfg.model }), maxCalls: cfg.maxInferences }),
     model: cfg.model, contract: cfg.contract, agent: cfg.agent, tiers,
   };
   console.log(`underwriter agent ${cfg.agent} -> ${cfg.contract} via ${cfg.rpcUrl}${once ? ' (once)' : ` every ${intervalSec}s`}`);

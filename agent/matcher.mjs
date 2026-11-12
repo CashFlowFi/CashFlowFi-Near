@@ -5,8 +5,7 @@
 // request (agent/tee.mjs) only: no evidence file, no log line and no error code carries it.
 // The result is a suggestion. Money moves only when the investor signs ft_transfer_call with `invest_msg`.
 import { fetchAll } from './near.mjs';
-import { createVerifiedChat, unverifiedPrivacy } from './tee.mjs';
-import { attestGpu, verifyTdxQuote } from './tee-quote.mjs';
+import { unverifiedPrivacy } from './tee.mjs';
 
 export const TRANCHES = ['Senior', 'Junior'];
 export const TIERS = ['A', 'B', 'C', 'D']; // best first
@@ -128,11 +127,7 @@ export async function loadPools(view) {
   return { pools, scores };
 }
 
-/** Production chat: attested NEAR AI completion; the TDX quote must verify before the intent is sent. */
-export const createMatchChat = ({ apiKey, model, fetchImpl = fetch }) => createVerifiedChat({ apiKey, model, fetchImpl,
-  verifyQuote: verifyTdxQuote, attestGpu: (c, nonce) => attestGpu(c, nonce, { fetchImpl }) });
-
-/** Match one request. `chat` is agent/tee.mjs createVerifiedChat (or null); `log` never receives the intent. */
+/** Match one request. `chat` is agent/tee-quote.mjs createAttestedChat (or null); `log` never receives the intent. */
 export async function matchPools({ intent, filters, pools, scores, nowNs, chat, model = null, log = () => {} }) {
   const allowed = applyFilters(openTranches(pools, scores, nowNs), filters);
   let picks = null; let dropped = 0; let modelError = null; let privacy = unverifiedPrivacy(model);

@@ -10,7 +10,7 @@ Merchants who sell on credit wait 30 to 90 days for payment. Cashflow Fi finance
 
 1. Merchant calls `create_order` (amount, currency, due date, invoice number).
 2. Customer calls `approve_receipt` from their own account, confirming the sale. The merchant cannot approve its own order.
-3. The underwriter agent scores the order with an LLM on NEAR AI Cloud, applies deterministic hard rules, and writes `attest_receipt` (verdict, score, reason hash) on-chain.
+3. The underwriter agent applies deterministic hard rules, scores the order with an LLM inside a verified NEAR AI Cloud TEE, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
 4. Merchant calls `create_pool` on approved orders. Terms come from the merchant tier (LTV A/B/C/D = 85/80/70/60 %).
 5. Investors fund senior (75 %) and junior (25 %) of the advance with `ft_transfer_call`. Each investment mints a NEP-171 position NFT.
 6. When both tranches are full, the merchant receives the advance minus a 1 % fee (half to insurance, half to treasury).
@@ -28,8 +28,8 @@ Numbers from the testnet run (10 USDC receivable, tier B): advance 8, merchant n
 | NEP-141 | `usdc.tidepool-sandbox.testnet` | All money moves in via `ft_transfer_call` / `ft_on_transfer` (invest, pay, repay, seed insurance) |
 | NEP-171 | inside `cashflow` | Position NFTs; `metadata.media` is a live on-chain SVG card; `claim` pays the current owner |
 | Function-call access key | `agent.cashflowfi.testnet` | Agent key limited to `attest_receipt` and `set_merchant_tier` on the contract, 0 deposit |
-| NEAR AI Cloud | `agent/underwriter.mjs` | Chat completion at `cloud-api.near.ai` (model `Qwen/Qwen3.6-35B-A3B-FP8` in the runs) |
-| NEAR AI Cloud TEE (private inference) | `agent/matcher.mjs`, `agent/tee.mjs` | Private pool matching for investors; the TEE attestation and per-response signature are verified before a result is called private |
+| NEAR AI Cloud TEE (verified inference) | `agent/tee.mjs`, `agent/tee-quote.mjs` | Every model call (underwriter and investor matching) goes to `cloud-api.near.ai` (model `Qwen/Qwen3.6-35B-A3B-FP8` in the runs) only after a nonce-bound attestation and Intel TDX quote check; the response signature must recover to the attested key |
+| Verdict proof | `agent/verdict-proof.mjs` | `/api/agent/verdicts` returns `verified: true` only after re-checking the saved signature and binding the signed answer to the on-chain score, reason hash and order |
 | Sputnik DAO v2.3.1 | `dao.cashflowfi.testnet` | Council of 2, threshold 2 of 2; only the DAO can call `approve_cover` |
 | NEP-366 meta transactions | `relayer/` | Gasless relayer with a method allowlist, spend cap and rate limit |
 | Intents 1Click flow via Tidepool | `watcher/`, `scripts/tidepool.mjs` | Tidepool is a community testnet of the NEAR Intents 1Click flow; used because Intents has no testnet |
@@ -49,7 +49,7 @@ You will see one function-call key (`ed25519:HKeuj...`) limited to `attest_recei
 | Contract | `contracts/cashflow` | NEAR contract: orders, pools, NEP-171 positions, insurance; near-workspaces sandbox tests in `tests/` (one file per area, shared fixture in `tests/common/`) |
 | Pool engine | `contracts/cashflow-core` | Pure Rust pool accounting (terms, waterfall, cover), unit-tested natively |
 | Test token | `contracts/test-token` | NEP-141 used only by the sandbox tests |
-| Underwriter agent | `agent/underwriter.mjs`, `agent/run.mjs` | Hard rules, NEAR AI call, strict parse, signs `attest_receipt` |
+| Underwriter agent | `agent/underwriter.mjs`, `agent/run.mjs` | Hard rules, verified TEE call, strict parse, signs `attest_receipt` |
 | Collections agent | `agent/collections.mjs` | Payment reminders before due date, `mark_default` after due date plus grace |
 | Tidepool client | `watcher/tidepool.mjs`, `lib/quote-signature.mjs` | Builds quotes, verifies the 1Click quote signature, checks delivery on NEAR |
 | Payment forwarder | `watcher/forwarder.mjs` | Moves a verified Tidepool delivery into the contract with `ft_transfer_call {"pay"}` |
@@ -72,6 +72,7 @@ Contract `cashflow.cashflowfi.testnet`, token `usdc.tidepool-sandbox.testnet`. E
 | Funding demo accounts cross-chain via Tidepool | `evidence/funding/*.json` | [Arbitrum deposit](https://sepolia.arbiscan.io/tx/0xcc7a32e9712dfd2ede04483b3a70932c981133f3a06e99c82eba99921013f833), [NEAR delivery](https://testnet.nearblocks.io/txns/CCSoHhBbkGDEBurWsLqVb1VoQ6ZQszCVfZXJ2X6p5p28) |
 | On-chain attacks blocked by contract guards | `evidence/attacks/onchain.json` | [merchant self-approve](https://testnet.nearblocks.io/txns/6vD9XdhtxtAR54tkrffv3umK1pHA4ykYBocXdubcS46h), [spoofed deposit](https://testnet.nearblocks.io/txns/7SsPgdP8CQbENbfEWzjt4TUyp1KPfXSCMjFKL13wpkoG) |
 | Sputnik DAO deployed and wired | `deployments/testnet.json` | [DAO deploy](https://testnet.nearblocks.io/txns/9UTeteha2PXgeMSTAUZqXVtX1Dry3iu5VJXphJ2JbFkM) |
+| Underwriter verdict from a verified TEE (order 22: Approve, score 92), re-proved against the on-chain verdict | `evidence/tee-underwrite-run.json`, `evidence/attestations/22.json` | `GET /api/agent/verdicts?order_id=22` returns `verified: true`; older verdicts made before this change return `false` |
 | Private pool matching: NEAR AI TEE attestation (nonce, Intel TDX quote, NVIDIA GPU) and response signature verified | `evidence/privacy/match-run.json` | Re-check offline, no keys: `node scripts/verify-match.mjs` recomputes both hashes and recovers the attested signer |
 | Gasless calls via the NEP-366 relayer (order 9: merchant creates, customer approves; neither pays gas) | `evidence/relayer-run.json` | [create_order](https://testnet.nearblocks.io/txns/83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio), [approve_receipt](https://testnet.nearblocks.io/txns/Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG) |
 
@@ -93,7 +94,7 @@ Requirements: Node 22 or newer, then `npm ci`. For contracts: Rust stable (pinne
 
 | Run | See |
 |---|---|
-| `npm test` | `tests 141`, `pass 141`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
+| `npm test` | `tests 148`, `pass 148`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
 | `cd contracts/cashflow && cargo test --tests` | every `test result: ok`: 13 sandbox tests across 7 files plus 2 unit tests (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
 | `npm run test:contracts` | `test result: ok. 14 passed` (pure pool engine) |
 | `npm run attacks` | 16 cases, each `[HELD]` with the defense; rewrites `evidence/attacks/offchain.json` |
@@ -121,14 +122,14 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | Component | Status |
 |---|---|
 | Contract `cashflow` with NEP-171 positions | Deployed on testnet; 13 sandbox tests, 14 engine tests |
-| Underwriter agent (NEAR AI Cloud, function-call key) | Live: attestations for orders 2 to 8 in `evidence/attestations/` |
+| Underwriter agent (NEAR AI Cloud TEE, function-call key) | Live: attestations in `evidence/attestations/`; from order 22 on, each carries a verified TEE privacy block and raw signed bodies |
 | Tidepool payment + forwarder | Live run done (order 6) |
 | Collections agent | Live: `mark_default` on pool 5 |
 | Insurance + Sputnik DAO cover | Live run done (pool 5, proposal 1) |
 | Attack suites | Off-chain in `npm test`; on-chain run on testnet |
 | API (`api/`) | Built and tested (`api/app.test.mjs`); not hosted |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
-| Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). The underwriter verdicts are not TEE-verified yet: `/api/agent/verdicts` still returns `verified: false` |
+| Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
 | Frontend | Not in this repo yet; built separately by another developer against `docs/INTERFACE.md` |
 
 ## Security
@@ -146,7 +147,7 @@ Attack demos with the defense that stopped each one: [`scripts/attacks/README.md
 - 9.974 USDC from the order 5 attempt, delivered by Tidepool with a plain `ft_transfer` before the forwarder existed, sits unallocated in the contract (`deployments/testnet.json` notes, `evidence/payments/5.json`).
 - Collections reminders use dry Tidepool quotes unless `TIDEPOOL_LIVE=1`.
 - Relayer rate limits, replay cache and spend cap are in memory and reset on restart.
-- The underwriter trusts the NEAR AI Cloud response (only the investor matcher verifies the TEE so far). Hard rules run before and regardless of the model.
+- The underwriter's TEE checks have the same limits as private matching (next point). Its order facts are public on-chain data, so they are not private; the TEE proves which model produced the score. Hard rules run before and regardless of the model.
 - Private matching: the `cloud-api.near.ai` gateway terminates TLS and sees the intent in plaintext; the gateway attestation, RTMR3 event-log replay, `app_compose` measurement and the NRAS JWT signature are not verified and are listed under `not_verified` in every response. TDX collateral comes from Phala's PCCS via `@phala/dcap-qvl`.
 - The owner account can pause the contract and withdraw the treasury; the DAO council is two accounts controlled by the team.
 

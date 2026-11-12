@@ -4,6 +4,7 @@
 // GPU: the NVIDIA payload must carry our nonce and NRAS must return overall result true.
 // Layout per https://docs.near.ai/cloud/verification/reference/quote-nonce-signer.
 import { getCollateralAndVerify } from '@phala/dcap-qvl';
+import { createVerifiedChat } from './tee.mjs';
 
 export const ACCEPTED_TCB = new Set(['UpToDate', 'SWHardeningNeeded']);
 export const NRAS_URL = 'https://nras.attestation.nvidia.com/v3/attest/gpu';
@@ -46,3 +47,7 @@ export async function attestGpu(candidate, nonce, { fetchImpl = fetch, timeoutMs
     return false;
   }
 }
+
+/** Production chat for every agent: attested NEAR AI completion; the TDX quote must verify before the prompt is sent. */
+export const createAttestedChat = ({ apiKey, model, fetchImpl = fetch }) => createVerifiedChat({ apiKey, model, fetchImpl,
+  verifyQuote: verifyTdxQuote, attestGpu: (c, nonce) => attestGpu(c, nonce, { fetchImpl }) });

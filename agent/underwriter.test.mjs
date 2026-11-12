@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { underwrite, decide, parseModelAnswer, merchantTier, createNearAiClient, hardRules, MAX_AMOUNT } from './underwriter.mjs';
+import { underwrite, decide, parseModelAnswer, merchantTier, createUnderwriterModel, hardRules, SYSTEM_PROMPT, MAX_AMOUNT } from './underwriter.mjs';
 
 const DAY = 86_400_000_000_000n;
 const nowNs = 1_800_000_000n * 1_000_000_000n;
@@ -85,28 +85,30 @@ test('merchant tiers', () => {
   assert.equal(merchantTier({ defaults: 2 }), 'D');
 });
 
-test('NEAR AI client sends one bounded request and enforces the call budget', async () => {
-  const seen = [];
-  const fetchImpl = async (url, init) => {
-    seen.push({ url, body: JSON.parse(init.body), auth: init.headers.authorization });
-    return { ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: '{"score":75,"reasons":["ok"]}' } }] }) };
-  };
-  const complete = createNearAiClient({ apiKey: 'k', model: 'Qwen/Qwen3.6-35B-A3B-FP8', fetchImpl, maxCalls: 1 });
-  assert.equal((await complete({})).text, '{"score":75,"reasons":["ok"]}');
-  assert.equal(seen[0].url, 'https://cloud-api.near.ai/v1/chat/completions');
-  assert.equal(seen[0].auth, 'Bearer k');
+/** Fake attested chat (agent/tee.mjs shape): records the request, returns text, privacy and raw bytes. */
+function fakeChat(text, verified = true) {
+  const chat = async (req) => { chat.seen.push(req); return { text, privacy: { verified_private: verified },
+    transcript: { request: Buffer.from('REQ'), response: Buffer.from('RESP') } }; };
+  chat.seen = [];
+  return chat;
+}
+
+test('TEE model: sends the system prompt and JSON context, keeps raw bytes, enforces the call budget', async () => {
+  const chat = fakeChat('{"score":75,"reasons":["ok"]}');
+  const complete = createUnderwriterModel({ chat, maxCalls: 1 });
+  const r = await complete({ order: { invoice_no: 'INV-1' } });
+  assert.deepEqual(chat.seen[0], { system: SYSTEM_PROMPT, user: '{"order":{"invoice_no":"INV-1"}}', maxTokens: 400 });
+  assert.deepEqual(r.tee.raw, { request_body: 'REQ', response_body: 'RESP' });
   await assert.rejects(complete({}), /INFERENCE_BUDGET_EXHAUSTED/);
+  assert.equal(chat.seen.length, 1);
 });
 
-test('NEAR AI request turns thinking off and keeps the token cap', async () => {
-  let body;
-  const fetchImpl = async (_url, init) => {
-    body = JSON.parse(init.body);
-    return { ok: true, json: async () => ({ choices: [{ finish_reason: 'stop', message: { content: '{"score":80,"reasons":["x"]}' } }] }) };
-  };
-  const complete = createNearAiClient({ apiKey: 'k', model: 'Qwen/Qwen3.6-35B-A3B-FP8', fetchImpl });
-  await complete({ order: {}, history: {} });
-  // Without this, Qwen3 spends max_tokens on hidden reasoning and returns finish_reason "length".
-  assert.deepEqual(body.chat_template_kwargs, { enable_thinking: false });
-  assert.equal(body.max_tokens, 400);
+test('TEE model: an unverified completion is refused (Flag, never Approve) but its privacy block is kept', async () => {
+  const complete = createUnderwriterModel({ chat: fakeChat('{"score":100,"reasons":["ok"]}', false) });
+  const r = await underwrite({ order, complete, nowNs });
+  assert.equal(r.args.verdict, 'Flag');
+  assert.equal(r.evidence.model_error, 'TEE_NOT_VERIFIED');
+  assert.deepEqual(r.evidence.tee.privacy, { verified_private: false });
+  const ok = await underwrite({ order, complete: createUnderwriterModel({ chat: fakeChat('{"score":100,"reasons":["ok"]}') }), nowNs });
+  assert.deepEqual([ok.args.verdict, ok.evidence.tee.privacy.verified_private], ['Approve', true]);
 });
