@@ -3,3 +3,5 @@ node_modules/
 target/
 .next/
 !.env.example
+CLAUDE.md
+claude.md

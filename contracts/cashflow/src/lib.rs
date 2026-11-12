@@ -18,7 +18,7 @@ use near_sdk::serde_json::{self, json, Value};
 use near_sdk::store::{IterableMap, LookupMap};
 use near_sdk::{
     env, near, require, AccountId, BorshStorageKey, Gas, NearToken, PanicOnDefault, Promise,
-    PromiseOrValue, PromiseResult,
+    PromiseError, PromiseOrValue,
 };
 use std::collections::HashMap;
 
@@ -523,7 +523,8 @@ impl Contract {
     }
 
     fn transfer_ok() -> bool {
-        matches!(env::promise_result(0), PromiseResult::Successful(_))
+        // TooLong means the call succeeded; only Failed is a failure.
+        !matches!(env::promise_result_checked(0, 0), Err(PromiseError::Failed))
     }
 
     fn ft_transfer(&self, to: AccountId, amount: u128) -> Promise {
@@ -568,7 +569,7 @@ impl Contract {
         }
         if r.activated {
             // Detached promise: the advance is not part of the refund value returned to the token.
-            self.pay_advance(pool_id, merchant, advance, fee);
+            self.pay_advance(pool_id, merchant, advance, fee).detach();
         }
         r.refund
     }
@@ -597,7 +598,8 @@ impl Contract {
             "insurance_refill": U128(split.insurance_refill)}));
         if split.merchant > 0 {
             self.ft_transfer(merchant.clone(), split.merchant)
-                .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CALLBACK).on_residual(merchant, U128(split.merchant)));
+                .then(Self::ext(env::current_account_id()).with_static_gas(GAS_CALLBACK).on_residual(merchant, U128(split.merchant)))
+                .detach();
         }
         amount - accepted
     }
