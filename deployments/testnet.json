@@ -1,0 +1,16 @@
+{
+  "network": "testnet",
+  "contract": "cashflow.cashflowfi.testnet",
+  "owner": "cashflowfi.testnet",
+  "token": "usdc.tidepool-sandbox.testnet",
+  "agent": "agent.cashflowfi.testnet",
+  "dao": "dao.cashflowfi.testnet",
+  "merchant": "merchant.cashflowfi.testnet",
+  "customer": "customer.cashflowfi.testnet",
+  "investors": ["alice.cashflowfi.testnet", "bob.cashflowfi.testnet"],
+  "init": { "grace_ns": "300000000000", "dao_threshold": "500000" },
+  "txs": {
+    "deploy": "8SDfWzNgR8ksbniwV5PrvA1jt9hCBSVZPKddrsAp3WEt",
+    "init": "F7hLj8zMxpvnsjMiCH4entXGwiKiEuQrWwVYGYTnARmE"
+  }
+}
