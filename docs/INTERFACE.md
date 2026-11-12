@@ -66,9 +66,9 @@ interface Position {
 
 | Method | Args | Caller |
 |---|---|---|
-| `create_order` | `{ amount, currency, due_date, invoice_no, customer_hash }` → `number` | merchant |
+| `create_order` | `{ amount, currency, due_date, invoice_no, customer_hash }` → `number`. `invoice_no` must match `^[A-Za-z0-9][A-Za-z0-9._/#-]{0,63}$` and `currency` `^[A-Z]{3,5}$`, or the underwriter rejects the order | merchant |
 | `approve_receipt` | `{ id }` | customer (not the merchant) |
-| `create_pool` | `{ order_ids: number[] }` → `number`. Attach **0.1 NEAR** for storage | merchant |
+| `create_pool` | `{ order_ids: number[] }` → `number`. No deposit (the method is not payable) | merchant |
 | `claim` | `{ token_id }`. 100 TGas | position owner |
 | `mark_default` | `{ pool_id }` | anyone, after due date + grace |
 | `attest_receipt` | `{ id, verdict, score, reason_hash }` | agent only |
@@ -93,6 +93,10 @@ ft_transfer_call({ receiver_id: CASHFLOW, amount, msg })
 Anything not used (over-funding, over-payment) is **refunded automatically** in the same transaction.
 
 Before the first transfer, the user must be registered on the token: `storage_deposit({ account_id })` with **0.00125 NEAR** attached. Check first with `storage_balance_of`.
+
+## Position NFTs
+
+`nft_token`, `nft_tokens` and `nft_tokens_for_owner` return `metadata.media` as a live SVG card (`data:image/svg+xml;charset=utf-8,...`) built from pool state, and `metadata.extra` as JSON: `{ pool_id, tranche, amount, claimed, claimable, pool_status }`. Render `media` directly; don't cache it, the numbers change as payments arrive.
 
 ## Events (NEP-297 logs, `EVENT_JSON:` prefix, standard `cashflow`, version `1.0.0`)
 
