@@ -1,0 +1,84 @@
+{
+  "network": "testnet",
+  "standard": "NEP-366",
+  "contract": "cashflow.cashflowfi.testnet",
+  "relayer": "cashflowfi.testnet",
+  "order_id": 9,
+  "ran_at": "2026-11-12T14:32:00.922Z",
+  "steps": [
+    {
+      "step": "1. merchant creates order (gasless)",
+      "user": "merchant.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.create_order",
+      "tx": "83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio",
+      "explorer": "https://testnet.nearblocks.io/txns/83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio",
+      "tx_signer": "cashflowfi.testnet",
+      "receipt_predecessor": "merchant.cashflowfi.testnet",
+      "receipt_id": "8Yp8kxHUfGrSsgMfSYwvgBMvrT3sP1TesaxzR6PpVZVD",
+      "user_balance_yocto": {
+        "before": "296128278861438700000000",
+        "after": "296128278861438700000000"
+      },
+      "checks": {
+        "tx_signer_is_relayer": true,
+        "receipt_predecessor_is_user": true,
+        "user_balance_unchanged": true
+      },
+      "value": 9
+    },
+    {
+      "step": "2. customer approves receipt (gasless)",
+      "user": "customer.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.approve_receipt",
+      "tx": "Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG",
+      "explorer": "https://testnet.nearblocks.io/txns/Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG",
+      "tx_signer": "cashflowfi.testnet",
+      "receipt_predecessor": "customer.cashflowfi.testnet",
+      "receipt_id": "4sHt5NwHkjtUpvnPNs1qaasL7m4PJcDJd25zgN5LYuAM",
+      "user_balance_yocto": {
+        "before": "595684418377711199999997",
+        "after": "595684418377711199999997"
+      },
+      "checks": {
+        "tx_signer_is_relayer": true,
+        "receipt_predecessor_is_user": true,
+        "user_balance_unchanged": true
+      },
+      "value": null
+    }
+  ],
+  "rejected": [
+    {
+      "label": "Transfer action inside the delegate",
+      "http_status": 403,
+      "error": "ACTION_NOT_ALLOWED",
+      "detail": "Transfer"
+    },
+    {
+      "label": "non-allowlisted method attest_receipt",
+      "http_status": 403,
+      "error": "METHOD_NOT_ALLOWED",
+      "detail": "cashflow.cashflowfi.testnet.attest_receipt"
+    }
+  ],
+  "relayer_balance_yocto": {
+    "before": "580727512098125299999999",
+    "after": "580133775598687099999999",
+    "spent": "593736499438200000000"
+  },
+  "relayer_health": {
+    "ok": true,
+    "relayer": "cashflowfi.testnet",
+    "contract": "cashflow.cashflowfi.testnet",
+    "token": "usdc.tidepool-sandbox.testnet",
+    "network": "testnet",
+    "relayed": 2,
+    "spentYocto": "16000000000000000000000",
+    "spendCapYocto": "100000000000000000000000",
+    "rateLimit": {
+      "max": 10,
+      "windowSec": 600
+    },
+    "maxTtlBlocks": 600
+  }
+}
