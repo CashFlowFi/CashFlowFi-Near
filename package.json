@@ -3,9 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test": "node --test watcher/*.test.mjs agent/*.test.mjs",
-    "test:contracts": "cd contracts/cashflow-core && cargo test"
+    "test": "node --test watcher/*.test.mjs agent/*.test.mjs api/*.test.mjs",
+    "test:contracts": "cd contracts/cashflow-core && cargo test",
+    "test:sandbox": "cd contracts/cashflow && cargo test --test sandbox",
+    "api": "node --env-file-if-exists=.env api/server.mjs",
+    "agent": "node --env-file-if-exists=.env agent/run.mjs",
+    "demo": "bash scripts/demo.sh"
+  },
+  "dependencies": {
+    "near-api-js": "7.4.0"
   }
 }

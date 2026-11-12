@@ -1,0 +1,165 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, writeFile, readdir } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { runOnce, fetchAll, loadConfig } from './run.mjs';
+import { reasonHash } from './underwriter.mjs';
+
+const NOW = 1_700_000_000_000_000_000n;
+const DAY = 86_400_000_000_000n;
+const order = (id, status, extra = {}) => ({
+  id, merchant: 'shop.testnet', customer: 'alice.testnet', amount: '1000000000', currency: 'USDC',
+  due_date: String(NOW + 30n * DAY), invoice_no: `INV-${id}`, customer_hash: 'h', status,
+  verdict: null, score: null, reason_hash: null, paid: '0', pool_id: null, created_at: String(NOW), ...extra,
+});
+
+function fakes({ orders, pools = [], tiers = {}, score = 85, failSignFor = [], failModelFor = [] }) {
+  const calls = { view: [], sign: [], complete: 0 };
+  const view = async (method, args) => {
+    calls.view.push([method, args]);
+    if (method === 'get_orders') return orders.slice(args.from_index, args.from_index + args.limit);
+    if (method === 'get_pools') return pools.slice(args.from_index, args.from_index + args.limit);
+    if (method === 'get_tier') return tiers[args.merchant] ?? 'B';
+    throw new Error(`unexpected view ${method}`);
+  };
+  const sign = async (method, args) => {
+    calls.sign.push([method, args]);
+    if (failSignFor.includes(args.id)) throw new Error('Order is not customer-approved');
+    return { txHash: `tx-${method}-${args.id ?? args.merchant}` };
+  };
+  const complete = async (ctx) => {
+    calls.complete++;
+    if (failModelFor.includes(ctx.order.invoice_no)) throw new Error('INFERENCE_HTTP_500');
+    return { text: JSON.stringify({ score, reasons: ['Clean history'] }) };
+  };
+  return { view, sign, complete, calls };
+}
+
+const dir = () => mkdtemp(path.join(os.tmpdir(), 'cff-agent-'));
+const base = (f, evidenceDir) => ({ view: f.view, sign: f.sign, complete: f.complete, model: 'test/model',
+  contract: 'cashflow.x.testnet', agent: 'underwriter.x.testnet', evidenceDir, nowNs: () => NOW, log: () => {} });
+
+test('only CustomerApproved orders are attested', async () => {
+  const statuses = ['Pending', 'CustomerApproved', 'Attested', 'Rejected', 'Pooled', 'Paid', 'CustomerApproved'];
+  const f = fakes({ orders: statuses.map((s, i) => order(i, s)) });
+  const ev = await dir();
+  const s = await runOnce(base(f, ev));
+  assert.deepEqual(s.attested, [1, 6]);
+  assert.deepEqual(f.calls.sign.map(([m, a]) => [m, a.id]), [['attest_receipt', 1], ['attest_receipt', 6]]);
+  assert.deepEqual((await readdir(ev)).sort(), ['1.json', '6.json']);
+});
+
+test('attest args match underwriter output; Approve at 85', async () => {
+  const f = fakes({ orders: [order(3, 'CustomerApproved')] });
+  await runOnce(base(f, await dir()));
+  assert.deepEqual(f.calls.sign[0], ['attest_receipt',
+    { id: 3, verdict: 'Approve', score: 85, reason_hash: reasonHash(['Clean history']) }]);
+});
+
+test('Reject verdict is still attested on-chain', async () => {
+  // customer == merchant trips a hard rule -> Reject, score 0, model never called
+  const f = fakes({ orders: [order(4, 'CustomerApproved', { customer: 'shop.testnet' })] });
+  const ev = await dir();
+  const s = await runOnce(base(f, ev));
+  assert.deepEqual(s.attested, [4]);
+  assert.equal(f.calls.complete, 0);
+  assert.equal(f.calls.sign[0][1].verdict, 'Reject');
+  assert.equal(f.calls.sign[0][1].score, 0);
+  const e = JSON.parse(await readFile(path.join(ev, '4.json'), 'utf8'));
+  assert.equal(e.verdict, 'Reject');
+  assert.deepEqual(e.reasons, ['Customer and merchant are the same account']);
+});
+
+test('low model score gives Reject and is attested', async () => {
+  const f = fakes({ orders: [order(5, 'CustomerApproved')], score: 20 });
+  const s = await runOnce(base(f, await dir()));
+  assert.deepEqual(s.attested, [5]);
+  assert.equal(f.calls.sign[0][1].verdict, 'Reject');
+  assert.equal(f.calls.sign[0][1].score, 20);
+});
+
+test('evidence file has the full record and no secrets', async () => {
+  const f = fakes({ orders: [order(7, 'CustomerApproved')] });
+  const ev = await dir();
+  await runOnce(base(f, ev));
+  const raw = await readFile(path.join(ev, '7.json'), 'utf8');
+  const e = JSON.parse(raw);
+  assert.equal(e.order_id, 7);
+  assert.equal(e.verdict, 'Approve');
+  assert.equal(e.score, 85);
+  assert.deepEqual(e.reasons, ['Clean history']);
+  assert.equal(e.reason_hash, reasonHash(['Clean history']));
+  assert.equal(e.model, 'test/model');
+  assert.equal(e.tx_hash, 'tx-attest_receipt-7');
+  assert.equal(e.agent, 'underwriter.x.testnet');
+  assert.ok(!Number.isNaN(Date.parse(e.timestamp)));
+  assert.doesNotMatch(raw, /ed25519:|private|NEARAI_API_KEY/i);
+});
+
+test('already evidenced order is skipped (no model call, no tx)', async () => {
+  const f = fakes({ orders: [order(8, 'CustomerApproved'), order(9, 'CustomerApproved')] });
+  const ev = await dir();
+  await writeFile(path.join(ev, '8.json'), '{"order_id":8}');
+  const s = await runOnce(base(f, ev));
+  assert.deepEqual(s.skipped, [8]);
+  assert.deepEqual(s.attested, [9]);
+  assert.deepEqual(f.calls.sign.map(([, a]) => a.id), [9]);
+  assert.equal(f.calls.complete, 1);
+  assert.equal(await readFile(path.join(ev, '8.json'), 'utf8'), '{"order_id":8}');
+});
+
+test('second pass is a no-op', async () => {
+  const f = fakes({ orders: [order(1, 'CustomerApproved')] });
+  const ev = await dir();
+  await runOnce(base(f, ev));
+  const s2 = await runOnce(base(f, ev));
+  assert.deepEqual(s2.attested, []);
+  assert.deepEqual(s2.skipped, [1]);
+  assert.equal(f.calls.sign.length, 1);
+});
+
+test('one failing order does not stop the others, and leaves no evidence', async () => {
+  const f = fakes({ orders: [order(1, 'CustomerApproved'), order(2, 'CustomerApproved'), order(3, 'CustomerApproved')], failSignFor: [2] });
+  const ev = await dir();
+  const s = await runOnce(base(f, ev));
+  assert.deepEqual(s.attested, [1, 3]);
+  assert.deepEqual(s.failed, [{ id: 2, error: 'Order is not customer-approved' }]);
+  assert.deepEqual((await readdir(ev)).sort(), ['1.json', '3.json']);
+});
+
+test('model failure falls back to Flag (still attested)', async () => {
+  const f = fakes({ orders: [order(1, 'CustomerApproved')], failModelFor: ['INV-1'] });
+  const ev = await dir();
+  await runOnce(base(f, ev));
+  assert.equal(f.calls.sign[0][1].verdict, 'Flag');
+  const e = JSON.parse(await readFile(path.join(ev, '1.json'), 'utf8'));
+  assert.equal(e.model_error, 'INFERENCE_HTTP_500');
+});
+
+test('pagination reads every page, including an exact multiple of the page size', async () => {
+  const orders = Array.from({ length: 6 }, (_, i) => order(i, 'Pending'));
+  const f = fakes({ orders });
+  const got = await fetchAll(f.view, 'get_orders', 3);
+  assert.deepEqual(got.map((o) => o.id), [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(f.calls.view.map(([, a]) => a.from_index), [0, 3, 6]);
+});
+
+test('tiers: set only when computed tier differs from on-chain', async () => {
+  const pools = [
+    { merchant: 'bad.testnet', status: 'Defaulted' },
+    { merchant: 'good.testnet', status: 'Repaid' },
+  ];
+  const f = fakes({ orders: [], pools, tiers: { 'bad.testnet': 'B', 'good.testnet': 'B' } });
+  const s = await runOnce({ ...base(f, await dir()), tiers: true });
+  assert.deepEqual(f.calls.sign, [['set_merchant_tier', { merchant: 'bad.testnet', tier: 'C' }]]);
+  assert.equal(s.tiers.length, 1);
+});
+
+test('config refuses mainnet and missing vars', () => {
+  const env = { CASHFLOW_CONTRACT: 'c.x.testnet', AGENT_ACCOUNT: 'a.x.testnet', AGENT_PRIVATE_KEY: 'k', NEARAI_API_KEY: 'k', NEARAI_MODEL: 'm' };
+  assert.equal(loadConfig(env).rpcUrl, 'https://test.rpc.fastnear.com');
+  assert.throws(() => loadConfig({ ...env, CASHFLOW_CONTRACT: 'c.near' }), /testnet only/);
+  assert.throws(() => loadConfig({ ...env, NEAR_RPC: 'https://rpc.mainnet.near.org' }), /testnet only/);
+  assert.throws(() => loadConfig({ ...env, AGENT_PRIVATE_KEY: '' }), /missing env: AGENT_PRIVATE_KEY/);
+});
