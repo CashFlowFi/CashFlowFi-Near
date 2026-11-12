@@ -2,12 +2,11 @@
 // junior position is sold with its payout still unclaimed. The new holder (carol) collects exactly
 // what is left; the old holders are refused. Writes evidence/nft-transfer-run.json.
 
-import { call, dep, ftBalance as balance, ftCall, view } from './lib/near.mjs';
+import { call, dep, fmt, ftBalance as balance, ftCall, view } from './lib/near.mjs';
 import { JUNIOR_INVESTOR, SENIOR_INVESTOR, fundPool, openPool, positionOf } from './lib/flow.mjs';
 import { createRun } from './lib/run.mjs';
 
-const AMOUNT = 10_000_000n; // 10 USDC: senior face 6.375, junior face 2.125, residual 1.5
-const HALF = AMOUNT / 2n;
+const AMOUNT = 10_000_000n; // 10 USDC receivable; faces follow the merchant tier
 const BUYER = dep.buyer ?? 'carol.cashflowfi.testnet';
 const { record, check, execute } = createRun('position NFT transfer mid-payout', 'evidence/nft-transfer-run.json');
 
@@ -38,13 +37,14 @@ await execute(async (run) => {
   const senior = (await positionOf(SENIOR_INVESTOR, poolId)).token_id;
   const junior = (await positionOf(JUNIOR_INVESTOR, poolId)).token_id;
 
-  record('customer pays half', (await ftCall(dep.customer, HALF, { pay: { order_id: orderId } })).hash);
-  await claimExactly(SENIOR_INVESTOR, senior, HALF, 'senior holder claims the first half');
+  const first = BigInt(pool.senior_face) / 2n; // pays half of the senior face, so the senior position is part-repaid
+  record(`customer pays ${fmt(first)}`, (await ftCall(dep.customer, first, { pay: { order_id: orderId } })).hash);
+  await claimExactly(SENIOR_INVESTOR, senior, first, 'senior holder claims the first payment');
   record(`senior NFT sold to ${BUYER}`, (await transfer(SENIOR_INVESTOR, senior)).hash);
 
-  record('customer pays the rest', (await ftCall(dep.customer, AMOUNT - HALF, { pay: { order_id: orderId } })).hash);
+  record('customer pays the rest', (await ftCall(dep.customer, AMOUNT - first, { pay: { order_id: orderId } })).hash);
   await expectRefusedClaim(SENIOR_INVESTOR, senior);
-  await claimExactly(BUYER, senior, BigInt(pool.senior_face) - HALF, 'new holder claims the senior remainder');
+  await claimExactly(BUYER, senior, BigInt(pool.senior_face) - first, 'new holder claims the senior remainder');
   check('senior claimed in total', (await view(dep.contract, 'get_position', { token_id: senior })).claimed, pool.senior_face);
 
   const juniorBefore = await balance(JUNIOR_INVESTOR);

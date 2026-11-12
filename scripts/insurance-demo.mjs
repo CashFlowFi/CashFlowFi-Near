@@ -11,7 +11,6 @@ import { createRun } from './lib/run.mjs';
 import { approveByCouncil, proposeApproveCover } from './dao.mjs';
 
 const AMOUNT = 10_000_000n; // 10 USDC receivable
-const PAID = 7_000_000n; // the customer pays 7, then goes silent
 const SEED = 3_000_000n; // insurance seeded by the owner
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const { record, check, execute } = createRun('default + DAO cover', 'evidence/insurance-run.json');
@@ -47,7 +46,9 @@ await execute(async (run) => {
   const due = BigInt(Date.now() + 150_000) * 1_000_000n; // room for the reminder pass before the due date
   const { orderId, poolId, pool } = await openPool(record, { amount: AMOUNT, dueNs: due, prefix: 'DFLT' });
   await fundPool(record, { poolId, pool });
-  record(`customer pays only ${fmt(PAID)}`, (await ftCall(dep.customer, PAID, { pay: { order_id: orderId } })).hash);
+  // Senior face plus a quarter of the junior face: senior is whole, junior is short, whatever the merchant tier.
+  const PAID = BigInt(pool.senior_face) + BigInt(pool.junior_face) / 4n;
+  record(`customer pays only ${fmt(PAID)}, then goes silent`, (await ftCall(dep.customer, PAID, { pay: { order_id: orderId } })).hash);
   record(`owner seeds insurance ${fmt(SEED)}`, (await ftCall(dep.owner, SEED, { seed_insurance: {} })).hash);
 
   const cover = [BigInt(pool.junior_face) / 2n, BigInt(pool.receivable) / 10n].reduce((a, b) => (a < b ? a : b));
