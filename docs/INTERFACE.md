@@ -116,6 +116,45 @@ Each event's `data` holds the relevant ids and amounts, for example:
 | `GET /api/pay/status?depositAddress=` | `{ status, originTx, destinationTx, nearTx, evidence }` |
 | `GET /api/agent/verdicts?order_id=` | `{ verdict, score, reasons[], attestation: { verified, model, report_url } }` |
 | `GET /api/ledger/payments` | Watcher ledger rows (CSV at `?format=csv`) |
+| `POST /api/invest/match` `{ intent, filters }` | Ranked tranche suggestions plus a `privacy` block (below) |
+
+### `POST /api/invest/match`: private pool matching
+
+The investor describes what they want in free text. The server reads open pools from chain (status `Funding` with room left in a tranche) and applies the filters in code. A NEAR AI model running in a TEE then ranks only the tranches that passed the filters. The intent is never stored or logged. The response is a suggestion: investing is still the investor's own `ft_transfer_call` with `msg = invest_msg`.
+
+```ts
+// Request. Unknown keys are rejected (400 MATCH_BODY / MATCH_FILTERS).
+{ intent: string;                     // 1..280 chars, untrusted data for the model
+  filters?: { tranche?: Tranche; max_usdc?: number; max_days?: number; min_tier?: Tier } } // min_tier "B" allows A and B
+
+// Response
+{ source: "model" | "fallback";
+  model_error: string | null;         // NO_CANDIDATES | MODEL_NOT_CONFIGURED | MODEL_NOT_JSON | MODEL_SHAPE | MODEL_PICK | MODEL_AMOUNT
+                                      // | MODEL_REASON | MODEL_NO_VALID_PICKS | TEE_NONCE_NOT_BOUND | TEE_QUOTE_REJECTED | INFERENCE_HTTP_<n> | ...
+  dropped: number;                    // model picks removed: unknown pool or tranche, or outside the filters
+  candidates: number;                 // tranches that passed the filters
+  filters: object;                    // as applied
+  suggestions: { rank: number; pool_id: number; tranche: Tranche;
+                 amount_usdc: number; amount: string;   // clamped to max_usdc and the tranche's remaining room
+                 reason: string; invest_msg: string }[]; // invest_msg = '{"invest":{"pool_id":1,"tranche":"Senior"}}'
+  privacy: { model: string | null;
+             nonce_bound: boolean;                // the attestation report echoed our fresh 32-byte nonce
+             signature_valid: boolean;            // ECDSA (EIP-191) signature over sha256(exact request bytes):sha256(exact response bytes)
+             signer_matches_attestation: boolean; // the recovered signer is the attested model signing_address
+             signature_kind: "provider_tee" | "gateway" | null;
+             gpu_attested: boolean;               // NVIDIA NRAS overall result true for the nonce-bound GPU evidence
+             tdx_quote_verified: boolean;         // Intel TDX quote verified (dcap-qvl), not debug, report_data = signer + nonce
+             verified_private: boolean;           // nonce_bound && signature_valid && signer_matches_attestation && kind = provider_tee
+             intent_stored: false;
+             not_verified: string[];              // checks this client does not perform
+             evidence?: { nonce, chat_id, attested_signers, tdx_tcb_status, request_sha256, response_sha256,
+                          signed_text, signature, signing_address } };
+  note: string }
+```
+
+- The model sees only public pool facts per tranche (pool id, tier, receivable, advance, face, target, room, days to due, lowest underwriter score of the pool's orders) and the intent.
+- If the model is unavailable, the TEE checks fail before the prompt is sent, or its answer fails the strict parse, the response is a **fallback** ranking: underwriter score (high first), then tier, then days to due, then pool id, Senior before Junior, each for as much as the filters and room allow.
+- Reproduce from the CLI: `npm run match -- "<intent>" --filters '{"tranche":"Senior"}' [--save]`. The live run is in `evidence/privacy/match-run.json`.
 
 ## Mock fixture (receivable 1,000 USDC, tier B)
 

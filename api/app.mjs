@@ -6,6 +6,8 @@ import * as tidepoolModule from '../watcher/tidepool.mjs';
 import { reasonHash } from '../agent/underwriter.mjs';
 import { DEFAULT_RPC, viewCall, txStatus, lookupTx } from './near.mjs';
 import { createFileStore, processDeposit } from '../watcher/forwarder.mjs';
+import { createMatchChat, loadPools, matchPools, parseMatchRequest } from '../agent/matcher.mjs';
+import { DEFAULT_MATCH_MODEL } from '../agent/tee.mjs';
 
 const EVM = /^0x[0-9a-fA-F]{40}$/;
 const MAX_BODY = 16 * 1024;
@@ -20,7 +22,7 @@ const PAY_INPUT_CODES = new Set(['PAY_UNSUPPORTED_ORIGIN', 'PAY_REFUND_ADDRESS',
 function mapError(e) {
   if (e instanceof HttpError) return e;
   const code = String(e?.message ?? 'INTERNAL');
-  if (PAY_INPUT_CODES.has(code)) return new HttpError(400, code);
+  if (PAY_INPUT_CODES.has(code) || code.startsWith('MATCH_')) return new HttpError(400, code);
   if (code === 'PAY_EXECUTION_DISABLED') return new HttpError(403, code);
   if (code.startsWith('PAY_') || code.startsWith('NEAR_') || e?.name === 'SyntaxError' || e?.name === 'TimeoutError')
     return new HttpError(502, code.startsWith('PAY_') || code.startsWith('NEAR_') ? code : 'UPSTREAM_BAD_RESPONSE', e?.detail);
@@ -56,6 +58,9 @@ export function createApp({
   fetchImpl = fetch,
   tidepool = tidepoolModule,
   now = () => Math.floor(Date.now() / 1000),
+  matchModel = process.env.MATCH_MODEL || DEFAULT_MATCH_MODEL,
+  // null -> deterministic fallback ranking. The intent is never stored or logged (agent/matcher.mjs).
+  matchChat = process.env.NEARAI_API_KEY ? createMatchChat({ apiKey: process.env.NEARAI_API_KEY, model: matchModel }) : null,
 } = {}) {
   const near = { rpcUrl, fetchImpl };
   const { TIDEPOOL } = tidepool;
@@ -159,6 +164,15 @@ export function createApp({
     return format === 'csv' ? { csv: toCsv(rows) } : rows;
   }
 
+  // ---- POST /api/invest/match ----
+  // Hard filters in code, then a TEE-verified ranking. A suggestion only: investing stays ft_transfer_call.
+  async function investMatch(body) {
+    needContract();
+    const request = parseMatchRequest(body);
+    const { pools, scores } = await loadPools((method, args) => viewCall(contractId, method, args, near));
+    return matchPools({ ...request, pools, scores, nowNs: BigInt(now()) * 1_000_000_000n, chat: matchChat, model: matchModel });
+  }
+
   async function readBody(req) {
     const ct = req.headers['content-type'] ?? '';
     if (!ct.startsWith('application/json')) throw new HttpError(415, 'CONTENT_TYPE');
@@ -172,6 +186,7 @@ export function createApp({
     'GET /api/pay/status': (req, url) => status(url.searchParams),
     'GET /api/agent/verdicts': (req, url) => verdicts(url.searchParams),
     'GET /api/ledger/payments': (req, url) => ledger(url.searchParams),
+    'POST /api/invest/match': async (req) => investMatch(await readBody(req)),
   };
 
   return async function handler(req, res) {
