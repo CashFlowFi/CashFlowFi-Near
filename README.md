@@ -29,6 +29,7 @@ Numbers from the testnet run (10 USDC receivable, tier B): advance 8, merchant n
 | NEP-171 | inside `cashflow` | Position NFTs; `metadata.media` is a live on-chain SVG card; `claim` pays the current owner |
 | Function-call access key | `agent.cashflowfi.testnet` | Agent key limited to `attest_receipt` and `set_merchant_tier` on the contract, 0 deposit |
 | NEAR AI Cloud | `agent/underwriter.mjs` | Chat completion at `cloud-api.near.ai` (model `Qwen/Qwen3.6-35B-A3B-FP8` in the runs) |
+| NEAR AI Cloud TEE (private inference) | `agent/matcher.mjs`, `agent/tee.mjs` | Private pool matching for investors; the TEE attestation and per-response signature are verified before a result is called private |
 | Sputnik DAO v2.3.1 | `dao.cashflowfi.testnet` | Council of 2, threshold 2 of 2; only the DAO can call `approve_cover` |
 | NEP-366 meta transactions | `relayer/` | Gasless relayer with a method allowlist, spend cap and rate limit |
 | Intents 1Click flow via Tidepool | `watcher/`, `scripts/tidepool.mjs` | Tidepool is a community testnet of the NEAR Intents 1Click flow; used because Intents has no testnet |
@@ -64,13 +65,14 @@ Contract `cashflow.cashflowfi.testnet`, token `usdc.tidepool-sandbox.testnet`. E
 
 | Flow | Evidence | Explorer |
 |---|---|---|
-| Deploy and init | `deployments/testnet.json` | [deploy](https://testnet.nearblocks.io/txns/8SDfWzNgR8ksbniwV5PrvA1jt9hCBSVZPKddrsAp3WEt), [SVG NFT upgrade](https://testnet.nearblocks.io/txns/GJBdWNTn9gicoQ6kGXLoM2DxAqUafJHDGyLSTT8xr58a) |
+| Deploy and init | `deployments/testnet.json` | [deploy](https://testnet.nearblocks.io/txns/8SDfWzNgR8ksbniwV5PrvA1jt9hCBSVZPKddrsAp3WEt), [SVG NFT upgrade](https://testnet.nearblocks.io/txns/GJBdWNTn9gicoQ6kGXLoM2DxAqUafJHDGyLSTT8xr58a), [current code](https://testnet.nearblocks.io/txns/HKxaGsbg3D1Kj28NYNUP28SHNRU6afFLRho7wtTg6iJu); on-chain code hash `DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9` equals `cargo near build non-reproducible-wasm` of this repo |
 | Happy path, customer pays on NEAR (order 4, pool 2) | `evidence/demo-run.json`, `evidence/attestations/4.json` | [agent attest](https://testnet.nearblocks.io/txns/2Scu7EPzbyxKjuMx3hx43j9mGAN2Wf5cSX8Eej9WWRoU), [payment + waterfall](https://testnet.nearblocks.io/txns/BwUcf7dbNBRRabkrm8PUTDLERBMYumV2CU3JEpU3EkGz) |
 | Happy path, customer pays from Arbitrum Sepolia via Tidepool (order 6, pool 4) | `evidence/demo-run-tidepool.json`, `evidence/payments/6.json` | [Arbitrum deposit](https://sepolia.arbiscan.io/tx/0xfdfc3c81711986ed7da85b1636aeca9a7cd9469917c2434f29ab96d5f4d6f88a), [forwarder pays order](https://testnet.nearblocks.io/txns/9ExMjG2TpeSEGVaSCD91Y2MuKAyQwNAZCYrZR2JB3DG5) |
 | Default, collections agent, Sputnik DAO cover (order 8, pool 5) | `evidence/insurance-run.json`, `evidence/defaults/5.json` | [mark_default](https://testnet.nearblocks.io/txns/PYvP8Dk3CoodZHfRVgDJ9znM5QgazAKrBUdopiaRzfw), [final DAO vote](https://testnet.nearblocks.io/txns/FbUmHdaSH8MxJ7h2Xc2LMYWBnDkwmPptNn1ukEk4PyL1) |
 | Funding demo accounts cross-chain via Tidepool | `evidence/funding/*.json` | [Arbitrum deposit](https://sepolia.arbiscan.io/tx/0xcc7a32e9712dfd2ede04483b3a70932c981133f3a06e99c82eba99921013f833), [NEAR delivery](https://testnet.nearblocks.io/txns/CCSoHhBbkGDEBurWsLqVb1VoQ6ZQszCVfZXJ2X6p5p28) |
 | On-chain attacks blocked by contract guards | `evidence/attacks/onchain.json` | [merchant self-approve](https://testnet.nearblocks.io/txns/6vD9XdhtxtAR54tkrffv3umK1pHA4ykYBocXdubcS46h), [spoofed deposit](https://testnet.nearblocks.io/txns/7SsPgdP8CQbENbfEWzjt4TUyp1KPfXSCMjFKL13wpkoG) |
 | Sputnik DAO deployed and wired | `deployments/testnet.json` | [DAO deploy](https://testnet.nearblocks.io/txns/9UTeteha2PXgeMSTAUZqXVtX1Dry3iu5VJXphJ2JbFkM) |
+| Private pool matching: NEAR AI TEE attestation (nonce, Intel TDX quote, NVIDIA GPU) and response signature verified | `evidence/privacy/match-run.json` | Re-check offline, no keys: `node scripts/verify-match.mjs` recomputes both hashes and recovers the attested signer |
 | Gasless calls via the NEP-366 relayer (order 9: merchant creates, customer approves; neither pays gas) | `evidence/relayer-run.json` | [create_order](https://testnet.nearblocks.io/txns/83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio), [approve_receipt](https://testnet.nearblocks.io/txns/Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG) |
 
 Read the state yourself (no keys needed):
@@ -89,7 +91,7 @@ Requirements: Node 22 or newer, then `npm ci`. For contracts: Rust stable (pinne
 
 | Run | See |
 |---|---|
-| `npm test` | `tests 114`, `pass 114`, `fail 0` (agent, API, watcher, forwarder, relayer, attack cases) |
+| `npm test` | `tests 141`, `pass 141`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
 | `cd contracts/cashflow && cargo test --tests` | every `test result: ok`: 13 sandbox tests across 7 files plus 2 unit tests (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
 | `npm run test:contracts` | `test result: ok. 14 passed` (pure pool engine) |
 | `npm run attacks` | 16 cases, each `[HELD]` with the defense; rewrites `evidence/attacks/offchain.json` |
@@ -124,7 +126,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | Attack suites | Off-chain in `npm test`; on-chain run on testnet |
 | API (`api/`) | Built and tested (`api/app.test.mjs`); not hosted |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
-| TEE attestation verification for inference | In progress. Not verified: `/api/agent/verdicts` returns `verified: false` when no attestation is recorded, and none is recorded yet |
+| Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). The underwriter verdicts are not TEE-verified yet: `/api/agent/verdicts` still returns `verified: false` |
 | Frontend | Not in this repo yet; built separately by another developer against `docs/INTERFACE.md` |
 
 ## Security
@@ -142,7 +144,8 @@ Attack demos with the defense that stopped each one: [`scripts/attacks/README.md
 - 9.974 USDC from the order 5 attempt, delivered by Tidepool with a plain `ft_transfer` before the forwarder existed, sits unallocated in the contract (`deployments/testnet.json` notes, `evidence/payments/5.json`).
 - Collections reminders use dry Tidepool quotes unless `TIDEPOOL_LIVE=1`.
 - Relayer rate limits, replay cache and spend cap are in memory and reset on restart.
-- The underwriter trusts the NEAR AI Cloud response; TEE attestation is not yet verified (see Build status). Hard rules run before and regardless of the model.
+- The underwriter trusts the NEAR AI Cloud response (only the investor matcher verifies the TEE so far). Hard rules run before and regardless of the model.
+- Private matching: the `cloud-api.near.ai` gateway terminates TLS and sees the intent in plaintext; the gateway attestation, RTMR3 event-log replay, `app_compose` measurement and the NRAS JWT signature are not verified and are listed under `not_verified` in every response. TDX collateral comes from Phala's PCCS via `@phala/dcap-qvl`.
 - The owner account can pause the contract and withdraw the treasury; the DAO council is two accounts controlled by the team.
 
 ## Disclosures

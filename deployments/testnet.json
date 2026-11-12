@@ -24,7 +24,8 @@
       "note": "approve_cover(999) via DAO vote passed the Only-the-DAO guard and failed at Pool not found",
       "final_vote": "95zHMGUvNmH2t3TKPiQ1PR8ZTtnHdpWeoy47FjH9Veds"
     },
-    "upgrade_svg_nft": "GJBdWNTn9gicoQ6kGXLoM2DxAqUafJHDGyLSTT8xr58a"
+    "upgrade_svg_nft": "GJBdWNTn9gicoQ6kGXLoM2DxAqUafJHDGyLSTT8xr58a",
+    "upgrade_modular": "HKxaGsbg3D1Kj28NYNUP28SHNRU6afFLRho7wtTg6iJu"
   },
   "dao_contract": {
     "kind": "Sputnik DAO v2.3.1",
@@ -38,5 +39,6 @@
   "forwarder": "payments.cashflowfi.testnet",
   "notes": {
     "unallocated_usdc": "9.974 USDC sits unallocated in the contract: Tidepool order-5 delivery used plain ft_transfer (customRecipientMsg is accepted but not applied on Tidepool testnet). Payments now route through the forwarder."
-  }
+  },
+  "code_hash": "DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9"
 }
