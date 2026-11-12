@@ -15,7 +15,7 @@ Merchants who sell on credit wait 30 to 90 days for payment. Cashflow Fi finance
 5. Investors fund senior (75 %) and junior (25 %) of the advance with `ft_transfer_call`. Each investment mints a NEP-171 position NFT.
 6. When both tranches are full, the merchant receives the advance minus a 1 % fee (half to insurance, half to treasury).
 7. The customer pays from Arbitrum Sepolia through Tidepool, or directly on NEAR.
-8. The waterfall pays senior face, then junior face, then the merchant residual. Position owners `claim`; payouts follow the current NFT owner.
+8. The waterfall pays senior face, then junior face, then refills any insurance cover the pool received, then the merchant residual. Position owners `claim`; payouts follow the current NFT owner.
 9. After due date plus grace, anyone (here: the collections agent) calls `mark_default`. Insurance covers `min(50 % of junior face, 10 % of receivable)`. A cover above `dao_threshold` waits for `approve_cover` from the Sputnik DAO.
 
 Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D after 3 defaults, see below): advance 6, merchant net 5.94, senior 4.5 in / 4.78125 back, junior 1.5 in / 1.59375 back, merchant residual 3.625. Default run: customer paid 5.179687, cover 0.796875, senior got 4.78125, junior got 1.195312 (cover included). At tier B the same receivable gives advance 8 and senior/junior faces 6.375/2.125.
