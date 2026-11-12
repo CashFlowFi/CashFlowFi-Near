@@ -2,21 +2,140 @@
   "scenario": "default + DAO cover",
   "contract": "cashflow.cashflowfi.testnet",
   "dao": "dao.cashflowfi.testnet",
-  "started_at": "2026-11-12T13:44:18.703Z",
+  "started_at": "2026-11-12T13:46:37.854Z",
   "steps": [
     {
       "step": "1. merchant creates short-dated order",
-      "tx": "3Vu641ub5X5EMMPpowEU5iaPuyuSyJF7xyDAhoASpECc",
-      "explorer": "https://testnet.nearblocks.io/txns/3Vu641ub5X5EMMPpowEU5iaPuyuSyJF7xyDAhoASpECc"
+      "tx": "14sYdJX6Aop1ixNSMX1qvF7oDPiueVVzyM5jEB1VtzCT",
+      "explorer": "https://testnet.nearblocks.io/txns/14sYdJX6Aop1ixNSMX1qvF7oDPiueVVzyM5jEB1VtzCT"
     },
     {
       "step": "2. customer approves receipt",
-      "tx": "BYqWoyUomUdcUmw1gBmktwkLTDnxVoyehpFNyUqzKYR2",
-      "explorer": "https://testnet.nearblocks.io/txns/BYqWoyUomUdcUmw1gBmktwkLTDnxVoyehpFNyUqzKYR2"
+      "tx": "AxfvKt8LibkqTYSvVrccd8SchSvrWwTxj6euGX5bqEuD",
+      "explorer": "https://testnet.nearblocks.io/txns/AxfvKt8LibkqTYSvVrccd8SchSvrWwTxj6euGX5bqEuD"
+    },
+    {
+      "step": "3. agent attests Approve (score 100)",
+      "tx": "7s2ujpEWMCPo4u5f4pU4Q2GFVBLhDGZP6wT4hpgwzyx7",
+      "explorer": "https://testnet.nearblocks.io/txns/7s2ujpEWMCPo4u5f4pU4Q2GFVBLhDGZP6wT4hpgwzyx7"
+    },
+    {
+      "step": "4. merchant opens pool",
+      "tx": "HDa98djHh1dh5q9e1WqXuVHZSFzCQh2G73M6XCtie3mf",
+      "explorer": "https://testnet.nearblocks.io/txns/HDa98djHh1dh5q9e1WqXuVHZSFzCQh2G73M6XCtie3mf"
+    },
+    {
+      "step": "5a. senior investor funds",
+      "tx": "4ktPBGB6gBD21QYk4i6LBU9Wmx2jsGVfX8xQrAgKeL9e",
+      "explorer": "https://testnet.nearblocks.io/txns/4ktPBGB6gBD21QYk4i6LBU9Wmx2jsGVfX8xQrAgKeL9e"
+    },
+    {
+      "step": "5b. junior investor funds (activates, pays advance)",
+      "tx": "CqpUXMqufeFrwmSKESYHDjAwSkapQokv4Rw9MtnLTg88",
+      "explorer": "https://testnet.nearblocks.io/txns/CqpUXMqufeFrwmSKESYHDjAwSkapQokv4Rw9MtnLTg88"
+    },
+    {
+      "step": "6. customer pays only 7 USDC",
+      "tx": "Cf5QC6Sdp2MonmUhdpvuLMduNSgRHS9qutNwGedG4oaz",
+      "explorer": "https://testnet.nearblocks.io/txns/Cf5QC6Sdp2MonmUhdpvuLMduNSgRHS9qutNwGedG4oaz"
+    },
+    {
+      "step": "7. owner seeds insurance 3 USDC",
+      "tx": "Ep4CaGqKwu4oodhFpa5PMvmnP36jWwKs3S2dMDC64cGc",
+      "explorer": "https://testnet.nearblocks.io/txns/Ep4CaGqKwu4oodhFpa5PMvmnP36jWwKs3S2dMDC64cGc"
+    },
+    {
+      "step": "8. collections agent marks default",
+      "tx": "PYvP8Dk3CoodZHfRVgDJ9znM5QgazAKrBUdopiaRzfw",
+      "explorer": "https://testnet.nearblocks.io/txns/PYvP8Dk3CoodZHfRVgDJ9znM5QgazAKrBUdopiaRzfw",
+      "cover": "1000000",
+      "needs_dao": true
+    },
+    {
+      "step": "9a. council proposes approve_cover (proposal 1)",
+      "tx": "7vj3piCMAG2nbGezAAZPFAFaDr7tw1ytfGTSGUhMAWhU",
+      "explorer": "https://testnet.nearblocks.io/txns/7vj3piCMAG2nbGezAAZPFAFaDr7tw1ytfGTSGUhMAWhU"
+    },
+    {
+      "step": "9b. cashflowfi.testnet votes approve",
+      "tx": "7T2gk7tCx31quYjP5uz7xUr1v5FPP7GjKmcEy8vnBfv7",
+      "explorer": "https://testnet.nearblocks.io/txns/7T2gk7tCx31quYjP5uz7xUr1v5FPP7GjKmcEy8vnBfv7"
+    },
+    {
+      "step": "9b. alice.cashflowfi.testnet votes approve",
+      "tx": "FbUmHdaSH8MxJ7h2Xc2LMYWBnDkwmPptNn1ukEk4PyL1",
+      "explorer": "https://testnet.nearblocks.io/txns/FbUmHdaSH8MxJ7h2Xc2LMYWBnDkwmPptNn1ukEk4PyL1"
+    },
+    {
+      "step": "10a. senior holder claims",
+      "tx": "41HHK1RHLUsDN7YsrgT8mXvzHf9AtCWPhtotyAe4gtH5",
+      "explorer": "https://testnet.nearblocks.io/txns/41HHK1RHLUsDN7YsrgT8mXvzHf9AtCWPhtotyAe4gtH5"
+    },
+    {
+      "step": "10b. junior holder claims (includes cover)",
+      "tx": "78LUkkBthVW9Z4purUTt9WVP2DWzu59bcRQHkwZurbEb",
+      "explorer": "https://testnet.nearblocks.io/txns/78LUkkBthVW9Z4purUTt9WVP2DWzu59bcRQHkwZurbEb"
     }
   ],
-  "checks": [],
-  "ok": false,
-  "error": "Command failed: /Users/router/.local/share/fnm/node-versions/v24.11.0/installation/bin/node --env-file-if-exists=.env agent/run.mjs --once",
-  "finished_at": "2026-11-12T13:44:35.352Z"
+  "checks": [
+    {
+      "label": "pool status",
+      "got": "Defaulted",
+      "want": "Defaulted",
+      "ok": true
+    },
+    {
+      "label": "pending cover (waits for DAO)",
+      "got": "1000000",
+      "want": "1000000",
+      "ok": true
+    },
+    {
+      "label": "proposal status",
+      "got": "Approved",
+      "want": "Approved",
+      "ok": true
+    },
+    {
+      "label": "cover paid",
+      "got": "1000000",
+      "want": "1000000",
+      "ok": true
+    },
+    {
+      "label": "pending cover cleared",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    },
+    {
+      "label": "alice.cashflowfi.testnet claimable",
+      "got": "6375000",
+      "want": "6375000",
+      "ok": true
+    },
+    {
+      "label": "alice.cashflowfi.testnet received",
+      "got": "6375000",
+      "want": "6375000",
+      "ok": true
+    },
+    {
+      "label": "bob.cashflowfi.testnet claimable",
+      "got": "1625000",
+      "want": "1625000",
+      "ok": true
+    },
+    {
+      "label": "bob.cashflowfi.testnet received",
+      "got": "1625000",
+      "want": "1625000",
+      "ok": true
+    }
+  ],
+  "order_id": 8,
+  "pool_id": 5,
+  "proposal_id": 1,
+  "ok": true,
+  "finished_at": "2026-11-12T13:54:00.835Z"
 }
