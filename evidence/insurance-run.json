@@ -1,0 +1,22 @@
+{
+  "scenario": "default + DAO cover",
+  "contract": "cashflow.cashflowfi.testnet",
+  "dao": "dao.cashflowfi.testnet",
+  "started_at": "2026-11-12T13:44:18.703Z",
+  "steps": [
+    {
+      "step": "1. merchant creates short-dated order",
+      "tx": "3Vu641ub5X5EMMPpowEU5iaPuyuSyJF7xyDAhoASpECc",
+      "explorer": "https://testnet.nearblocks.io/txns/3Vu641ub5X5EMMPpowEU5iaPuyuSyJF7xyDAhoASpECc"
+    },
+    {
+      "step": "2. customer approves receipt",
+      "tx": "BYqWoyUomUdcUmw1gBmktwkLTDnxVoyehpFNyUqzKYR2",
+      "explorer": "https://testnet.nearblocks.io/txns/BYqWoyUomUdcUmw1gBmktwkLTDnxVoyehpFNyUqzKYR2"
+    }
+  ],
+  "checks": [],
+  "ok": false,
+  "error": "Command failed: /Users/router/.local/share/fnm/node-versions/v24.11.0/installation/bin/node --env-file-if-exists=.env agent/run.mjs --once",
+  "finished_at": "2026-11-12T13:44:35.352Z"
+}

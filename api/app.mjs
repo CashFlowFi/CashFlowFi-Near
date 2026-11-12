@@ -1,10 +1,11 @@
 // HTTP API for the frontend (docs/INTERFACE.md, "Off-chain APIs"). Node built-ins only.
 // createApp(deps) returns a node:http request handler; every external call goes through injected deps.
-import { mkdir, readFile, writeFile, appendFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import * as tidepoolModule from '../watcher/tidepool.mjs';
 import { reasonHash } from '../agent/underwriter.mjs';
-import { DEFAULT_RPC, viewCall, txStatus, payReceiptFromTx, paymentEvents } from './near.mjs';
+import { DEFAULT_RPC, viewCall, txStatus, lookupTx } from './near.mjs';
+import { createFileStore, processDeposit } from '../watcher/forwarder.mjs';
 
 const EVM = /^0x[0-9a-fA-F]{40}$/;
 const MAX_BODY = 16 * 1024;
@@ -47,6 +48,7 @@ export function toCsv(rows) {
 
 export function createApp({
   contractId = process.env.CASHFLOW_CONTRACT,
+  forwarder = process.env.FORWARDER_ACCOUNT,
   rpcUrl = process.env.NEAR_RPC || DEFAULT_RPC,
   live = process.env.TIDEPOOL_LIVE === '1',
   evidenceDir = join(import.meta.dirname, '..', 'evidence'),
@@ -57,16 +59,12 @@ export function createApp({
 } = {}) {
   const near = { rpcUrl, fetchImpl };
   const { TIDEPOOL } = tidepool;
-  const paths = {
-    ledger: join(evidenceDir, 'ledger', 'payments.jsonl'),
-    quote: (addr) => join(evidenceDir, 'quotes', `${addr.toLowerCase()}.json`),
-    payment: (id) => join(evidenceDir, 'payments', `${id}.json`),
-    attestation: (id) => join(evidenceDir, 'attestations', `${id}.json`),
-  };
+  const store = createFileStore(evidenceDir);
+  const paths = { attestation: (id) => join(evidenceDir, 'attestations', `${id}.json`) };
 
   const needContract = () => { if (!contractId) throw new HttpError(503, 'CASHFLOW_CONTRACT_NOT_SET'); };
+  const needForwarder = () => { needContract(); if (!forwarder) throw new HttpError(503, 'FORWARDER_ACCOUNT_NOT_SET'); };
   const readJson = async (p) => { try { return JSON.parse(await readFile(p, 'utf8')); } catch (e) { if (e.code === 'ENOENT') return null; throw e; } };
-  const writeJson = async (p, v) => { await mkdir(join(p, '..'), { recursive: true }); await writeFile(p, JSON.stringify(v, null, 2) + '\n'); };
   async function getOrder(id) {
     const order = await viewCall(contractId, 'get_order', { id }, near);
     if (!order) throw new HttpError(404, 'ORDER_NOT_FOUND');
@@ -77,14 +75,12 @@ export function createApp({
     if (!Number.isSafeInteger(n) || n <= 0) throw bad('ORDER_ID');
     return n;
   };
-  async function readLedger() {
-    let text; try { text = await readFile(paths.ledger, 'utf8'); } catch (e) { if (e.code === 'ENOENT') return []; throw e; }
-    return text.split('\n').filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
-  }
 
   // ---- POST /api/pay/quote ----
+  // Tidepool testnet ignores customRecipientMsg, so the quote delivers to the forwarder with a plain transfer and
+  // the order is bound in our own evidence. watcher/forwarder.mjs forwards it with {"pay":{"order_id":N}}.
   async function quote(body) {
-    needContract();
+    needForwarder();
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw bad('BODY');
     const orderId = parseOrderId(body.order_id);
     const origin = originKey(body.origin_asset, TIDEPOOL);
@@ -95,59 +91,44 @@ export function createApp({
     if (pool?.status !== 'Active') throw new HttpError(409, 'POOL_NOT_ACTIVE', pool?.status ?? null);
     const owed = BigInt(order.amount) - BigInt(order.paid);
     if (owed <= 0n) throw new HttpError(409, 'ORDER_ALREADY_PAID');
-    const request = tidepool.payQuoteRequest({ contractId, orderId, amount: owed.toString(), refundTo: body.refund_to, origin, dry: !live, now: now() });
-    const q = await tidepool.fetchPayQuote(request, { fetchImpl, allowExecution: live });
+    const request = tidepool.forwardQuoteRequest({ forwarder, amount: owed.toString(), refundTo: body.refund_to, origin, dry: !live, now: now() });
+    const q = await tidepool.fetchPayQuote(request, { fetchImpl, allowExecution: live, purpose: 'forward' });
     const deadline = q.response?.quote?.deadline ?? request.deadline;
     if (!request.dry) {
-      // Remembered so /api/pay/status checks the delivery against the exact request we signed off on.
-      await writeJson(paths.quote(q.depositAddress), { order_id: orderId, depositAddress: q.depositAddress, request, response: q.response, saved_at: new Date(now() * 1000).toISOString() });
+      // The binding deposit -> order, saved before any money moves. The forwarder acts only on these.
+      await store.saveBinding({ order_id: orderId, depositAddress: q.depositAddress, amountIn: q.amountIn, minAmountOut: q.minAmountOut,
+        request, response: q.response, source: 'api', saved_at: new Date(now() * 1000).toISOString() });
     }
     return { depositAddress: q.depositAddress, amountIn: q.amountIn, deadline, dry: request.dry, order_id: orderId, minAmountOut: q.minAmountOut };
   }
 
   // ---- GET /api/pay/status ----
+  // Read-only: provider status + our NEAR receipts + forwarder evidence. Only the forwarder writes.
+  const STATUS = { pending: 'pending', ready: 'forwarding', forwarding: 'forwarding', delivered: 'delivered', refunded: 'refunded', failed: 'failed', held: 'failed', ambiguous: 'ambiguous' };
   async function status(params) {
-    needContract();
+    needForwarder();
     const depositAddress = params.get('depositAddress');
     if (!EVM.test(depositAddress ?? '')) throw bad('PAY_DEPOSIT_ADDRESS');
-    const st = await tidepool.fetchStatus(depositAddress, { fetchImpl });
-    const saved = await readJson(paths.quote(depositAddress));
-    // Prefer our own saved request. The provider's echo is accepted only if it targets our contract; the
-    // on-chain check below then verifies receiver and msg independently.
-    const request = saved?.request ?? st?.quoteResponse?.quoteRequest;
-    if (!request || request.recipient !== contractId || typeof request.customRecipientMsg !== 'string') throw new HttpError(404, 'QUOTE_UNKNOWN');
-    let orderId; try { orderId = JSON.parse(request.customRecipientMsg).pay.order_id; } catch { throw new HttpError(404, 'QUOTE_UNKNOWN'); }
-    if (!Number.isSafeInteger(orderId) || orderId <= 0) throw new HttpError(404, 'QUOTE_UNKNOWN');
-
-    const originList = (st?.swapDetails?.originChainTxHashes ?? []).map((x) => (typeof x === 'string' ? x : x?.hash)).filter((h) => typeof h === 'string');
-    const originTx = originList[0] ?? null;
-    const candidates = tidepool.nearDestinationHashes(st);
-    let nearReceipt = { found: false }; let nearTx = null;
-    if (st?.status === 'SUCCESS') {
-      for (const h of candidates) {
-        const tx = await txStatus(h, TIDEPOOL.verifier, near);
-        const r = payReceiptFromTx(tx, { contractId, tokenId: TIDEPOOL.destinationToken });
-        if (r.found) { nearReceipt = r; nearTx = h; break; }
-      }
+    const binding = await store.readBinding(depositAddress);
+    if (!binding) throw new HttpError(404, 'QUOTE_UNKNOWN');
+    const deps = {
+      config: { contractId, forwarder, tokenId: TIDEPOOL.destinationToken }, store, now,
+      fetchStatus: (addr) => tidepool.fetchStatus(addr, { fetchImpl }),
+      txStatus: (h, sender) => txStatus(h, sender, near),
+      lookupTx: (h, sender) => lookupTx(h, sender, near),
+    };
+    let r;
+    try { r = await processDeposit(binding, deps, { forward: false, reverify: true }); } catch (e) {
+      if (e.message === 'BINDING_INVALID') throw new HttpError(404, 'QUOTE_UNKNOWN');
+      throw e;
     }
-    let c = tidepool.classifyPayment({ status: st, request, nearReceipt });
-    const events = nearReceipt.found ? paymentEvents(nearReceipt.logs, orderId) : [];
-    if (c.outcome === 'delivered' && events.length === 0) c = { outcome: 'ambiguous', evidence: c.evidence, reason: 'No payment_applied event for this order' };
-    const destinationTx = nearTx ?? candidates[0] ?? null;
-
-    if (c.outcome === 'delivered') {
-      const amount = events.reduce((s, e) => s + BigInt(e.amount), 0n).toString();
-      const row = { recorded_at: new Date(now() * 1000).toISOString(), order_id: orderId, amount, deposit_address: depositAddress, origin_tx: originTx, near_tx: nearTx, evidence: c.evidence };
-      const ledger = await readLedger();
-      if (!ledger.some((r) => r.near_tx === nearTx)) {
-        await mkdir(join(paths.ledger, '..'), { recursive: true });
-        await appendFile(paths.ledger, JSON.stringify(row) + '\n');
-        const file = (await readJson(paths.payment(orderId))) ?? { order_id: orderId, contract: contractId, payments: [] };
-        file.payments.push({ ...row, provider_status: st.status, destination_hashes: candidates, events, ft_on_transfer_receipt: nearReceipt.onTransferReceiptId });
-        await writeJson(paths.payment(orderId), file);
-      }
-    }
-    return { status: c.outcome, originTx, destinationTx, nearTx: c.outcome === 'delivered' ? nearTx : null, evidence: c.evidence, ...(c.reason ? { reason: c.reason } : {}) };
+    const rec = r.record ?? {};
+    const st = STATUS[r.outcome] ?? 'ambiguous';
+    const reason = r.outcome === 'ready' ? 'AWAITING_FORWARD: delivered to the forwarder, not yet paid into the contract' : rec.reason;
+    return {
+      status: st, originTx: rec.origin_tx ?? null, destinationTx: rec.delivery_tx ?? rec.destination_hashes?.[0] ?? null,
+      nearTx: st === 'delivered' ? rec.forward_tx : null, evidence: rec.evidence ?? 'provider-claim-only', ...(reason ? { reason } : {}),
+    };
   }
 
   // ---- GET /api/agent/verdicts ----
@@ -174,7 +155,7 @@ export function createApp({
   async function ledger(params) {
     const format = params.get('format');
     if (format !== null && format !== 'csv' && format !== 'json') throw bad('FORMAT');
-    const rows = await readLedger();
+    const rows = await store.readLedger();
     return format === 'csv' ? { csv: toCsv(rows) } : rows;
   }
 

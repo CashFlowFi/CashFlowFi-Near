@@ -1,0 +1,40 @@
+{
+  "order_id": 6,
+  "contract": "cashflow.cashflowfi.testnet",
+  "forwarder": "payments.cashflowfi.testnet",
+  "payments": [
+    {
+      "order_id": 6,
+      "deposit_address": "0x3bF90a209B221D7b1bbE6BE53e9803a09F6C7895",
+      "origin_tx": "0xfdfc3c81711986ed7da85b1636aeca9a7cd9469917c2434f29ab96d5f4d6f88a",
+      "min_amount_out": "1974852",
+      "provider_status": "SUCCESS",
+      "delivery_id": "BMa9iNoUcdgC87c1NZ2iPwJik7JCAtY3z1Lr5hmjdyHM-DCMzGzvoLKUTjFEsVh4PRmCNS6gwyz75gHWYXwiAgATT",
+      "delivery_tx": "BMa9iNoUcdgC87c1NZ2iPwJik7JCAtY3z1Lr5hmjdyHM",
+      "delivery_receipt": "DCMzGzvoLKUTjFEsVh4PRmCNS6gwyz75gHWYXwiAgATT",
+      "delivered_amount": "1994800",
+      "evidence": "provider-linked-near-receipt",
+      "stage": "delivered",
+      "forward_tx": "9ExMjG2TpeSEGVaSCD91Y2MuKAyQwNAZCYrZR2JB3DG5",
+      "contract": "cashflow.cashflowfi.testnet",
+      "forwarder": "payments.cashflowfi.testnet",
+      "claimed_at": "2026-11-12T13:45:12.000Z",
+      "applied_amount": "1994800",
+      "surplus_refunded_to_forwarder": "0",
+      "events": [
+        {
+          "pool_id": 4,
+          "order_id": 6,
+          "amount": "1994800",
+          "senior": "1275000",
+          "junior": "425000",
+          "merchant": "294800",
+          "insurance_refill": "0"
+        }
+      ],
+      "ft_on_transfer_receipt": "zNbKi2cJg7E34gmQ83CK4DjNogsHtY1BgyP1DjPUoC2",
+      "forward_explorer": "https://testnet.nearblocks.io/txns/9ExMjG2TpeSEGVaSCD91Y2MuKAyQwNAZCYrZR2JB3DG5",
+      "finished_at": "2026-11-12T13:45:12.000Z"
+    }
+  ]
+}

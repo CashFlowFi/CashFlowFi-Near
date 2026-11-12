@@ -36,6 +36,14 @@ export function txStatus(txHash, senderId, opts) {
   return rpc('EXPERIMENTAL_tx_status', { tx_hash: txHash, sender_account_id: senderId, wait_until: 'FINAL' }, opts);
 }
 
+/** txStatus, but null when the tx is unknown to the node (or the wait timed out). Other RPC errors throw. */
+export async function lookupTx(txHash, senderId, opts) {
+  try { return await txStatus(txHash, senderId, opts); } catch (e) {
+    if (e?.detail === 'UNKNOWN_TRANSACTION' || e?.name === 'TimeoutError') return null;
+    throw e;
+  }
+}
+
 const decodeJson = (b64) => { try { return JSON.parse(Buffer.from(b64, 'base64').toString('utf8')); } catch { return null; } };
 const calls = (r) => (r?.receipt?.Action?.actions ?? []).map((a) => a?.FunctionCall).filter(Boolean);
 const succeeded = (o) => !!o?.status && !('Failure' in o.status) && ('SuccessValue' in o.status || 'SuccessReceiptId' in o.status);
@@ -81,4 +89,48 @@ export function payReceiptFromTx(tx, { contractId, tokenId }) {
     receiverId: call.receiver_id, predecessorId: call.predecessor_id, method: 'ft_transfer_call',
     args, logs, onTransferReceiptId: onTransfer?.receipt_id ?? null,
   };
+}
+
+/**
+ * NEP-141 `ft_transfer` events emitted by `tokenId` itself in successful receipts of this tx, each tagged with
+ * the receipt that emitted it (a receipt id is unique on chain, so it identifies one delivery).
+ */
+export function ftTransfers(tx, tokenId) {
+  const out = [];
+  for (const o of tx?.receipts_outcome ?? []) {
+    if (o.outcome?.executor_id !== tokenId || !succeeded(o.outcome)) continue;
+    for (const l of o.outcome.logs ?? []) {
+      if (!l.startsWith('EVENT_JSON:')) continue;
+      let e; try { e = JSON.parse(l.slice('EVENT_JSON:'.length)); } catch { continue; }
+      if (e?.standard !== 'nep141' || e.event !== 'ft_transfer' || !Array.isArray(e.data)) continue;
+      for (const d of e.data) {
+        if (typeof d?.old_owner_id === 'string' && typeof d.new_owner_id === 'string' && /^[0-9]+$/.test(d.amount ?? ''))
+          out.push({ receiptId: o.id, old_owner_id: d.old_owner_id, new_owner_id: d.new_owner_id, amount: d.amount });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Check a forwarder tx: `forwarder` -> token.ft_transfer_call(receiver=contract, amount, msg={"pay":{"order_id":N}}),
+ * the contract's ft_on_transfer ran, and the contract itself logged payment_applied for that order.
+ * `refunded` is what the token sent back from the contract to the forwarder (surplus over the amount owed).
+ */
+export function forwardResultFromTx(tx, { contractId, tokenId, forwarder, orderId, amount }) {
+  const r = payReceiptFromTx(tx, { contractId, tokenId });
+  if (!r.found) return { ok: false, reason: 'NO_FT_TRANSFER_CALL', events: [], applied: '0', refunded: '0' };
+  const events = paymentEvents(r.logs, orderId);
+  const applied = events.reduce((s, e) => s + BigInt(e.amount), 0n);
+  const refunded = ftTransfers(tx, tokenId).filter((t) => t.old_owner_id === contractId && t.new_owner_id === forwarder)
+    .reduce((s, t) => s + BigInt(t.amount), 0n);
+  const checks = [
+    [r.predecessorId === forwarder, 'WRONG_SENDER'],
+    [r.args?.msg === JSON.stringify({ pay: { order_id: orderId } }), 'WRONG_MSG'],
+    [r.args?.amount === String(amount), 'WRONG_AMOUNT'],
+    [r.success, 'RECEIPT_FAILED'],
+    [events.length > 0, 'NO_PAYMENT_APPLIED'],
+  ];
+  const failed = checks.find(([ok]) => !ok);
+  return { ok: !failed, reason: failed?.[1] ?? null, events, applied: applied.toString(), refunded: refunded.toString(), onTransferReceiptId: r.onTransferReceiptId };
 }

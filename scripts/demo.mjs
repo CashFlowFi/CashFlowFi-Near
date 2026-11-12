@@ -9,6 +9,9 @@ import { ROOT, TGAS, call as rawCall, dep, explorer, fmt, ftBalance as balance, 
 
 const AMOUNT = BigInt(Math.round(Number(process.env.DEMO_USDC || '10') * 1e6)); // receivable
 const [investor1, investor2] = dep.investors;
+// DEMO_PAY=tidepool: the customer pays from Arbitrum Sepolia through Tidepool (needs EVM_PRIVATE_KEY).
+const VIA_TIDEPOOL = process.env.DEMO_PAY === 'tidepool';
+const OUT = VIA_TIDEPOOL ? 'evidence/demo-run-tidepool.json' : 'evidence/demo-run.json';
 
 const run = { network: 'testnet', contract: dep.contract, token: dep.token, started_at: new Date().toISOString(), steps: [] };
 
@@ -64,7 +67,29 @@ async function main() {
   check('merchant received advance - fee', (await balance(dep.merchant)) - merchant0, BigInt(pool.advance) - BigInt(pool.fee));
 
   const merchant1 = await balance(dep.merchant);
-  await ftCall('6. customer pays invoice (waterfall)', dep.customer, AMOUNT, { pay: { order_id: orderId } });
+  if (VIA_TIDEPOOL) {
+    console.log('… 6. customer pays from Arbitrum Sepolia through Tidepool (delivered to the forwarder, forwarded with ft_transfer_call)');
+    try {
+      execFileSync(process.execPath, ['--env-file-if-exists=.env', 'scripts/tidepool.mjs', 'pay', String(orderId), String(Number(AMOUNT) / 1e6)], { cwd: ROOT, stdio: 'inherit' });
+    } catch { /* outcome is read from the evidence below */ }
+    const pe = JSON.parse(readFileSync(path.join(ROOT, 'evidence/payments', `${orderId}.json`), 'utf8')).payments.at(-1);
+    run.steps.push({ step: '6a. Tidepool delivers to the forwarder (Arbitrum Sepolia -> NEAR)', origin_tx: pe.origin_tx,
+      origin_explorer: pe.origin_tx ? `https://sepolia.arbiscan.io/tx/${pe.origin_tx}` : null, deposit_address: pe.deposit_address,
+      tx: pe.delivery_tx ?? null, explorer: pe.delivery_tx ? explorer(pe.delivery_tx) : null, amount: pe.delivered_amount ?? null });
+    run.steps.push({ step: '6b. forwarder pays the order (ft_transfer_call {"pay"})', signer: dep.forwarder, method: `${dep.token}.ft_transfer_call`,
+      tx: pe.forward_tx ?? null, explorer: pe.forward_tx ? explorer(pe.forward_tx) : null, outcome: pe.stage, applied: pe.applied_amount ?? null,
+      surplus_to_forwarder: pe.surplus_refunded_to_forwarder ?? null, evidence: pe.evidence, ...(pe.reason ? { reason: pe.reason } : {}) });
+    if (pe.stage !== 'delivered') throw new Error(`Tidepool payment outcome ${pe.stage}${pe.reason ? ` (${pe.reason})` : ''}`);
+    console.log(`✓ 6. delivered ${pe.delivery_tx}, forwarded ${pe.forward_tx}  (Arbitrum ${pe.origin_tx})`);
+    // Exact-input quotes deliver slightly less than sent (route fee). The customer settles the rest on NEAR.
+    const o = await view(dep.contract, 'get_order', { id: orderId });
+    const rest = BigInt(o.amount) - BigInt(o.paid);
+    run.tidepool_delivered = o.paid;
+    if (rest > 0n) await ftCall(`6c. customer settles remaining ${fmt(rest)} on NEAR`, dep.customer, rest, { pay: { order_id: orderId } });
+  } else {
+    await ftCall('6. customer pays invoice (waterfall)', dep.customer, AMOUNT, { pay: { order_id: orderId } });
+  }
+  check('order status', (await view(dep.contract, 'get_order', { id: orderId })).status, 'Paid');
   const paid = await view(dep.contract, 'get_pool', { id: poolId });
   check('pool status', paid.status, 'Repaid');
   check('senior repaid', BigInt(paid.senior_repaid), BigInt(pool.senior_face));
@@ -93,6 +118,6 @@ try {
   process.exitCode = 1;
 } finally {
   mkdirSync(path.join(ROOT, 'evidence'), { recursive: true });
-  writeFileSync(path.join(ROOT, 'evidence/demo-run.json'), JSON.stringify(run, null, 2) + '\n');
-  console.log(`evidence/demo-run.json written (ok=${run.ok})`);
+  writeFileSync(path.join(ROOT, OUT), JSON.stringify(run, null, 2) + '\n');
+  console.log(`${OUT} written (ok=${run.ok})`);
 }

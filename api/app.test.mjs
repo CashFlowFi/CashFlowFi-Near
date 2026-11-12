@@ -7,43 +7,23 @@ import { join } from 'node:path';
 import * as realTidepool from '../watcher/tidepool.mjs';
 import { reasonHash } from '../agent/underwriter.mjs';
 import { createApp } from './app.mjs';
+import { createFileStore, processDeposit } from '../watcher/forwarder.mjs';
+import { FWD, DELIVERY_TX, FORWARD_TX, deliveryTx, forwardTx, binding as fwdBinding, providerStatus as fwdStatus } from '../watcher/forwarder.fixtures.mjs';
 
 const CONTRACT = 'cashflow.cfi.testnet';
 const RPC = 'http://rpc.fake';
 const TOKEN = 'usdc.tidepool-sandbox.testnet';
-const VERIFIER = 'verifier.tidepool-sandbox.testnet';
 const REFUND = '0x1903bddf6f73ee4aa8f66d170e7590d28cd3f8b9';
 const DEPOSIT = '0x0e54Cf33cEBBB71c4531C762f14E27bC29753428';
 const NEAR_HASH = '93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC';
-const EVM_HASH = '0x' + 'ab'.repeat(32);
 const NOW = 1_800_000_000;
-const b64 = (v) => Buffer.from(typeof v === 'string' ? v : JSON.stringify(v)).toString('base64');
 
 const order = (o = {}) => ({ id: 7, merchant: 'm.testnet', customer: 'c.testnet', amount: '1000000000', currency: 'USDC',
   due_date: '1', invoice_no: 'INV-7', customer_hash: 'h', status: 'Pooled', verdict: 'Approve', score: 82,
   reason_hash: null, paid: '400000000', pool_id: 1, created_at: '1', ...o });
 
-function payTx({ onTransferOk = true, logExecutor = CONTRACT, orderId = 7 } = {}) {
-  const log = `EVENT_JSON:${JSON.stringify({ standard: 'cashflow', version: '1.0.0', event: 'payment_applied',
-    data: [{ pool_id: 1, order_id: orderId, amount: '600000000', senior: '600000000', junior: '0', merchant: '0', insurance_refill: '0' }] })}`;
-  return {
-    status: { SuccessValue: '' },
-    receipts: [
-      { receipt_id: 'R1', predecessor_id: VERIFIER, receiver_id: TOKEN, receipt: { Action: { actions: [{ FunctionCall: {
-        method_name: 'ft_transfer_call', args: b64({ receiver_id: CONTRACT, amount: '600000000', msg: '{"pay":{"order_id":7}}' }) } }] } } },
-      { receipt_id: 'R2', predecessor_id: TOKEN, receiver_id: CONTRACT, receipt: { Action: { actions: [{ FunctionCall: {
-        method_name: 'ft_on_transfer', args: b64({ sender_id: VERIFIER, amount: '600000000', msg: '{"pay":{"order_id":7}}' }) } }] } } },
-    ],
-    receipts_outcome: [
-      { id: 'R1', outcome: { executor_id: TOKEN, logs: [], status: { SuccessReceiptId: 'R3' } } },
-      { id: 'R2', outcome: { executor_id: logExecutor, logs: [log],
-        status: onTransferOk ? { SuccessValue: b64('"0"') } : { Failure: { ActionError: {} } } } },
-    ],
-  };
-}
-
 /** Fake network: NEAR RPC + Tidepool. Records every call. */
-function fakeNet({ orders = { 7: order() }, pool = { id: 1, status: 'Active' }, status = null, tx = payTx(), quoteBody = null } = {}) {
+function fakeNet({ orders = { 7: order() }, pool = { id: 1, status: 'Active' }, status = null, txs = {}, quoteBody = null } = {}) {
   const calls = [];
   const json = (body, ok = true) => ({ ok, status: ok ? 200 : 500, json: async () => body, text: async () => JSON.stringify(body) });
   const fetchImpl = async (url, init = {}) => {
@@ -55,7 +35,10 @@ function fakeNet({ orders = { 7: order() }, pool = { id: 1, status: 'Active' }, 
         const v = params.method_name === 'get_order' ? (orders[args.id] ?? null) : params.method_name === 'get_pool' ? pool : null;
         return json({ jsonrpc: '2.0', result: { result: [...Buffer.from(JSON.stringify(v))] } });
       }
-      if (method === 'EXPERIMENTAL_tx_status') return json({ jsonrpc: '2.0', result: tx });
+      if (method === 'EXPERIMENTAL_tx_status') {
+        const hit = txs[params.tx_hash];
+        return json(hit ? { jsonrpc: '2.0', result: hit } : { jsonrpc: '2.0', error: { name: 'HANDLER_ERROR', cause: { name: 'UNKNOWN_TRANSACTION' } } });
+      }
     }
     calls.push({ url });
     if (url.includes('/v0/status')) return json(status);
@@ -67,7 +50,7 @@ function fakeNet({ orders = { 7: order() }, pool = { id: 1, status: 'Active' }, 
 
 async function serve(t, opts) {
   const evidenceDir = await mkdtemp(join(tmpdir(), 'cfi-api-'));
-  const app = createApp({ contractId: CONTRACT, rpcUrl: RPC, live: false, evidenceDir, now: () => NOW, ...opts });
+  const app = createApp({ contractId: CONTRACT, forwarder: FWD, rpcUrl: RPC, live: false, evidenceDir, now: () => NOW, ...opts });
   const server = createServer(app);
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   t.after(() => server.close());
@@ -101,7 +84,10 @@ test('quote: owed = amount - paid, dry by default, execution not allowed', async
   assert.equal(rec[0].request.amount, '600000000'); // not the full 1000000000
   assert.equal(rec[0].request.dry, true);
   assert.equal(rec[0].opts.allowExecution, false);
-  assert.equal(rec[0].request.customRecipientMsg, '{"pay":{"order_id":7}}');
+  // Forwarder route: Tidepool testnet ignores customRecipientMsg, so the quote delivers to the forwarder.
+  assert.equal(rec[0].request.recipient, FWD);
+  assert.equal('customRecipientMsg' in rec[0].request, false);
+  assert.equal(rec[0].opts.purpose, 'forward');
   assert.deepEqual(r.body, { depositAddress: null, amountIn: '600000000', deadline: rec[0].request.deadline, dry: true, order_id: 7, minAmountOut: '590000000' });
   assert.equal(r.headers.get('access-control-allow-origin'), '*');
 });
@@ -118,6 +104,8 @@ test('quote: live mode asks for a real quote and saves it for status checks', as
   const saved = JSON.parse(await readFile(join(evidenceDir, 'quotes', DEPOSIT.toLowerCase() + '.json'), 'utf8'));
   assert.equal(saved.order_id, 7);
   assert.equal(saved.request.amount, '600000000');
+  assert.equal(saved.request.recipient, FWD);
+  assert.equal(saved.minAmountOut, '590000000');
 });
 
 test('quote: input and state errors', async (t) => {
@@ -164,59 +152,95 @@ test('quote: real watcher module rejects an unsigned provider answer with 502', 
   assert.deepEqual([r.status, r.body.error], [502, 'PAY_SIGNATURE']);
 });
 
-function providerStatus(st = 'SUCCESS') {
-  const request = realTidepool.payQuoteRequest({ contractId: CONTRACT, orderId: 7, amount: '600000000', refundTo: REFUND, dry: false, now: NOW });
-  return { status: st, quoteResponse: { quoteRequest: request },
-    swapDetails: { originChainTxHashes: [{ hash: '0x' + 'cd'.repeat(32) }], destinationChainTxHashes: [{ hash: EVM_HASH }, { hash: NEAR_HASH }] } };
-}
+// ---- /api/pay/status: read-only view over provider status + NEAR receipts + forwarder evidence ----
 
-test('status: verified NEAR delivery is recorded once; RPC sees only the NEAR hash', async (t) => {
-  const net = fakeNet({ status: providerStatus() });
-  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
-  const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
-  assert.equal(r.status, 200);
-  assert.deepEqual(r.body, { status: 'delivered', originTx: '0x' + 'cd'.repeat(32), destinationTx: NEAR_HASH, nearTx: NEAR_HASH, evidence: 'provider-linked-near-receipt' });
-  const txCalls = net.calls.filter((c) => c.rpc === 'EXPERIMENTAL_tx_status');
-  assert.deepEqual(txCalls.map((c) => c.params.tx_hash), [NEAR_HASH]);
-  await call(`/api/pay/status?depositAddress=${DEPOSIT}`); // poll again: no duplicate row
-  const rows = (await readFile(join(evidenceDir, 'ledger', 'payments.jsonl'), 'utf8')).trim().split('\n').map((l) => JSON.parse(l));
-  assert.equal(rows.length, 1);
-  assert.equal(rows[0].order_id, 7);
-  assert.equal(rows[0].amount, '600000000');
-  const ev = JSON.parse(await readFile(join(evidenceDir, 'payments', '7.json'), 'utf8'));
-  assert.equal(ev.payments.length, 1);
-  assert.equal(ev.payments[0].ft_on_transfer_receipt, 'R2');
-});
+const FWD_TXS = { [DELIVERY_TX]: deliveryTx(), [FORWARD_TX]: forwardTx() };
 
-for (const [name, tx, why] of [
-  ['ft_on_transfer failed', payTx({ onTransferOk: false }), 'ambiguous'],
-  ['payment_applied logged by another account', payTx({ logExecutor: 'evil.testnet' }), 'ambiguous'],
-  ['payment_applied for a different order', payTx({ orderId: 8 }), 'ambiguous'],
-]) {
-  test(`status: provider SUCCESS but ${name} -> not delivered, nothing recorded`, async (t) => {
-    const net = fakeNet({ status: providerStatus(), tx });
-    const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
-    const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
-    assert.equal(r.body.status, why);
-    assert.equal(r.body.nearTx, null);
-    await assert.rejects(readFile(join(evidenceDir, 'ledger', 'payments.jsonl')), { code: 'ENOENT' });
+async function withBinding(evidenceDir, b = fwdBinding()) { await createFileStore(evidenceDir).saveBinding(b); }
+
+/** Run the real forwarder (fake chain) against the API's evidence dir. */
+async function forwardInto(evidenceDir, { sendThrows = false } = {}) {
+  let landed = false;
+  return processDeposit(fwdBinding(), {
+    config: { contractId: CONTRACT, forwarder: FWD, tokenId: TOKEN }, store: createFileStore(evidenceDir), now: () => NOW,
+    fetchStatus: async () => fwdStatus(), txStatus: async () => deliveryTx(),
+    lookupTx: async () => (landed ? forwardTx() : null), viewOrder: async () => ({ status: 'Pooled' }), ftBalance: async () => '595000000',
+    signForward: async () => ({ hash: FORWARD_TX, signedBase64: 'x', send: async () => { if (sendThrows) throw new Error('boom'); landed = true; } }),
   });
 }
 
-test('status: pending provider state skips the RPC; bad address and foreign quotes are refused', async (t) => {
-  const net = fakeNet({ status: providerStatus('PROCESSING') });
-  const { call } = await serve(t, { fetchImpl: net.fetchImpl });
+test('status: unknown deposit or a quote not on the forwarder route -> 404', async (t) => {
+  const net = fakeNet({ status: fwdStatus(), txs: FWD_TXS });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
+  assert.deepEqual([r.status, r.body.error], [404, 'QUOTE_UNKNOWN']);
+  await withBinding(evidenceDir, fwdBinding({ request: { ...fwdBinding().request, recipient: CONTRACT } }));
+  const r2 = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
+  assert.deepEqual([r2.status, r2.body.error], [404, 'QUOTE_UNKNOWN']);
+  const badAddr = await call('/api/pay/status?depositAddress=../../etc');
+  assert.deepEqual([badAddr.status, badAddr.body.error], [400, 'PAY_DEPOSIT_ADDRESS']);
+});
+
+test('status: provider pending skips the RPC', async (t) => {
+  const net = fakeNet({ status: fwdStatus('PROCESSING'), txs: FWD_TXS });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await withBinding(evidenceDir);
   const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
   assert.equal(r.body.status, 'pending');
   assert.equal(net.calls.some((c) => c.rpc === 'EXPERIMENTAL_tx_status'), false);
-  const badAddr = await call('/api/pay/status?depositAddress=../../etc');
-  assert.deepEqual([badAddr.status, badAddr.body.error], [400, 'PAY_DEPOSIT_ADDRESS']);
+});
 
-  const foreign = providerStatus(); foreign.quoteResponse.quoteRequest.recipient = 'someone-else.testnet';
-  const net2 = fakeNet({ status: foreign });
-  const s2 = await serve(t, { fetchImpl: net2.fetchImpl });
-  const r2 = await s2.call(`/api/pay/status?depositAddress=${DEPOSIT}`);
-  assert.deepEqual([r2.status, r2.body.error], [404, 'QUOTE_UNKNOWN']);
+test('status: delivered to the forwarder but not yet forwarded -> forwarding, never delivered; API writes nothing', async (t) => {
+  const net = fakeNet({ status: fwdStatus(), txs: FWD_TXS });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await withBinding(evidenceDir);
+  const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
+  assert.equal(r.body.status, 'forwarding');
+  assert.equal(r.body.nearTx, null);
+  assert.equal(r.body.destinationTx, DELIVERY_TX);
+  assert.match(r.body.reason, /AWAITING_FORWARD/);
+  assert.deepEqual(net.calls.filter((c) => c.rpc === 'EXPERIMENTAL_tx_status').map((c) => c.params.tx_hash), [DELIVERY_TX]);
+  await assert.rejects(readFile(join(evidenceDir, 'ledger', 'payments.jsonl')), { code: 'ENOENT' });
+  await assert.rejects(readFile(join(evidenceDir, 'payments', '7.json')), { code: 'ENOENT' });
+});
+
+test('status: forwarded with payment_applied -> delivered (re-verified on chain); ledger has one row', async (t) => {
+  const net = fakeNet({ status: fwdStatus(), txs: FWD_TXS });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await withBinding(evidenceDir);
+  assert.equal((await forwardInto(evidenceDir)).outcome, 'delivered');
+  const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
+  assert.deepEqual(r.body, { status: 'delivered', originTx: '0x' + 'cd'.repeat(32), destinationTx: DELIVERY_TX, nearTx: FORWARD_TX, evidence: 'provider-linked-near-receipt' });
+  assert.deepEqual(net.calls.filter((c) => c.rpc === 'EXPERIMENTAL_tx_status').map((c) => [c.params.tx_hash, c.params.sender_account_id]), [[FORWARD_TX, FWD]]);
+  const rows = (await call('/api/ledger/payments')).body;
+  assert.deepEqual(rows.map((x) => [x.order_id, x.amount, x.near_tx]), [[7, '595000000', FORWARD_TX]]);
+});
+
+test('status: recorded delivery whose forward tx lacks payment_applied on chain -> ambiguous', async (t) => {
+  const net = fakeNet({ status: fwdStatus(), txs: { ...FWD_TXS, [FORWARD_TX]: forwardTx({ orderId: 8, msgOrder: 7 }) } });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await withBinding(evidenceDir);
+  await forwardInto(evidenceDir);
+  const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
+  assert.equal(r.body.status, 'ambiguous');
+  assert.equal(r.body.nearTx, null);
+});
+
+test('status: forward claimed but unresolved -> forwarding', async (t) => {
+  const net = fakeNet({ status: fwdStatus(), txs: FWD_TXS });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await withBinding(evidenceDir);
+  assert.equal((await forwardInto(evidenceDir, { sendThrows: true })).outcome, 'forwarding');
+  const r = await call(`/api/pay/status?depositAddress=${DEPOSIT}`);
+  assert.equal(r.body.status, 'forwarding');
+  assert.equal(r.body.nearTx, null);
+});
+
+test('status: provider REFUNDED -> refunded', async (t) => {
+  const net = fakeNet({ status: fwdStatus('REFUNDED'), txs: FWD_TXS });
+  const { call, evidenceDir } = await serve(t, { fetchImpl: net.fetchImpl });
+  await withBinding(evidenceDir);
+  assert.equal((await call(`/api/pay/status?depositAddress=${DEPOSIT}`)).body.status, 'refunded');
 });
 
 test('verdicts: chain verdict, reasons only when they match the on-chain hash, no privacy claim', async (t) => {

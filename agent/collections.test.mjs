@@ -209,15 +209,16 @@ function apiHandler({ poolStatus = 'Active' } = {}) {
     seen.push({ request, opts });
     return { depositAddress: null, amountIn: request.amount, minAmountOut: '594000000', response: { quote: {} } };
   } };
-  return { handler: createApp({ contractId: CONTRACT, rpcUrl: RPC, live: false, evidenceDir: os.tmpdir(), fetchImpl, tidepool, now: () => 1_800_000_000 }), seen };
+  return { handler: createApp({ contractId: CONTRACT, forwarder: 'payments.x.testnet', rpcUrl: RPC, live: false, evidenceDir: os.tmpdir(), fetchImpl, tidepool, now: () => 1_800_000_000 }), seen };
 }
 
-test('quoter reuses /api/pay/quote: dry, owed amount, pay message for the order', async () => {
+test('quoter reuses /api/pay/quote: dry, owed amount, forwarder route', async () => {
   const { handler, seen } = apiHandler();
   const q = await createApiQuoter({ handler, refundTo: '0x1903bddf6f73ee4aa8f66d170e7590d28cd3f8b9' })(7);
   assert.equal(q.dry, true);
   assert.equal(q.amountIn, '600000000');
-  assert.equal(seen[0].request.customRecipientMsg, '{"pay":{"order_id":7}}');
+  assert.equal(seen[0].request.recipient, 'payments.x.testnet'); // forwarder route; the order is bound off-chain
+  assert.equal('customRecipientMsg' in seen[0].request, false);
   assert.equal(seen[0].opts.allowExecution, false);
 });
 

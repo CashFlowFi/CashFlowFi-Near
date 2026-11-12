@@ -1,0 +1,19 @@
+{
+  "order_id": 7,
+  "verdict": "Approve",
+  "score": 100,
+  "reasons": [
+    "Zero days to due date ensures immediate settlement.",
+    "On-chain confirmation by customer provides strong payment intent.",
+    "Low invoice amount ($10) minimizes financial exposure.",
+    "Merchant has clean repayment history with no defaults."
+  ],
+  "source": "model",
+  "model_error": null,
+  "reason_hash": "ad626c70eccffa0617323e0f71d9d2aa8764f48a280a345b14a379fad77b390a",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "contract": "cashflow.cashflowfi.testnet",
+  "agent": "agent.cashflowfi.testnet",
+  "tx_hash": "9yv4GQ1AMiTbrGQotT6DXJqCNDwzFfrvtLrexAyxz2YJ",
+  "timestamp": "2026-11-12T13:44:35.340Z"
+}

@@ -5,5 +5,5 @@ import { createApp } from './app.mjs';
 const port = Number(process.env.PORT || 8787);
 const live = process.env.TIDEPOOL_LIVE === '1';
 createServer(createApp()).listen(port, () => {
-  console.log(`cashflow api on :${port} contract=${process.env.CASHFLOW_CONTRACT || '(unset)'} quotes=${live ? 'LIVE' : 'dry'}`);
+  console.log(`cashflow api on :${port} contract=${process.env.CASHFLOW_CONTRACT || '(unset)'} forwarder=${process.env.FORWARDER_ACCOUNT || '(unset)'} quotes=${live ? 'LIVE' : 'dry'}`);
 });

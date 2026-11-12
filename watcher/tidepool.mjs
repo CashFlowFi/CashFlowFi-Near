@@ -1,6 +1,7 @@
 // Tidepool (community testnet of the Intents/1Click flow) for paying a Cashflow Fi invoice from another chain.
-// The destination is our NEAR contract itself: Tidepool withdraws with ft_transfer_call and
-// customRecipientMsg = {"pay":{"order_id":N}}, so the waterfall runs on arrival.
+// Tidepool testnet accepts customRecipientMsg but delivers with a plain ft_transfer (verified live, order 5),
+// so pay quotes deliver to a forwarder account (forwardQuoteRequest) and watcher/forwarder.mjs moves the
+// verified delivery into the contract with ft_transfer_call {"pay":{"order_id":N}}.
 // Lessons carried over from Wavefund: verify the quote signature, never trust provider SUCCESS alone,
 // the destination-hash list can mix NEAR and EVM hashes, and executable quotes are never auto-retried.
 import { createQuoteSignatureVerifier, stableStringify } from '../lib/quote-signature.mjs';
@@ -67,11 +68,20 @@ export function fundQuoteRequest({ recipient, ...rest }) {
   return req;
 }
 
+/**
+ * Pay quote for the forwarder route: deliver `amount` to `forwarder` with a plain transfer. The order binding
+ * lives in our own evidence (evidence/quotes/<depositAddress>.json), never in the request.
+ */
+export function forwardQuoteRequest({ forwarder, ...rest }) {
+  return fundQuoteRequest({ recipient: forwarder, ...rest });
+}
+
 /** Validate a provider response against the exact request we sent. Throws a code on any mismatch. */
 export function validatePayQuote(response, request, { now = Math.floor(Date.now() / 1000), purpose = 'pay' } = {}) {
+  check(['pay', 'fund', 'forward'].includes(purpose), 'PAY_PURPOSE');
   check(stableStringify(response?.quoteRequest) === stableStringify(request), 'PAY_REQUEST_CHANGED');
   check(verifySignature(response).valid, 'PAY_SIGNATURE');
-  const routeOk = purpose === 'fund'
+  const routeOk = purpose === 'fund' || purpose === 'forward'
     ? request.customRecipientMsg === undefined
     : typeof request.customRecipientMsg === 'string' && JSON.parse(request.customRecipientMsg).pay;
   check(request.recipientType === 'DESTINATION_CHAIN' && request.destinationAsset === TIDEPOOL.destinationAsset && routeOk, 'PAY_ROUTE');

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { payQuoteRequest, validatePayQuote, classifyPayment, nearDestinationHashes, payMessage, TIDEPOOL } from './tidepool.mjs';
+import { forwardQuoteRequest, payQuoteRequest, validatePayQuote, classifyPayment, nearDestinationHashes, payMessage, TIDEPOOL } from './tidepool.mjs';
 
 const base = { contractId: 'cashflow.cfi.testnet', orderId: 7, amount: '1000000000', refundTo: '0x1903bddf6f73ee4aa8f66d170e7590d28cd3f8b9', now: 1_800_000_000 };
 
@@ -56,4 +56,12 @@ test('delivered only when our NEAR receipt matches exactly', () => {
   assert.equal(classifyPayment({ status: { status: 'SUCCESS' }, request, nearReceipt: wrongMsg }).outcome, 'ambiguous');
   const noEvent = { ...good, logs: [] };
   assert.equal(classifyPayment({ status: { status: 'SUCCESS' }, request, nearReceipt: noEvent }).outcome, 'ambiguous');
+});
+
+test('forwarder route: plain delivery to the forwarder, no msg; validated as purpose forward', () => {
+  const r = forwardQuoteRequest({ forwarder: 'payments.cfi.testnet', amount: '1000000', refundTo: base.refundTo, now: base.now });
+  assert.equal(r.recipient, 'payments.cfi.testnet');
+  assert.equal('customRecipientMsg' in r, false);
+  const response = { quoteRequest: r, quote: { amountIn: '1000000', amountOut: '999000', minAmountOut: '990000' }, timestamp: new Date(base.now * 1000).toISOString(), signature: 'ed25519:1111' };
+  assert.throws(() => validatePayQuote(response, r, { now: base.now, purpose: 'nope' }), /PAY_PURPOSE/);
 });

@@ -1,0 +1,155 @@
+{
+  "network": "testnet",
+  "contract": "cashflow.cashflowfi.testnet",
+  "token": "usdc.tidepool-sandbox.testnet",
+  "started_at": "2026-11-12T13:44:15.165Z",
+  "steps": [
+    {
+      "step": "1. merchant creates order",
+      "signer": "merchant.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.create_order",
+      "tx": "DsE8ty7Kft6PG7aoetwMRcEPMVtyMdhSW1dnhNXz3EGY",
+      "explorer": "https://testnet.nearblocks.io/txns/DsE8ty7Kft6PG7aoetwMRcEPMVtyMdhSW1dnhNXz3EGY"
+    },
+    {
+      "step": "2. customer approves receipt",
+      "signer": "customer.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.approve_receipt",
+      "tx": "2ou8eFcYYimwTVk8nXEzDBJJrFLJHunkAgZTZADqVfKz",
+      "explorer": "https://testnet.nearblocks.io/txns/2ou8eFcYYimwTVk8nXEzDBJJrFLJHunkAgZTZADqVfKz"
+    },
+    {
+      "step": "3. agent attests verdict on-chain",
+      "signer": "agent.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.attest_receipt",
+      "tx": "2N4QeUBR9XZddwr39pMigyvfcoZnkPS3nHkDUgXnyZ3z",
+      "explorer": "https://testnet.nearblocks.io/txns/2N4QeUBR9XZddwr39pMigyvfcoZnkPS3nHkDUgXnyZ3z",
+      "verdict": "Approve",
+      "score": 92,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8"
+    },
+    {
+      "step": "4. merchant opens pool",
+      "signer": "merchant.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.create_pool",
+      "tx": "2xYg7kKxmw5NVKLK3t6jtHTfsK5bf9Tv9aSmaedddQbP",
+      "explorer": "https://testnet.nearblocks.io/txns/2xYg7kKxmw5NVKLK3t6jtHTfsK5bf9Tv9aSmaedddQbP"
+    },
+    {
+      "step": "5a. investor funds senior tranche",
+      "signer": "alice.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "5H4CaU3zDbRqnThhXQNhEm2oY1XgcjcGWhE1Y6BBD2R2",
+      "explorer": "https://testnet.nearblocks.io/txns/5H4CaU3zDbRqnThhXQNhEm2oY1XgcjcGWhE1Y6BBD2R2"
+    },
+    {
+      "step": "5b. investor funds junior tranche (activates pool, pays advance)",
+      "signer": "bob.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "FbvbCqtFMmkVv1RTEpRPdYG4Hijw7uip5rF9AtrBykyh",
+      "explorer": "https://testnet.nearblocks.io/txns/FbvbCqtFMmkVv1RTEpRPdYG4Hijw7uip5rF9AtrBykyh"
+    },
+    {
+      "step": "6a. Tidepool delivers to the forwarder (Arbitrum Sepolia -> NEAR)",
+      "origin_tx": "0xfdfc3c81711986ed7da85b1636aeca9a7cd9469917c2434f29ab96d5f4d6f88a",
+      "origin_explorer": "https://sepolia.arbiscan.io/tx/0xfdfc3c81711986ed7da85b1636aeca9a7cd9469917c2434f29ab96d5f4d6f88a",
+      "deposit_address": "0x3bF90a209B221D7b1bbE6BE53e9803a09F6C7895",
+      "tx": "BMa9iNoUcdgC87c1NZ2iPwJik7JCAtY3z1Lr5hmjdyHM",
+      "explorer": "https://testnet.nearblocks.io/txns/BMa9iNoUcdgC87c1NZ2iPwJik7JCAtY3z1Lr5hmjdyHM",
+      "amount": "1994800"
+    },
+    {
+      "step": "6b. forwarder pays the order (ft_transfer_call {\"pay\"})",
+      "signer": "payments.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "9ExMjG2TpeSEGVaSCD91Y2MuKAyQwNAZCYrZR2JB3DG5",
+      "explorer": "https://testnet.nearblocks.io/txns/9ExMjG2TpeSEGVaSCD91Y2MuKAyQwNAZCYrZR2JB3DG5",
+      "outcome": "delivered",
+      "applied": "1994800",
+      "surplus_to_forwarder": "0",
+      "evidence": "provider-linked-near-receipt"
+    },
+    {
+      "step": "6c. customer settles remaining 0.0052 USDC on NEAR",
+      "signer": "customer.cashflowfi.testnet",
+      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
+      "tx": "F47cyW6pwjmJ9Cuf4Ni5T2h91FBNcjp8DbozmVzNEBqe",
+      "explorer": "https://testnet.nearblocks.io/txns/F47cyW6pwjmJ9Cuf4Ni5T2h91FBNcjp8DbozmVzNEBqe"
+    },
+    {
+      "step": "7a. senior holder claims",
+      "signer": "alice.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.claim",
+      "tx": "BvXhS1iVr2Bh7vQbUSKf7EzMLwhrKbvcD554iA4ATBoR",
+      "explorer": "https://testnet.nearblocks.io/txns/BvXhS1iVr2Bh7vQbUSKf7EzMLwhrKbvcD554iA4ATBoR"
+    },
+    {
+      "step": "7b. junior holder claims",
+      "signer": "bob.cashflowfi.testnet",
+      "method": "cashflow.cashflowfi.testnet.claim",
+      "tx": "6aAvbeED1PoEvrMHVSee2YMQ6nsTYQ3cZixebCt7CVnB",
+      "explorer": "https://testnet.nearblocks.io/txns/6aAvbeED1PoEvrMHVSee2YMQ6nsTYQ3cZixebCt7CVnB"
+    }
+  ],
+  "checks": [
+    {
+      "label": "pool status",
+      "got": "Active",
+      "want": "Active",
+      "ok": true
+    },
+    {
+      "label": "merchant received advance - fee",
+      "got": "1584000",
+      "want": "1584000",
+      "ok": true
+    },
+    {
+      "label": "order status",
+      "got": "Paid",
+      "want": "Paid",
+      "ok": true
+    },
+    {
+      "label": "pool status",
+      "got": "Repaid",
+      "want": "Repaid",
+      "ok": true
+    },
+    {
+      "label": "senior repaid",
+      "got": "1275000",
+      "want": "1275000",
+      "ok": true
+    },
+    {
+      "label": "junior repaid",
+      "got": "425000",
+      "want": "425000",
+      "ok": true
+    },
+    {
+      "label": "merchant residual",
+      "got": "300000",
+      "want": "300000",
+      "ok": true
+    },
+    {
+      "label": "alice.cashflowfi.testnet claim",
+      "got": "1275000",
+      "want": "1275000",
+      "ok": true
+    },
+    {
+      "label": "bob.cashflowfi.testnet claim",
+      "got": "425000",
+      "want": "425000",
+      "ok": true
+    }
+  ],
+  "tidepool_delivered": "1994800",
+  "order_id": 6,
+  "pool_id": 4,
+  "finished_at": "2026-11-12T13:45:40.690Z",
+  "ok": true
+}

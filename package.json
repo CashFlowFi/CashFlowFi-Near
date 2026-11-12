@@ -13,6 +13,7 @@
     "api": "node --env-file-if-exists=.env api/server.mjs",
     "agent": "node --env-file-if-exists=.env agent/run.mjs",
     "relayer": "node --env-file-if-exists=.env relayer/server.mjs",
+    "forwarder": "node --env-file-if-exists=.env watcher/forwarder.mjs --interval 15",
     "collections": "node --env-file-if-exists=.env agent/collections.mjs",
     "demo": "bash scripts/demo.sh",
     "attacks": "node scripts/attacks/prompt-injection.mjs",
