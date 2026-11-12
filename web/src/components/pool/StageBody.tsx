@@ -79,7 +79,7 @@ function ApprovedStage({ orders, state }: Props) {
 function UnderwrittenStage({ orders, state }: Props) {
   return (
     <>
-      <Head title="Underwritten" state={state} line="The AI underwriter scored the invoice and wrote its verdict on-chain." tip="Approve at 70 or more, Flag 40–69, Reject below 40. Only approved invoices can be pooled." />
+      <Head title="Underwritten by AI" state={state} line="The AI underwriter scored the invoice and wrote its verdict on-chain." tip="Approve at 70 or more, Flag 40–69, Reject below 40. Only approved invoices can be pooled." />
       <div className="space-y-6">{orders.map((o) => <VerdictCard key={o.id} order={o} />)}</div>
     </>
   );
@@ -101,7 +101,7 @@ function VerdictCard({ order }: { order: Order }) {
               : v.kind === "unavailable" ? <span key="u" className="text-muted">details unavailable ({v.reason})</span>
               : verified ? (
                 <span key="t" className="inline-flex items-center gap-2">
-                  <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">TEE verified</span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai"><span aria-hidden="true">◆</span>TEE verified</span>
                   {v.data.attestation?.report_url && <a className="text-xs underline" href={repoFileUrl(v.data.attestation.report_url)} target="_blank" rel="noreferrer">report</a>}
                 </span>
               ) : <span key="n" className="text-muted">not verified</span>,

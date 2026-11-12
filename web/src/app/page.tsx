@@ -1,38 +1,119 @@
 import Link from "next/link";
 import { FEATURED_POOL } from "@/lib/config";
+import { getAllOrders, getAllPools, getInsurance } from "@/lib/chain";
+import { sum } from "@/lib/amount";
+import { Usdc } from "@/components/ui";
 
-const STEPS = ["Invoice", "Approved", "AI underwritten", "Funded", "Paid", "Claimed"];
+export const revalidate = 30;
 
-export default function Welcome() {
+const STEPS = [
+  { k: "Invoice", ai: false },
+  { k: "Approved", ai: false },
+  { k: "AI underwriting", ai: true },
+  { k: "Funded", ai: false },
+  { k: "Paid", ai: false },
+  { k: "Claimed", ai: false },
+];
+
+const AGENTS = [
+  { title: "Underwriter", line: "Scores every invoice 0–100", href: "/agents" },
+  { title: "Collections", line: "Writes reminders, flags defaults", href: "/agents" },
+  { title: "Matching", line: "Finds a tranche for your intent", href: "/portfolio" },
+];
+
+async function stats() {
+  try {
+    const [pools, orders, ins] = await Promise.all([getAllPools(), getAllOrders(), getInsurance()]);
+    return {
+      pools: pools.length,
+      repaid: sum(...pools.map((p) => p.senior_repaid), ...pools.map((p) => p.junior_repaid)),
+      scored: orders.filter((o) => o.verdict !== null).length,
+      insurance: ins.balance,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function Welcome() {
+  const s = await stats();
   return (
-    <section className="flex flex-col items-center py-10 text-center sm:py-16">
-      <h1 className="max-w-5xl text-4xl leading-[0.95] text-balance sm:text-7xl">
-        Get paid today for invoices settled later
-      </h1>
-      <p className="mt-6 max-w-2xl text-base text-muted text-pretty">
-        Investors fund a merchant&apos;s <span className="font-semibold text-accent">AI-approved invoices</span> on NEAR and are repaid when the customer pays, from any chain.
-      </p>
-      <div className="mt-10 flex flex-wrap justify-center gap-3">
-        <Link href={`/pools/${FEATURED_POOL}`} className="flex items-center gap-6 border border-accent bg-accent px-5 py-3 text-sm font-medium text-accent-ink hover:opacity-90">
-          Explore a pool <span aria-hidden="true">↗</span>
-        </Link>
-        <Link href="/invoices" className="flex items-center gap-6 border border-ink px-5 py-3 text-sm font-medium hover:bg-sunken">
-          Open an invoice <span aria-hidden="true">→</span>
-        </Link>
-      </div>
-      <div className="grid-paper relative mt-14 w-full max-w-5xl border border-line px-4 py-10 sm:px-6">
-        <p className="absolute left-3 top-2 text-[11px] text-muted">How a pool moves</p>
-        <ol className="flex flex-col items-center gap-2 text-sm sm:flex-row sm:justify-center sm:gap-0">
-          {STEPS.map((s, i) => (
-            <li key={s} className="flex items-center">
-              {i > 0 && <span aria-hidden="true" className="mx-1.5 hidden h-px w-5 bg-ink/40 sm:block" />}
-              <span className={`whitespace-nowrap border px-2.5 py-1.5 ${s === "AI underwritten" ? "border-accent bg-accent text-accent-ink" : "border-ink bg-bg"}`}>
-                <span className="mr-1.5 text-[11px] opacity-70">0{i + 1}</span>{s}
-              </span>
+    <div className="relative">
+      <div aria-hidden="true" className="aurora pointer-events-none absolute left-1/2 -top-24 h-[560px] w-screen -translate-x-1/2" />
+      <div aria-hidden="true" className="halftone pointer-events-none absolute left-1/2 -top-16 h-[520px] w-screen -translate-x-1/2" />
+
+      <section className="relative grid items-center gap-10 py-10 sm:py-16 lg:grid-cols-[1fr_360px]">
+        <div>
+          <p className="eyebrow flex items-center gap-2">
+            <span className="pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-accent" /> Live on NEAR testnet
+          </p>
+          <h1 className="mt-4 text-[2.6rem] leading-[1.02] text-balance sm:text-6xl">
+            Get paid today for invoices settled <span className="text-accent">later</span>.
+          </h1>
+          <p className="mt-5 max-w-xl text-base text-muted text-pretty sm:text-lg">
+            Investors fund a merchant&apos;s <span className="text-ai">AI-approved</span> invoices and are repaid when the customer pays, from any chain.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={`/pools/${FEATURED_POOL}`} className="rounded-md bg-ink px-5 py-3 text-sm font-semibold text-bg hover:opacity-90">
+              Explore a pool
+            </Link>
+            <Link href="/invoices" className="rounded-md border border-line bg-surface px-5 py-3 text-sm font-semibold hover:bg-sunken">
+              Open an invoice
+            </Link>
+          </div>
+        </div>
+
+        <aside className="glass rounded-lg border border-line bg-surface p-6">
+          <p className="eyebrow">Protocol, live from chain</p>
+          <p className="num mt-3 text-4xl font-medium text-accent">
+            {s ? <Usdc value={s.repaid} unit={false} /> : "—"}
+            <span className="ml-2 font-sans text-sm font-normal text-muted">USDC repaid</span>
+          </p>
+          <dl className="mt-5 divide-y divide-line border-t border-line text-sm">
+            <Stat label="Pools opened" value={s ? String(s.pools) : "unavailable"} />
+            <Stat label="Invoices scored by AI" value={s ? String(s.scored) : "unavailable"} ai />
+            <Stat label="Insurance fund" value={s ? <Usdc value={s.insurance} /> : "unavailable"} />
+          </dl>
+        </aside>
+      </section>
+
+      <section aria-labelledby="flow" className="relative mt-4">
+        <h2 id="flow" className="eyebrow">How a pool moves</h2>
+        <ol className="ledger-grid mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
+          {STEPS.map((st, i) => (
+            <li key={st.k} className={`p-4 ${st.ai ? "bg-ai-soft" : "bg-surface"}`}>
+              <span className={`num text-xs ${st.ai ? "text-ai" : "text-muted"}`}>0{i + 1}</span>
+              <p className={`mt-1 text-sm font-medium ${st.ai ? "text-ai" : ""}`}>{st.k}</p>
             </li>
           ))}
         </ol>
-      </div>
-    </section>
+      </section>
+
+      <section aria-labelledby="ai" className="mt-10">
+        <h2 id="ai" className="eyebrow">Where AI works</h2>
+        <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+          {AGENTS.map((a) => (
+            <li key={a.title}>
+              <Link href={a.href} className="group block rounded-lg border border-line bg-surface p-4 hover:border-ai">
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <span aria-hidden="true" className="text-ai">◆</span>{a.title}
+                  <span aria-hidden="true" className="ml-auto text-muted transition-transform group-hover:translate-x-0.5">→</span>
+                </p>
+                <p className="mt-1 text-sm text-muted">{a.line}</p>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}
+
+function Stat({ label, value, ai = false }: { label: string; value: React.ReactNode; ai?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between py-3">
+      <dt className="text-muted">{label}</dt>
+      <dd className={`num ${ai ? "text-ai" : ""}`}>{value}</dd>
+    </div>
   );
 }

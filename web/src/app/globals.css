@@ -2,41 +2,56 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Palette, type and square corners follow the NEAR Hackathon site theme. */
+/*
+ * "Night Ledger": a calm near-black (or warm paper) base, glass cards and halftone glows,
+ * cream ink and mono numerals. Colour carries meaning: mint = money moving, violet = AI.
+ */
 :root {
-  --bg: #e9e1cd;
-  --surface: #eee7d6;
-  --sunken: #dcd2ba;
-  --line: #bdb199;
-  --ink: #322e25;
-  --muted: #655d4f;
-  --accent: #005fb0;
-  --accent-ink: #fff7e9;
-  --accent-soft: color-mix(in srgb, #005fb0 13%, #eee7d6);
-  --warn: #8a5300;
-  --warn-soft: color-mix(in srgb, #c98a1b 18%, #eee7d6);
-  --bad: #b53124;
-  --bad-soft: color-mix(in srgb, #b53124 13%, #eee7d6);
-  --dark-button: #322e25;
-  --dark-button-ink: #e9e1cd;
+  --bg: #f4f0e6;
+  --surface: #fbf8f1;
+  --sunken: #ece6d8;
+  --line: #ddd5c3;
+  --ink: #1c1b18;
+  --muted: #6b665b;
+  --accent: #0a8a5e;
+  --accent-ink: #f6fffa;
+  --accent-soft: color-mix(in srgb, #0a8a5e 12%, #fbf8f1);
+  --ai: #7a34d4;
+  --ai-ink: #fbf7ff;
+  --ai-soft: color-mix(in srgb, #7a34d4 11%, #fbf8f1);
+  --warn: #93590a;
+  --warn-soft: color-mix(in srgb, #e39b2d 17%, #fbf8f1);
+  --bad: #b93a45;
+  --bad-soft: color-mix(in srgb, #b93a45 11%, #fbf8f1);
+  --dark-button: #ece6d8;
+  --dark-button-ink: #1c1b18;
+  --glow-a: color-mix(in srgb, #0a8a5e 22%, transparent);
+  --glow-b: color-mix(in srgb, #7a34d4 18%, transparent);
+  --dot: color-mix(in srgb, #1c1b18 16%, transparent);
   color-scheme: light;
 }
 .dark {
-  --bg: #161a15;
-  --surface: #1c211a;
-  --sunken: #2c3327;
-  --line: #454d3d;
-  --ink: #e7dfca;
-  --muted: #b0b29d;
-  --accent: #0091fd;
-  --accent-ink: #181c16;
-  --accent-soft: color-mix(in srgb, #0091fd 18%, #1c211a);
-  --warn: #e3a64b;
-  --warn-soft: color-mix(in srgb, #e3a64b 16%, #1c211a);
-  --bad: #ff8b84;
-  --bad-soft: color-mix(in srgb, #ff8b84 14%, #1c211a);
-  --dark-button: #e7dfca;
-  --dark-button-ink: #161a15;
+  --bg: #08090a;
+  --surface: #111214;
+  --sunken: #191a1d;
+  --line: #26282c;
+  --ink: #f1ece1;
+  --muted: #9b978d;
+  --accent: #34e0a1;
+  --accent-ink: #03140d;
+  --accent-soft: color-mix(in srgb, #34e0a1 13%, #111214);
+  --ai: #b77bff;
+  --ai-ink: #140622;
+  --ai-soft: color-mix(in srgb, #b77bff 15%, #111214);
+  --warn: #ffbd5a;
+  --warn-soft: color-mix(in srgb, #ffbd5a 13%, #111214);
+  --bad: #ff8592;
+  --bad-soft: color-mix(in srgb, #ff8592 13%, #111214);
+  --dark-button: #191a1d;
+  --dark-button-ink: #f1ece1;
+  --glow-a: color-mix(in srgb, #34e0a1 20%, transparent);
+  --glow-b: color-mix(in srgb, #b77bff 22%, transparent);
+  --dot: color-mix(in srgb, #f1ece1 13%, transparent);
   color-scheme: dark;
 }
 
@@ -50,25 +65,23 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-ai: var(--ai);
+  --color-ai-ink: var(--ai-ink);
+  --color-ai-soft: var(--ai-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-bad: var(--bad);
   --color-bad-soft: var(--bad-soft);
   --color-dark-button: var(--dark-button);
   --color-dark-button-ink: var(--dark-button-ink);
-  --font-sans: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-display: Arial, Helvetica, sans-serif;
-  /* Square corners everywhere, like the reference theme. */
-  --radius-xs: 0;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-2xl: 0;
-  --radius-full: 0;
-  --shadow-sm: none;
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.12);
+  --font-display: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
+  --shadow-lg: 0 18px 40px -12px rgb(0 0 0 / 0.35);
 }
 
 body {
@@ -77,39 +90,76 @@ body {
   font-size: 15px;
 }
 
-/* Display headings: bold grotesk, tight tracking, upper case. */
 h1 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: -0.035em;
-  text-transform: uppercase;
 }
 h2,
 h3 {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+/* Numbers read as a ledger: mono, tabular. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
 }
 
+/* Small mono eyebrow labels. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 ::selection {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--ai);
+  color: var(--ai-ink);
 }
 
-.num {
-  font-variant-numeric: tabular-nums;
+/* Halftone dot field, faded at the edges. */
+.halftone {
+  background-image: radial-gradient(var(--dot) 1.1px, transparent 1.6px);
+  background-size: 11px 11px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 75%);
 }
-
-/* Graph-paper backdrop used on the welcome screen. */
-.grid-paper {
+/* Faint ledger grid. */
+.ledger-grid {
   background-image:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: -1px -1px;
+    linear-gradient(color-mix(in srgb, var(--line) 70%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--line) 70%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+/* Mint and violet glows behind the hero. */
+.aurora {
+  background:
+    radial-gradient(40% 55% at 22% 30%, var(--glow-a), transparent 70%),
+    radial-gradient(38% 50% at 80% 35%, var(--glow-b), transparent 70%);
+}
+/* Cards: solid surface with a hairline; glass in dark mode. */
+.dark .glass {
+  background: color-mix(in srgb, #ffffff 4%, transparent);
+  backdrop-filter: blur(14px);
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ai);
   outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pulse-dot {
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
 }

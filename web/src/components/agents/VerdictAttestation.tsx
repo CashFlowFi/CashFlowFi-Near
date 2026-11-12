@@ -10,7 +10,7 @@ export function VerdictAttestation({ orderId }: { orderId: number }) {
   if (v.data.attestation?.verified !== true) return <span className="text-muted">—</span>;
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
-      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">TEE verified</span>
+      <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai"><span aria-hidden="true">◆</span>TEE verified</span>
       {v.data.attestation.report_url && (
         <a className="text-xs underline" href={repoFileUrl(v.data.attestation.report_url)} target="_blank" rel="noreferrer">report</a>
       )}

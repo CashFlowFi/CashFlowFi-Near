@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { WalletButton } from "./wallet/WalletButton";
+import { LogoMark } from "./Logo";
 
 const LINKS = [
   { href: "/pools", label: "Pools" },
@@ -13,18 +14,17 @@ const LINKS = [
 export function Nav() {
   const path = usePathname();
   return (
-    <header className="border-b border-line bg-bg">
-      <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:h-20 sm:gap-6 sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-3">
-          <span aria-hidden="true" className="grid h-7 w-7 grid-cols-3 gap-[2px] bg-transparent">
-            {Array.from({ length: 9 }, (_, i) => (
-              <span key={i} className={[0, 2, 4, 6, 8].includes(i) ? "bg-accent" : "bg-line"} />
-            ))}
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-md">
+      <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <LogoMark />
+          <span className="hidden leading-none sm:block">
+            <span className="block text-[15px] font-semibold tracking-tight">Cashflow Fi</span>
+            <span className="block font-mono text-[10px] text-accent">on NEAR</span>
           </span>
-          <span className="hidden font-display text-lg font-bold tracking-tight sm:inline">Cashflow Fi</span>
           <span className="sr-only sm:hidden">Cashflow Fi home</span>
         </Link>
-        <div className="flex min-w-0 flex-1 items-center gap-1 sm:justify-center sm:gap-6">
+        <div className="flex min-w-0 flex-1 items-center gap-0.5 sm:justify-center sm:gap-2">
           {LINKS.map((l) => {
             const active = path === l.href || path.startsWith(l.href + "/");
             return (
@@ -32,7 +32,7 @@ export function Nav() {
                 key={l.href}
                 href={l.href}
                 aria-current={active ? "page" : undefined}
-                className={`px-1 py-1 text-[12px] sm:px-1.5 sm:text-[13px] font-medium underline-offset-[6px] ${active ? "text-accent underline decoration-2" : "text-ink hover:underline"}`}
+                className={`rounded-md px-2 py-1.5 text-[13px] sm:px-3 sm:text-sm ${active ? "bg-sunken text-ink" : "text-muted hover:text-ink"}`}
               >
                 {l.label}
               </Link>

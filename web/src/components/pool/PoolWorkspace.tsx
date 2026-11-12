@@ -194,6 +194,7 @@ function StageSelector({ stages, open, onOpen }: { stages: Stage[]; open: StageK
                   {s.state === "done" ? "✓" : s.state === "missed" ? "–" : ""}
                 </span>
                 {s.label}
+                {s.key === "underwritten" && <span className="rounded bg-ai-soft px-1 font-mono text-[10px] text-ai">AI</span>}
               </button>
             </div>
           );

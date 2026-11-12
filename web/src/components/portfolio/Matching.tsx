@@ -66,7 +66,7 @@ export function Matching() {
       {res && (
         <div className="mt-4 space-y-3">
           <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
-            {res.privacy.verified_private && <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent">Verified private (TEE)</span>}
+            {res.privacy.verified_private && <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 font-medium text-ai"><span aria-hidden="true">◆</span>Verified private (TEE)</span>}
             <span>{res.source === "model" ? `Ranked by ${res.privacy.model ?? "the model"}` : "Ranked by underwriter score, tier and term"}</span>
           </p>
           {res.suggestions.length === 0 ? (

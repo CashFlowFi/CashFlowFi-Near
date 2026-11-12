@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 const { tiers, reminders } = data as { tiers: TierChange[]; reminders: Reminder[] };
 const VERDICTS_SHOWN = 20;
 
-const TeeBadge = () => <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">TEE verified</span>;
+const TeeBadge = () => <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai"><span aria-hidden="true">◆</span>TEE verified</span>;
 const H2 = ({ children, tip }: { children: React.ReactNode; tip?: string }) => (
   <h2 className="flex items-center text-lg font-semibold">{children}{tip && <Info text={tip} />}</h2>
 );
