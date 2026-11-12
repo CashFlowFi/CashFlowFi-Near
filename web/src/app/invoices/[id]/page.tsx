@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getOrder } from "@/lib/chain";
+import { getOrder, getPool } from "@/lib/chain";
+import { InvoiceActions } from "@/components/actions/InvoiceActions";
 import { remaining } from "@/lib/amount";
 import { formatNs, shortHash } from "@/lib/format";
 import { Account, ErrorPanel, Rows, Usdc } from "@/components/ui";
@@ -28,11 +29,15 @@ export default async function InvoicePage({ params }: Props) {
     );
   }
   if (!order) notFound();
+  const pool = order.pool_id === null ? null : await getPool(order.pool_id).catch(() => null);
   return (
     <div className="max-w-2xl">
       <p className="text-sm text-muted"><Link href="/invoices" className="hover:text-ink">Invoices</Link> / #{order.id}</p>
       <h1 className="mt-1 text-2xl font-semibold tracking-tight">Invoice {order.invoice_no}</h1>
       <div className="mt-6 rounded-lg border border-line bg-surface p-5">
+        <InvoiceActions order={order} pool={pool} />
+      </div>
+      <div className="mt-4 rounded-lg border border-line bg-surface p-5">
         <Rows
           rows={[
             ["Status", order.status],

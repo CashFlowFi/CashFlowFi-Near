@@ -1,0 +1,237 @@
+{
+ "final_execution_status": "FINAL",
+ "receipts_outcome": [
+  {
+   "block_hash": "CnPyrp57b2uKuiMGm78Tkxw6DvtDjXTbyTTvFnp5A9kP",
+   "id": "BDC6d97qLXgi3ygwrxu56C7fftnLMnRVrUMpV1Uq37LZ",
+   "outcome": {
+    "executor_id": "cashflow.cashflowfi.testnet",
+    "gas_burnt": 1522282233720,
+    "logs": [],
+    "metadata": {
+     "contracts": [
+      {
+       "local": "DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9"
+      }
+     ],
+     "gas_profile": [
+      {
+       "cost": "BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "3971521665"
+      },
+      {
+       "cost": "CONTRACT_LOADING_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "35445963"
+      },
+      {
+       "cost": "CONTRACT_LOADING_BYTES",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "391339032405"
+      },
+      {
+       "cost": "READ_MEMORY_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "10439452800"
+      },
+      {
+       "cost": "READ_MEMORY_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "304106640"
+      },
+      {
+       "cost": "READ_REGISTER_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "12585825930"
+      },
+      {
+       "cost": "READ_REGISTER_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "54504786"
+      },
+      {
+       "cost": "SHA256_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "4540970250"
+      },
+      {
+       "cost": "SHA256_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "241173510"
+      },
+      {
+       "cost": "STORAGE_READ_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "112713691498"
+      },
+      {
+       "cost": "STORAGE_READ_KEY_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "1145243721"
+      },
+      {
+       "cost": "STORAGE_READ_VALUE_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "2721336940"
+      },
+      {
+       "cost": "UTF8_DECODING_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "3111779061"
+      },
+      {
+       "cost": "UTF8_DECODING_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "9622155807"
+      },
+      {
+       "cost": "WASM_INSTRUCTION",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "46574571648"
+      },
+      {
+       "cost": "WRITE_MEMORY_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "16822769166"
+      },
+      {
+       "cost": "WRITE_MEMORY_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "1549826268"
+      },
+      {
+       "cost": "WRITE_REGISTER_BASE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "14327612430"
+      },
+      {
+       "cost": "WRITE_REGISTER_BYTE",
+       "cost_category": "WASM_HOST_COST",
+       "gas_used": "2068050816"
+      }
+     ],
+     "version": 4
+    },
+    "receipt_ids": [
+     "9mUt5p9jJngGCqkzbrWaKqCLNnMNcizVYJyfZpnWzFvx"
+    ],
+    "status": {
+     "Failure": {
+      "ActionError": {
+       "index": 0,
+       "kind": {
+        "FunctionCallError": {
+         "ExecutionError": "Smart contract panicked: Merchant cannot approve own order"
+        }
+       }
+      }
+     }
+    },
+    "tokens_burnt": "152228223372000000000"
+   },
+   "proof": [
+    {
+     "direction": "Right",
+     "hash": "Hot7WucQR3FNx3S13SijCRPZoB29AJuu3Ebu1NXTzcPL"
+    }
+   ]
+  },
+  {
+   "block_hash": "7hf7SumRf8HJKW3FDsntyYc75qAej9QurSZadByCtZVB",
+   "id": "9mUt5p9jJngGCqkzbrWaKqCLNnMNcizVYJyfZpnWzFvx",
+   "outcome": {
+    "executor_id": "merchant.cashflowfi.testnet",
+    "gas_burnt": 223182562500,
+    "logs": [],
+    "metadata": {
+     "contracts": [
+      null
+     ],
+     "gas_profile": [],
+     "version": 4
+    },
+    "receipt_ids": [],
+    "status": {
+     "SuccessValue": ""
+    },
+    "tokens_burnt": "0"
+   },
+   "proof": [
+    {
+     "direction": "Right",
+     "hash": "HAr96dYqapcKd1qnMpSqEvUFMWKEKQ35me2N94zf5Nk4"
+    },
+    {
+     "direction": "Right",
+     "hash": "Gp2xJWLWAKm8R4VAZ7stGQ1SqQQvF5iYMZ4uQxAixLr"
+    }
+   ]
+  }
+ ],
+ "status": {
+  "Failure": {
+   "ActionError": {
+    "index": 0,
+    "kind": {
+     "FunctionCallError": {
+      "ExecutionError": "Smart contract panicked: Merchant cannot approve own order"
+     }
+    }
+   }
+  }
+ },
+ "transaction": {
+  "actions": [
+   {
+    "FunctionCall": {
+     "args": "eyJpZCI6NDF9",
+     "deposit": "0",
+     "gas": 30000000000000,
+     "method_name": "approve_receipt"
+    }
+   }
+  ],
+  "hash": "884CMUJyrEGm686LutqxLdiczchxd8E4Kjqscvk7SfC",
+  "nonce": 277359402000086,
+  "priority_fee": 0,
+  "public_key": "ed25519:3fzNkwUvbD1GBJVQL1XfWHJoQ5Ws2JCJvchERZLCsRKQ",
+  "receiver_id": "cashflow.cashflowfi.testnet",
+  "signature": "ed25519:3eUjGpwkmiztPmrNVp9jaUpnUUbgBsRiemHgE8Y2TguxNruKCr6TyucWaRhCZ5DYNFCjkfD5Zc3vGww41Ngrx2xd",
+  "signer_id": "merchant.cashflowfi.testnet"
+ },
+ "transaction_outcome": {
+  "block_hash": "5oZqpXBVrY5n95S5BnffFCokoUfTbJAD7VCvKKBYB5uF",
+  "id": "884CMUJyrEGm686LutqxLdiczchxd8E4Kjqscvk7SfC",
+  "outcome": {
+   "executor_id": "merchant.cashflowfi.testnet",
+   "gas_burnt": 309203909160,
+   "logs": [],
+   "metadata": {
+    "gas_profile": null,
+    "version": 1
+   },
+   "receipt_ids": [
+    "BDC6d97qLXgi3ygwrxu56C7fftnLMnRVrUMpV1Uq37LZ"
+   ],
+   "status": {
+    "SuccessReceiptId": "BDC6d97qLXgi3ygwrxu56C7fftnLMnRVrUMpV1Uq37LZ"
+   },
+   "tokens_burnt": "30920390916000000000"
+  },
+  "proof": [
+   {
+    "direction": "Left",
+    "hash": "GGkQHmotUvdesznWgnirY57qRFMfiev5nQk3HAVYb51n"
+   },
+   {
+    "direction": "Right",
+    "hash": "D9RTYcXKmFGbYsoGTcSRwywCpXHdb1FdxWW3BVx6py7E"
+   },
+   {
+    "direction": "Right",
+    "hash": "8q2TYNa4j5Hod2aXk9YprnYqUNgbXWUU3abqjmonL93y"
+   }
+  ]
+ }
+}

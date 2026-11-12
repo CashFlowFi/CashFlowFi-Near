@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
+import { WalletButton } from "./wallet/WalletButton";
 
 const LINKS = [
   { href: "/pools", label: "Pools" },
@@ -32,12 +33,7 @@ export function Nav() {
         })}
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle />
-          <span
-            className="hidden rounded-md border border-line px-3 py-1.5 text-sm text-muted sm:inline"
-            title="Not signed in. You are viewing as an observer."
-          >
-            Observer
-          </span>
+          <WalletButton />
         </div>
       </nav>
     </header>

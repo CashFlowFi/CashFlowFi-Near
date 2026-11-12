@@ -1,5 +1,5 @@
 // Read-only contract views over JSON-RPC. No wallet, no keys.
-import { CONTRACT, RPC_URL } from "./config";
+import { CONTRACT, RPC_URL, TOKEN } from "./config";
 import type { Config, Order, Pool, Position } from "./types";
 
 export class ChainError extends Error {}
@@ -78,4 +78,25 @@ export async function getAllOrders(): Promise<Order[]> {
     out.push(...page);
     if (page.length < 100) return out;
   }
+}
+
+
+export const getFtBalance = (accountId: string) => view<string>("ft_balance_of", { account_id: accountId }, TOKEN);
+export const isRegistered = async (accountId: string) =>
+  (await view<{ total: string } | null>("storage_balance_of", { account_id: accountId }, TOKEN)) !== null;
+export const getOrdersByMerchant = (merchant: string) => view<Order[]>("get_orders_by_merchant", { merchant });
+export const getPositionsByOwner = (owner: string) => view<Position[]>("get_positions_by_owner", { owner });
+export const getWithdrawable = (accountId: string) => view<string>("get_withdrawable", { account_id: accountId });
+export const getTier = (merchant: string) => view<import("./types").Tier>("get_tier", { merchant });
+
+/** Final outcome of a tx, used after a redirect wallet returns with ?transactionHashes=. */
+export async function txStatus(hash: string, sender: string): Promise<unknown> {
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: "cf", method: "tx", params: { tx_hash: hash, sender_account_id: sender, wait_until: "FINAL" } }),
+  });
+  const body = await res.json();
+  if (body.error) throw new ChainError(body.error?.cause?.name ?? "RPC error");
+  return body.result;
 }

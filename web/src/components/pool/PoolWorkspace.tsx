@@ -9,9 +9,11 @@ import type { ReceiptRun } from "@/lib/receipts";
 import { formatNs } from "@/lib/format";
 import { Account, Info, Rows, StatusBadge, Usdc } from "@/components/ui";
 import { StageBody } from "./StageBody";
+import { defaultRole, roleAction, type ActionKey, type Role } from "@/lib/roles";
+import { useWallet } from "@/components/wallet/WalletProvider";
+import { ClaimButton, InvestForm, PayForm, RetryAdvanceButton, SignInFor } from "@/components/actions/Actions";
 import { ReceiptsDrawer } from "./ReceiptsDrawer";
 
-export type Role = "observer" | "merchant" | "customer" | "investor";
 const ROLES: { key: Role; label: string }[] = [
   { key: "observer", label: "Observer" },
   { key: "merchant", label: "Merchant" },
@@ -32,7 +34,12 @@ export function PoolWorkspace(props: WorkspaceProps) {
   const router = useRouter();
   const view = useMemo(() => deriveStages(pool, orders, positions), [pool, orders, positions]);
   const [open, setOpen] = useState<StageKey>(view.open);
+  const { accountId } = useWallet();
   const [role, setRole] = useState<Role>("observer");
+  // Signing in picks the role this account plays on the pool; "View as" can still switch it.
+  // Only on sign-in changes, so the 15 s refresh never overrides the reader's choice.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setRole(defaultRole(accountId, pool, orders, positions)), [accountId, pool.id]);
   const [replaying, setReplaying] = useState(false);
   const [drawer, setDrawer] = useState(false);
 
@@ -249,11 +256,13 @@ function RoleSummary({ role, pool, orders, positions }: { role: Role } & Workspa
   );
 }
 
+const ACTION_LABEL: Record<ActionKey, string> = { invest: "Invest", claim: "Claim", pay: "Pay invoice", retry_advance: "Send advance" };
+
 function PrimaryAction({
   role, pool, orders, positions, settled, replaying, onReplay,
 }: { role: Role; settled: boolean; replaying: boolean; onReplay: () => void } & WorkspaceProps) {
-  const btn = "w-full rounded-md px-4 py-2.5 text-sm font-medium";
-  const primary = `${btn} bg-accent text-accent-ink hover:opacity-90`;
+  const { accountId } = useWallet();
+  const primary = "w-full rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-ink hover:opacity-90";
 
   if (role === "observer") {
     return settled ? (
@@ -265,24 +274,19 @@ function PrimaryAction({
     );
   }
 
-  let label: string | null = null;
-  if (role === "investor") {
-    if (pool.status === "Funding") label = "Invest";
-    else if (positions?.some((p) => toBig(p.claimable) > BigInt(0))) label = "Claim";
-  } else if (role === "customer") {
-    if (pool.status === "Active" && remaining(pool.receivable, sum(...orders.map((o) => o.paid))) > BigInt(0)) label = "Pay invoice";
-  } else if (role === "merchant") {
-    const full = toBig(pool.senior_funded) >= toBig(pool.senior_target) && toBig(pool.junior_funded) >= toBig(pool.junior_target);
-    if (pool.status === "Funding" && full) label = "Retry advance";
-  }
-
-  if (!label) return <p className="text-sm text-muted">Nothing to do as {role} at this stage.</p>;
-  return (
-    <>
-      <button type="button" disabled className={`${btn} cursor-not-allowed bg-accent/40 text-accent-ink`} aria-describedby="action-note">
-        {label}
+  const action = roleAction(role, pool, orders, positions, accountId);
+  if (!action) {
+    return settled ? (
+      <button type="button" onClick={onReplay} className={primary} aria-pressed={replaying}>
+        {replaying ? "Stop replay" : "Replay this pool"}
       </button>
-      <p id="action-note" className="mt-2 text-xs text-muted">Sign in with a NEAR testnet wallet to {label.toLowerCase()}.</p>
-    </>
-  );
+    ) : (
+      <p className="text-sm text-muted">The {role} is all set at this stage.</p>
+    );
+  }
+  if (!accountId) return <SignInFor label={ACTION_LABEL[action]} />;
+  if (action === "invest") return <InvestForm key={pool.id} pool={pool} accountId={accountId} />;
+  if (action === "pay") return <PayForm orders={orders} accountId={accountId} />;
+  if (action === "claim") return <ClaimButton positions={positions ?? []} accountId={accountId} />;
+  return <RetryAdvanceButton pool={pool} />;
 }
