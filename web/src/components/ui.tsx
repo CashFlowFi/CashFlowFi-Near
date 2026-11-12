@@ -24,7 +24,7 @@ export function Usdc({ value, unit = true }: { value: string | bigint; unit?: bo
   return (
     <span className="num whitespace-nowrap">
       {formatUsdc(value)}
-      {unit && <span className="ml-1 text-xs text-muted">USDC</span>}
+      {unit && <span className="ml-1 text-xs opacity-70">USDC</span>}
     </span>
   );
 }
@@ -71,11 +71,12 @@ export function Unavailable({ what }: { what?: string }) {
   return <span className="text-muted">{what ? `${what} unavailable` : "unavailable"}</span>;
 }
 
+/** Shown while NEAR RPC is unreachable; the technical detail stays small. */
 export function ErrorPanel({ title, detail }: { title: string; detail: string }) {
   return (
-    <div role="alert" className="rounded-lg border border-bad/40 bg-bad-soft p-4 text-sm">
-      <p className="font-medium text-bad">{title}</p>
-      <p className="mt-1 text-muted">{detail}</p>
+    <div role="status" className="rounded-lg border border-warn/40 bg-warn-soft p-4 text-sm">
+      <p className="font-medium text-warn">{title}</p>
+      <p className="mt-1 text-xs text-muted">Refresh in a moment. ({detail})</p>
     </div>
   );
 }

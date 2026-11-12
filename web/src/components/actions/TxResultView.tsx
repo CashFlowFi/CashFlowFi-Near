@@ -25,7 +25,7 @@ export function TxResultView({ results, onDismiss }: { results: TxResult[]; onDi
   return (
     <div role="status" className={`rounded-md border p-3 text-sm ${ok ? "border-accent/40 bg-accent-soft" : "border-warn/40 bg-warn-soft"}`}>
       <div className="flex items-start justify-between gap-2">
-        <p className={`font-medium ${ok ? "text-accent" : "text-warn"}`}>{ok ? "Confirmed on NEAR" : "Needs attention"}</p>
+        <p className={`font-medium ${ok ? "text-accent" : "text-warn"}`}>{ok ? "Confirmed on NEAR" : "Please review"}</p>
         {onDismiss && <button type="button" onClick={onDismiss} aria-label="Dismiss" className="text-muted hover:text-ink">✕</button>}
       </div>
       <ul className="mt-1 space-y-2">

@@ -68,6 +68,31 @@ export const retryAdvanceTx = (c: Contracts, poolId: number): TxSpec => ({
   calls: [{ method: "retry_advance", args: { pool_id: poolId }, gas: gas(300), deposit: "0" }],
 });
 
+export function createOrderTx(c: Contracts, o: { amount: bigint; currency: string; dueNs: string; invoiceNo: string; customerHash: string }): TxSpec {
+  return {
+    receiverId: c.cashflow,
+    calls: [{ method: "create_order", args: { amount: o.amount.toString(), currency: o.currency, due_date: o.dueNs, invoice_no: o.invoiceNo, customer_hash: o.customerHash }, gas: gas(30), deposit: "0" }],
+  };
+}
+
+export function createPoolTx(c: Contracts, orderIds: number[]): TxSpec {
+  if (orderIds.length < 1 || orderIds.length > 20) throw new Error("Select 1 to 20 invoices");
+  return { receiverId: c.cashflow, calls: [{ method: "create_pool", args: { order_ids: orderIds }, gas: gas(50), deposit: "0" }] };
+}
+
+export const withdrawResidualTx = (c: Contracts): TxSpec => ({
+  receiverId: c.cashflow,
+  calls: [{ method: "withdraw_residual", args: {}, gas: gas(300), deposit: "0" }],
+});
+
+export const nftTransferTx = (c: Contracts, receiverId: string, tokenId: string): TxSpec => ({
+  receiverId: c.cashflow,
+  calls: [{ method: "nft_transfer", args: { receiver_id: receiverId, token_id: tokenId }, gas: gas(30), deposit: ONE_YOCTO }],
+});
+
+/** NEAR account id rules (named or 64-hex implicit). */
+export const isAccountId = (s: string) => s.length >= 2 && s.length <= 64 && /^(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+$/.test(s);
+
 /**
  * Parse what a person typed ("1,000.5") into base units. Strict: at most `decimals` places,
  * no signs, no exponents. Returns null when the text is not a valid amount.
@@ -99,7 +124,7 @@ export interface CashflowEvent {
 export interface TxResult {
   hash: string | null;
   ok: boolean;
-  /** Friendly message when the transaction (or an inner receipt) failed. */
+  /** Friendly message when the transaction (or an inner receipt) did not complete. */
   error: string | null;
   /** For ft_transfer_call: amount sent, amount the contract kept, amount refunded. */
   transfer: { sent: bigint; used: bigint; refunded: bigint } | null;
@@ -126,10 +151,10 @@ function failureText(f: unknown): string {
 }
 
 const FRIENDLY: [RegExp, string][] = [
-  [/Merchant cannot approve own order/, "The merchant can't approve its own invoice. Sign in as the customer."],
+  [/Merchant cannot approve own order/, "Invoices are approved from the customer's account. Sign in as the customer."],
   [/Order is not pending/, "This invoice has already been approved."],
   [/Only the position owner can claim/, "Only the current holder of this position NFT can claim it."],
-  [/Nothing to claim/, "There is nothing to claim on this position right now."],
+  [/Nothing to claim/, "This position is fully claimed. New payouts appear here as payments arrive."],
   [/Pool not full/, "The pool is not fully funded yet."],
   [/Pool not funding/, "This pool is no longer taking investments."],
   [/Paused/, "The contract is paused."],
@@ -186,7 +211,7 @@ export function readOutcome(o: Outcome): TxResult {
   }
   // ft_on_transfer refunds instead of panicking, so "success" with nothing used means nothing happened.
   if (transfer && transfer.used === BigInt(0)) {
-    return { hash, ok: false, error: innerFailure ? friendlyError(innerFailure) : "The contract did not accept this transfer and refunded it in full.", transfer, events };
+    return { hash, ok: false, error: innerFailure ? friendlyError(innerFailure) : "The full amount was returned to your account and no change was made.", transfer, events };
   }
   return { hash, ok: true, error: null, transfer, events };
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
 import { WalletProvider } from "@/components/wallet/WalletProvider";
 import { ReturnedResults } from "@/components/actions/TxResultView";
 import "./globals.css";
@@ -22,16 +23,17 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className={`${sans.variable} ${mono.variable} min-h-dvh font-sans antialiased`}>
+      <body className={`${sans.variable} ${mono.variable} flex min-h-dvh flex-col font-sans antialiased`}>
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:bg-surface focus:px-3 focus:py-2">
           Skip to content
         </a>
         <WalletProvider>
           <Nav />
-          <main id="main" className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6">
+          <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-6 sm:px-6">
             <ReturnedResults />
             {children}
           </main>
+          <Footer />
         </WalletProvider>
       </body>
     </html>

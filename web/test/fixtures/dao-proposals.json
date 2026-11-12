@@ -1,0 +1,188 @@
+[
+ {
+  "id": 0,
+  "proposer": "cashflowfi.testnet",
+  "description": "Approve insurance cover for Cashflow Fi pool 999",
+  "kind": {
+   "FunctionCall": {
+    "receiver_id": "cashflow.cashflowfi.testnet",
+    "actions": [
+     {
+      "method_name": "approve_cover",
+      "args": "eyJwb29sX2lkIjo5OTl9",
+      "deposit": "0",
+      "gas": "50000000000000"
+     }
+    ]
+   }
+  },
+  "status": "Failed",
+  "vote_counts": {
+   "council": [
+    2,
+    0,
+    0
+   ]
+  },
+  "votes": {
+   "alice.cashflowfi.testnet": "Approve",
+   "cashflowfi.testnet": "Approve"
+  },
+  "submission_time": "1794485115143936089"
+ },
+ {
+  "id": 1,
+  "proposer": "cashflowfi.testnet",
+  "description": "Approve insurance cover for Cashflow Fi pool 5",
+  "kind": {
+   "FunctionCall": {
+    "receiver_id": "cashflow.cashflowfi.testnet",
+    "actions": [
+     {
+      "method_name": "approve_cover",
+      "args": "eyJwb29sX2lkIjo1fQ==",
+      "deposit": "0",
+      "gas": "50000000000000"
+     }
+    ]
+   }
+  },
+  "status": "Approved",
+  "vote_counts": {
+   "council": [
+    2,
+    0,
+    0
+   ]
+  },
+  "votes": {
+   "alice.cashflowfi.testnet": "Approve",
+   "cashflowfi.testnet": "Approve"
+  },
+  "submission_time": "1794491614191257524"
+ },
+ {
+  "id": 2,
+  "proposer": "cashflowfi.testnet",
+  "description": "Approve insurance cover for Cashflow Fi pool 9",
+  "kind": {
+   "FunctionCall": {
+    "receiver_id": "cashflow.cashflowfi.testnet",
+    "actions": [
+     {
+      "method_name": "approve_cover",
+      "args": "eyJwb29sX2lkIjo5fQ==",
+      "deposit": "0",
+      "gas": "50000000000000"
+     }
+    ]
+   }
+  },
+  "status": "Approved",
+  "vote_counts": {
+   "council": [
+    2,
+    0,
+    0
+   ]
+  },
+  "votes": {
+   "alice.cashflowfi.testnet": "Approve",
+   "cashflowfi.testnet": "Approve"
+  },
+  "submission_time": "1794495800282417696"
+ },
+ {
+  "id": 3,
+  "proposer": "cashflowfi.testnet",
+  "description": "Approve insurance cover for Cashflow Fi pool 13",
+  "kind": {
+   "FunctionCall": {
+    "receiver_id": "cashflow.cashflowfi.testnet",
+    "actions": [
+     {
+      "method_name": "approve_cover",
+      "args": "eyJwb29sX2lkIjoxM30=",
+      "deposit": "0",
+      "gas": "50000000000000"
+     }
+    ]
+   }
+  },
+  "status": "Approved",
+  "vote_counts": {
+   "council": [
+    2,
+    0,
+    0
+   ]
+  },
+  "votes": {
+   "alice.cashflowfi.testnet": "Approve",
+   "cashflowfi.testnet": "Approve"
+  },
+  "submission_time": "1794496587154948375"
+ },
+ {
+  "id": 4,
+  "proposer": "cashflowfi.testnet",
+  "description": "Approve insurance cover for Cashflow Fi pool 21",
+  "kind": {
+   "FunctionCall": {
+    "receiver_id": "cashflow.cashflowfi.testnet",
+    "actions": [
+     {
+      "method_name": "approve_cover",
+      "args": "eyJwb29sX2lkIjoyMX0=",
+      "deposit": "0",
+      "gas": "50000000000000"
+     }
+    ]
+   }
+  },
+  "status": "Approved",
+  "vote_counts": {
+   "council": [
+    2,
+    0,
+    0
+   ]
+  },
+  "votes": {
+   "cashflowfi.testnet": "Approve",
+   "alice.cashflowfi.testnet": "Approve"
+  },
+  "submission_time": "1794501751782756899"
+ },
+ {
+  "id": 5,
+  "proposer": "cashflowfi.testnet",
+  "description": "Approve insurance cover for Cashflow Fi pool 25",
+  "kind": {
+   "FunctionCall": {
+    "receiver_id": "cashflow.cashflowfi.testnet",
+    "actions": [
+     {
+      "method_name": "approve_cover",
+      "args": "eyJwb29sX2lkIjoyNX0=",
+      "deposit": "0",
+      "gas": "50000000000000"
+     }
+    ]
+   }
+  },
+  "status": "Approved",
+  "vote_counts": {
+   "council": [
+    2,
+    0,
+    0
+   ]
+  },
+  "votes": {
+   "alice.cashflowfi.testnet": "Approve",
+   "cashflowfi.testnet": "Approve"
+  },
+  "submission_time": "1794502672094626723"
+ }
+]

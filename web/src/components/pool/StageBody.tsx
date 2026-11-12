@@ -1,5 +1,5 @@
 "use client";
-import { remaining, sum, toBig } from "@/lib/amount";
+import { formatUsdc, remaining, sum, toBig } from "@/lib/amount";
 import { repoFileUrl } from "@/lib/config";
 import { formatDuration, formatNs, shortHash } from "@/lib/format";
 import type { StageKey, StageState } from "@/lib/stages";
@@ -13,12 +13,13 @@ type Props = WorkspaceProps & { stage: StageKey; state: StageState; settled: boo
 const STATE_PILL: Record<StageState, [string, string]> = {
   done: ["Done", "bg-accent-soft text-accent"],
   current: ["In progress", "bg-warn-soft text-warn"],
-  upcoming: ["Not reached", "bg-sunken text-muted"],
-  missed: ["Did not happen", "bg-bad-soft text-bad"],
+  upcoming: ["Upcoming", "bg-sunken text-muted"],
+  missed: ["Skipped", "bg-warn-soft text-warn"],
 };
 
-function Head({ title, state, line, tip }: { title: string; state: StageState; line: string; tip?: string }) {
-  const [text, cls] = STATE_PILL[state];
+function Head({ title, state, line, tip, pill }: { title: string; state: StageState; line: string; tip?: string; pill?: string }) {
+  const [base, cls] = STATE_PILL[state];
+  const text = pill ?? base;
   return (
     <div className="mb-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -159,7 +160,7 @@ function FundedStage({ pool, positions, state }: Props) {
           rows={[
             ["Advance", <Usdc key="a" value={pool.advance} />],
             ["Fee", <Usdc key="f" value={pool.fee} />],
-            ["Merchant received", state === "done" ? <Usdc key="r" value={toBig(pool.advance) - toBig(pool.fee)} /> : <span key="r" className="text-muted">not yet</span>],
+            ["Merchant received", state === "done" ? <Usdc key="r" value={toBig(pool.advance) - toBig(pool.fee)} /> : <span key="r" className="text-muted">after funding</span>],
             ["Position NFTs", positions ? positions.map((x) => x.token_id).join(", ") || "none yet" : <span key="u" className="text-muted">unavailable</span>],
           ]}
         />
@@ -174,13 +175,13 @@ function PaidStage({ pool, orders, state }: Props) {
   const line = state === "done"
     ? "The customer paid in full and the waterfall paid senior, then junior, then any insurance refill, then the merchant's residual."
     : state === "missed"
-      ? "The customer did not pay in full before the due date plus grace."
+      ? `The customer paid ${formatUsdc(paid)} of ${formatUsdc(pool.receivable)} USDC by the due date plus grace.`
       : state === "current"
         ? "Waiting for the customer to pay. Each payment runs the waterfall."
         : "Payment starts once the pool is funded.";
   return (
     <>
-      <Head title="Paid" state={state} line={line} tip="Payments arrive on NEAR directly or from another chain through Tidepool; both land through the token's ft_transfer_call." />
+      <Head title="Paid" state={state} pill={state === "missed" && paid > BigInt(0) ? "Partly paid" : undefined} line={line} tip="Payments arrive on NEAR directly or from another chain through Tidepool; both land through the token's ft_transfer_call." />
       <Rows
         rows={[
           ["Paid by customer", <span key="p"><Usdc value={paid} unit={false} /> / <Usdc value={pool.receivable} /></span>],
@@ -209,7 +210,7 @@ function CoverStage({ pool, config, state }: Props) {
     ? "The cover is above the DAO threshold and waits for the insurance DAO to approve it."
     : state === "done"
       ? aboveThreshold ? "The insurance DAO approved the cover and the fund paid investors." : "The insurance fund paid investors automatically."
-      : "No insurance cover was paid for this pool.";
+      : "This pool closed without an insurance cover payment.";
   return (
     <>
       <Head title="Insurance cover" state={state} line={line} tip="Cover is capped at the lower of 50% of the junior face and 10% of the receivable. Covers above the threshold need a Sputnik DAO vote." />
@@ -236,7 +237,7 @@ function ClaimedStage({ pool, positions, state, settled }: Props) {
     <>
       <Head title={settled ? "Result" : "Claimed"} state={state} line={line} tip="Payouts go to whoever holds the position NFT at claim time." />
       {positions === null ? (
-        <p className="text-sm text-muted">Positions unavailable: the NFT read from NEAR failed.</p>
+        <p className="text-sm text-muted">Positions are loading from NEAR. Refresh in a moment.</p>
       ) : positions.length === 0 ? (
         <p className="text-sm text-muted">No positions minted yet.</p>
       ) : (

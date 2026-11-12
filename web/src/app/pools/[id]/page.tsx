@@ -30,7 +30,7 @@ export default async function PoolPage({ params }: Props) {
     return (
       <>
         <h1 className="text-2xl font-semibold tracking-tight">Pool #{id}</h1>
-        <div className="mt-6"><ErrorPanel title="Could not read this pool from NEAR testnet" detail={(e as Error).message} /></div>
+        <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load this pool" detail={(e as Error).message} /></div>
       </>
     );
   }

@@ -1,0 +1,57 @@
+{
+ "tiers": [
+  {
+   "merchant": "merchant.cashflowfi.testnet",
+   "old_tier": "B",
+   "new_tier": "D",
+   "repaid_pools": 8,
+   "defaults": 3,
+   "reason": "Moved from tier B to tier D: 8 repaid pools and 3 defaults.",
+   "tx_hash": "BCSpFsXf2JLp1ikhngT2kPgE4dxCEadbPhfWL9QujKvE",
+   "timestamp": "2026-11-12T16:19:51.822Z",
+   "teeVerified": false,
+   "file": "evidence/tiers/merchant.cashflowfi.testnet.D.json"
+  }
+ ],
+ "reminders": [
+  {
+   "order_id": 43,
+   "pool_id": 25,
+   "invoice_no": "DFLT-1794502199115",
+   "customer": "customer.cashflowfi.testnet",
+   "amount_due": "4820313",
+   "subject": "Payment Reminder: Invoice DFLT-1794502199115",
+   "body": "Dear customer.cashflowfi.testnet,\n\nThis is a polite reminder that the payment for invoice DFLT-1794502199115 is now due. The total amount due is 4.820313 USDC.\n\nPlease complete your payment at your earliest convenience using the link below:\nhttp://localhost:3000/pay/43\n\nThank you for your business.",
+   "reminded_at": "2026-11-12T16:50:54.321Z",
+   "teeVerified": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "file": "evidence/collections/43.json"
+  },
+  {
+   "order_id": 36,
+   "pool_id": 21,
+   "invoice_no": "DFLT-1794501272150",
+   "customer": "customer.cashflowfi.testnet",
+   "amount_due": "4820313",
+   "subject": "Payment Reminder: Invoice DFLT-1794501272150",
+   "body": "Dear customer.cashflowfi.testnet,\n\nThis is a polite reminder that the payment for invoice DFLT-1794501272150 is now due. The amount due is 4.820313 USDC.\n\nPlease complete your payment at your earliest convenience using the link below:\nhttp://localhost:3000/pay/36\n\nThank you for your business.",
+   "reminded_at": "2026-11-12T16:35:26.457Z",
+   "teeVerified": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "file": "evidence/collections/36.json"
+  },
+  {
+   "order_id": 5,
+   "pool_id": 3,
+   "invoice_no": "DEMO-1794485753527",
+   "customer": "customer.cashflowfi.testnet",
+   "amount_due": "10000000",
+   "subject": "Reminder: Invoice DEMO-1794485753527 due soon",
+   "body": "Dear customer.cashflowfi.testnet,\n\nThis is a polite reminder that your invoice DEMO-1794485753527 for 10 USDC is due on 2026-12-12. There are 715 hours remaining.\n\nPlease complete your payment here: http://localhost:3000/pay/5\n\nThank you for your business.",
+   "reminded_at": "2026-11-12T16:19:43.837Z",
+   "teeVerified": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "file": "evidence/collections/5.json"
+  }
+ ]
+}

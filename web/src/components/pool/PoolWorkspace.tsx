@@ -150,9 +150,9 @@ const DOT: Record<Stage["state"], string> = {
   done: "bg-accent border-accent text-accent-ink",
   current: "border-warn bg-warn-soft text-warn",
   upcoming: "border-line bg-surface text-muted",
-  missed: "border-bad bg-bad-soft text-bad",
+  missed: "border-warn bg-warn-soft text-warn",
 };
-const STATE_TEXT: Record<Stage["state"], string> = { done: "done", current: "in progress", upcoming: "not reached", missed: "did not happen" };
+const STATE_TEXT: Record<Stage["state"], string> = { done: "done", current: "in progress", upcoming: "upcoming", missed: "skipped" };
 
 function StageSelector({ stages, open, onOpen }: { stages: Stage[]; open: StageKey; onOpen: (k: StageKey) => void }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -191,7 +191,7 @@ function StageSelector({ stages, open, onOpen }: { stages: Stage[]; open: StageK
                 className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors ${selected ? "border-ink bg-surface font-medium shadow-sm" : "border-transparent text-muted hover:text-ink"}`}
               >
                 <span aria-hidden="true" className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] font-bold ${DOT[s.state]}`}>
-                  {s.state === "done" ? "✓" : s.state === "missed" ? "×" : ""}
+                  {s.state === "done" ? "✓" : s.state === "missed" ? "–" : ""}
                 </span>
                 {s.label}
               </button>

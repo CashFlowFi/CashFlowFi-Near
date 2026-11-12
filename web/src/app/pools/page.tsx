@@ -16,7 +16,7 @@ export default async function PoolsPage() {
     return (
       <>
         <h1 className="text-2xl font-semibold tracking-tight">Pools</h1>
-        <div className="mt-6"><ErrorPanel title="Could not read pools from NEAR testnet" detail={(e as Error).message} /></div>
+        <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load pools" detail={(e as Error).message} /></div>
       </>
     );
   }

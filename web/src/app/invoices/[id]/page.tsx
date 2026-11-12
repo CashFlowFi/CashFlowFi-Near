@@ -24,7 +24,7 @@ export default async function InvoicePage({ params }: Props) {
     return (
       <>
         <h1 className="text-2xl font-semibold tracking-tight">Invoice #{raw}</h1>
-        <div className="mt-6"><ErrorPanel title="Could not read this invoice from NEAR testnet" detail={(e as Error).message} /></div>
+        <div className="mt-6"><ErrorPanel title="Waiting for NEAR testnet to load this invoice" detail={(e as Error).message} /></div>
       </>
     );
   }

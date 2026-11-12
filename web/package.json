@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "receipts": "node scripts/build-receipts.mjs",
-    "predev": "node scripts/build-receipts.mjs",
+    "receipts": "node scripts/build-receipts.mjs && node scripts/build-agent-evidence.mjs",
+    "predev": "node scripts/build-receipts.mjs && node scripts/build-agent-evidence.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/build-receipts.mjs",
+    "prebuild": "node scripts/build-receipts.mjs && node scripts/build-agent-evidence.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

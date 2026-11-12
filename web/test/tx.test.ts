@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- fixtures are raw RPC JSON */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -92,7 +93,7 @@ test("a fully refunded transfer is not reported as success", () => {
   const r = readOutcome(withSuccess(tx("invest-senior"), "0"));
   assert.equal(r.ok, false);
   assert.equal(r.transfer!.refunded, BigInt(4500000));
-  assert.match(r.error!, /refunded/);
+  assert.match(r.error!, /returned to your account/);
 });
 
 test("real claim and approve outcomes succeed without a transfer block", () => {
@@ -106,7 +107,7 @@ test("real claim and approve outcomes succeed without a transfer block", () => {
 test("real failures map to friendly messages", () => {
   const a = readOutcome(tx("fail-self-approve"));
   assert.equal(a.ok, false);
-  assert.equal(a.error, "The merchant can't approve its own invoice. Sign in as the customer.");
+  assert.equal(a.error, "Invoices are approved from the customer's account. Sign in as the customer.");
   assert.equal(readOutcome(tx("fail-claim-not-owner")).error, "Only the current holder of this position NFT can claim it.");
   assert.equal(friendlyError("something new"), "something new");
 });
