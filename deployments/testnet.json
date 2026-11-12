@@ -40,5 +40,6 @@
   "notes": {
     "unallocated_usdc": "9.974 USDC sits unallocated in the contract: Tidepool order-5 delivery used plain ft_transfer (customRecipientMsg is accepted but not applied on Tidepool testnet). Payments now route through the forwarder."
   },
-  "code_hash": "DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9"
+  "code_hash": "DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9",
+  "buyer": "carol.cashflowfi.testnet"
 }

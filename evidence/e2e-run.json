@@ -1,0 +1,91 @@
+{
+  "scenario": "end-to-end",
+  "network": "testnet",
+  "contract": "cashflow.cashflowfi.testnet",
+  "started_at": "2026-11-12T15:04:58.599Z",
+  "steps": [],
+  "checks": [
+    {
+      "label": "contract agent",
+      "got": "agent.cashflowfi.testnet",
+      "want": "agent.cashflowfi.testnet",
+      "ok": true
+    },
+    {
+      "label": "contract DAO",
+      "got": "dao.cashflowfi.testnet",
+      "want": "dao.cashflowfi.testnet",
+      "ok": true
+    },
+    {
+      "label": "contract token",
+      "got": "usdc.tidepool-sandbox.testnet",
+      "want": "usdc.tidepool-sandbox.testnet",
+      "ok": true
+    },
+    {
+      "label": "contract not paused",
+      "got": "false",
+      "want": "false",
+      "ok": true
+    },
+    {
+      "label": "on-chain code hash",
+      "got": "DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9",
+      "want": "DBZ1Z2v8DRqU8CGqitHas4bzFrAU1CUwYi4HpqCtPQZ9",
+      "ok": true
+    },
+    {
+      "label": "DAO is Sputnik",
+      "got": "2.3.1",
+      "want": "2.3.1",
+      "ok": true
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario": "happy path, customer pays on NEAR",
+      "evidence": "evidence/demo-run.json",
+      "fresh": true,
+      "pass": true
+    },
+    {
+      "scenario": "happy path, customer pays from Arbitrum via Tidepool + forwarder",
+      "evidence": "evidence/demo-run-tidepool.json",
+      "fresh": true,
+      "pass": true
+    },
+    {
+      "scenario": "position NFTs sold mid-payout",
+      "evidence": "evidence/nft-transfer-run.json",
+      "fresh": true,
+      "pass": true
+    },
+    {
+      "scenario": "gasless calls through the NEP-366 relayer",
+      "evidence": "evidence/relayer-run.json",
+      "fresh": true,
+      "pass": true
+    },
+    {
+      "scenario": "outside attacker against the contract guards",
+      "evidence": "evidence/attacks/onchain.json",
+      "fresh": true,
+      "pass": true
+    },
+    {
+      "scenario": "private pool matching with verified TEE",
+      "evidence": "evidence/privacy/match-run.json",
+      "fresh": true,
+      "pass": true
+    },
+    {
+      "scenario": "default, collections agent, Sputnik DAO cover",
+      "evidence": "evidence/insurance-run.json",
+      "fresh": true,
+      "pass": true
+    }
+  ],
+  "ok": true,
+  "finished_at": "2026-11-12T15:16:52.377Z"
+}

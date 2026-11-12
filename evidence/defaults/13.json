@@ -1,0 +1,12 @@
+{
+  "pool_id": 13,
+  "contract": "cashflow.cashflowfi.testnet",
+  "collector": "cashflowfi.testnet",
+  "tx_hash": "6GGyAEqVSuCbDTStLcYYWxP5GjJ3K9ueReJKcW1mQCbW",
+  "cover": "1000000",
+  "needs_dao": true,
+  "event_found": true,
+  "due_date": "1794496264174000000",
+  "grace_ns": "300000000000",
+  "timestamp": "2026-11-12T15:16:24.777Z"
+}

@@ -1,0 +1,65 @@
+{
+  "order_id": 17,
+  "depositAddress": "0x50124a38DA2f179Ba9B0346a515D616B1DF94727",
+  "amountIn": "2000000",
+  "minAmountOut": "1974852",
+  "request": {
+    "dry": false,
+    "swapType": "EXACT_INPUT",
+    "slippageTolerance": 100,
+    "originAsset": "nep141:arb-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+    "depositType": "ORIGIN_CHAIN",
+    "destinationAsset": "nep141:usdc.tidepool-sandbox.testnet",
+    "amount": "2000000",
+    "recipient": "payments.cashflowfi.testnet",
+    "recipientType": "DESTINATION_CHAIN",
+    "refundTo": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+    "refundType": "ORIGIN_CHAIN",
+    "deadline": "2026-11-12T15:36:22.000Z"
+  },
+  "response": {
+    "correlationId": "4c340e46-f4b2-471b-a513-149ab4f3b92d",
+    "timestamp": "2026-11-12T15:06:24.553Z",
+    "quoteRequest": {
+      "dry": false,
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:arb-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:usdc.tidepool-sandbox.testnet",
+      "amount": "2000000",
+      "recipient": "payments.cashflowfi.testnet",
+      "recipientType": "DESTINATION_CHAIN",
+      "refundTo": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "refundType": "ORIGIN_CHAIN",
+      "deadline": "2026-11-12T15:36:22.000Z"
+    },
+    "quote": {
+      "amountIn": "2000000",
+      "amountInFormatted": "2",
+      "amountInUsd": "1.9990",
+      "minAmountIn": "2000000",
+      "amountOut": "1994800",
+      "amountOutFormatted": "1.9948",
+      "amountOutUsd": "1.9938",
+      "minAmountOut": "1974852",
+      "timeEstimate": 60,
+      "depositAddress": "0x50124a38DA2f179Ba9B0346a515D616B1DF94727",
+      "deadline": "2026-11-12T15:36:22.000Z",
+      "timeWhenInactive": "2026-11-12T15:36:22.000Z"
+    },
+    "signature": "ed25519:ECTTdGggkxtEexJ4TZx9NgK4JZWXMhhDSvvYQsM51HMdrCmBrb7F36xk2xGTfPQ3ckv5okYcD65wh5nSTvBgugJ"
+  },
+  "source": "cli",
+  "saved_at": "2026-11-12T15:06:27.523Z",
+  "network": {
+    "origin": "arbitrum-sepolia",
+    "destination": "near-testnet"
+  },
+  "origin_tx": "0x39937ab52e863cc8579ad094d3ad37e88a0940bde2f14f2878c307e9fa894c68",
+  "origin_explorer": "https://sepolia.arbiscan.io/tx/0x39937ab52e863cc8579ad094d3ad37e88a0940bde2f14f2878c307e9fa894c68",
+  "nonce": 12,
+  "stage": "confirmed",
+  "origin_block": "328540597",
+  "deposit_submit": 200
+}

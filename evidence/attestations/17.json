@@ -1,0 +1,19 @@
+{
+  "order_id": 17,
+  "verdict": "Approve",
+  "score": 92,
+  "reasons": [
+    "Customer confirmed invoice on-chain, providing strong payment intent.",
+    "Short 29-day term reduces exposure to default risk.",
+    "Merchant has established repayment history (6 pools repaid).",
+    "Customer has prior paid orders, indicating existing relationship."
+  ],
+  "source": "model",
+  "model_error": null,
+  "reason_hash": "5ee749e6039f110eae77ea0f80343ebc803755ceed6612d438e8043e797da29e",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "contract": "cashflow.cashflowfi.testnet",
+  "agent": "agent.cashflowfi.testnet",
+  "tx_hash": "3CpGxmrj8LNa6FSH5ggg21LXXokjqLATjDSWigJqCdYa",
+  "timestamp": "2026-11-12T15:06:03.839Z"
+}

@@ -1,0 +1,19 @@
+{
+  "order_id": 10,
+  "verdict": "Approve",
+  "score": 92,
+  "reasons": [
+    "On-chain confirmation by customer provides strong payment intent evidence.",
+    "Short 29-day term reduces exposure to default risk.",
+    "Low invoice amount ($10 USDC) minimizes financial impact.",
+    "Merchant has prior repayment history, indicating operational stability."
+  ],
+  "source": "model",
+  "model_error": null,
+  "reason_hash": "1a932d09e81ae1b2872e2770532dbaffa0eb42a23d6e6dc4f2ae79b198de4701",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "contract": "cashflow.cashflowfi.testnet",
+  "agent": "agent.cashflowfi.testnet",
+  "tx_hash": "BDKCmbSfTUyg9pWTud7qUKbtRxLf9X5Kq8p3GArEqqBL",
+  "timestamp": "2026-11-12T14:52:59.085Z"
+}

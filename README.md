@@ -75,6 +75,8 @@ Contract `cashflow.cashflowfi.testnet`, token `usdc.tidepool-sandbox.testnet`. E
 | Private pool matching: NEAR AI TEE attestation (nonce, Intel TDX quote, NVIDIA GPU) and response signature verified | `evidence/privacy/match-run.json` | Re-check offline, no keys: `node scripts/verify-match.mjs` recomputes both hashes and recovers the attested signer |
 | Gasless calls via the NEP-366 relayer (order 9: merchant creates, customer approves; neither pays gas) | `evidence/relayer-run.json` | [create_order](https://testnet.nearblocks.io/txns/83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio), [approve_receipt](https://testnet.nearblocks.io/txns/Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG) |
 
+One end-to-end run (`npm run e2e`, evidence `evidence/e2e-run.json`, `"ok": true`) first checks that the deployment matches this repo (config, on-chain code hash, Sputnik version), then runs all seven scenarios in a row against the deployed contracts with every party involved: merchant, customer, two investors, a secondary NFT buyer, the underwriter and collections agents, the forwarder, the relayer, the DAO council and an outside attacker. It passes only if each scenario writes fresh evidence that meets its check: happy path on NEAR, happy path from Arbitrum via Tidepool and the forwarder, position NFTs sold mid-payout (`evidence/nft-transfer-run.json`), gasless relayer calls, all 7 on-chain attacks blocked (including a non-owner claim on a real position), private matching with `verified_private: true`, and default with Sputnik DAO cover.
+
 Read the state yourself (no keys needed):
 
 ```sh

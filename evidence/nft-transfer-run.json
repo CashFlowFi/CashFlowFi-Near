@@ -1,0 +1,128 @@
+{
+  "scenario": "position NFT transfer mid-payout",
+  "network": "testnet",
+  "contract": "cashflow.cashflowfi.testnet",
+  "started_at": "2026-11-12T15:07:17.393Z",
+  "steps": [
+    {
+      "step": "merchant creates order",
+      "tx": "BJzKaHKawoMgQLirHGHyAo81W3WT1tirkFuNxvZhBmXM",
+      "explorer": "https://testnet.nearblocks.io/txns/BJzKaHKawoMgQLirHGHyAo81W3WT1tirkFuNxvZhBmXM",
+      "order_id": 18
+    },
+    {
+      "step": "customer approves receipt",
+      "tx": "EqpXAwG52bq3JpiVJUTB9nBv9pxww1CqoE485yt8Vq7Y",
+      "explorer": "https://testnet.nearblocks.io/txns/EqpXAwG52bq3JpiVJUTB9nBv9pxww1CqoE485yt8Vq7Y"
+    },
+    {
+      "step": "agent attests Approve (score 92)",
+      "tx": "8bXi9EMXJFngTFF6T6gyK7KEuZZpwphVoAPqaz772T7v",
+      "explorer": "https://testnet.nearblocks.io/txns/8bXi9EMXJFngTFF6T6gyK7KEuZZpwphVoAPqaz772T7v",
+      "verdict": "Approve",
+      "score": 92,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8"
+    },
+    {
+      "step": "merchant opens pool",
+      "tx": "NkZhHgVBNaE6EgQt1LShQQvMJ7tfg5n4N6n4BF7cufC",
+      "explorer": "https://testnet.nearblocks.io/txns/NkZhHgVBNaE6EgQt1LShQQvMJ7tfg5n4N6n4BF7cufC",
+      "pool_id": 12
+    },
+    {
+      "step": "senior investor funds",
+      "tx": "EfJXY9T6N4nvkdon2T4ahcpXx6x2QDnjdp2xWjFjj27R",
+      "explorer": "https://testnet.nearblocks.io/txns/EfJXY9T6N4nvkdon2T4ahcpXx6x2QDnjdp2xWjFjj27R"
+    },
+    {
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "EWqpSZQnSVmJ6kUyxPGEXe1tNtu1ZzWv53psYv1P8enJ",
+      "explorer": "https://testnet.nearblocks.io/txns/EWqpSZQnSVmJ6kUyxPGEXe1tNtu1ZzWv53psYv1P8enJ"
+    },
+    {
+      "step": "customer pays half",
+      "tx": "3o9gbqJtYfU64WwjNVwxxx387WVRZnnUcYSL3rS2YDaC",
+      "explorer": "https://testnet.nearblocks.io/txns/3o9gbqJtYfU64WwjNVwxxx387WVRZnnUcYSL3rS2YDaC"
+    },
+    {
+      "step": "senior holder claims the first half",
+      "tx": "4NbML5Pr1F7cnb2SWtmGqxLYKytvy8VcojZbT9p8r6cp",
+      "explorer": "https://testnet.nearblocks.io/txns/4NbML5Pr1F7cnb2SWtmGqxLYKytvy8VcojZbT9p8r6cp"
+    },
+    {
+      "step": "senior NFT sold to carol.cashflowfi.testnet",
+      "tx": "5SWibbc4MV3eeuVNWRxYD3GfLsMcD2fvXfTDFB7UWiwo",
+      "explorer": "https://testnet.nearblocks.io/txns/5SWibbc4MV3eeuVNWRxYD3GfLsMcD2fvXfTDFB7UWiwo"
+    },
+    {
+      "step": "customer pays the rest",
+      "tx": "9sm2WFkUKJked8fKkuJnsJan2uYB6iJNahgRZoRQ1p1o",
+      "explorer": "https://testnet.nearblocks.io/txns/9sm2WFkUKJked8fKkuJnsJan2uYB6iJNahgRZoRQ1p1o"
+    },
+    {
+      "step": "new holder claims the senior remainder",
+      "tx": "82NTPKK2YYMhKqTQSHjibsM39PPANfSX1pjC5Vf67nWw",
+      "explorer": "https://testnet.nearblocks.io/txns/82NTPKK2YYMhKqTQSHjibsM39PPANfSX1pjC5Vf67nWw"
+    },
+    {
+      "step": "junior NFT sold to carol.cashflowfi.testnet with its payout unclaimed",
+      "tx": "FmZKtecvgw3LZKPdsEE6jit9gtUZSbrRVwoAqhipEYk1",
+      "explorer": "https://testnet.nearblocks.io/txns/FmZKtecvgw3LZKPdsEE6jit9gtUZSbrRVwoAqhipEYk1"
+    },
+    {
+      "step": "new holder claims the whole junior payout",
+      "tx": "87pdTDKYBUUG8MqAMHD4RNTiZF3iW5uDL8HqjK86qBxw",
+      "explorer": "https://testnet.nearblocks.io/txns/87pdTDKYBUUG8MqAMHD4RNTiZF3iW5uDL8HqjK86qBxw"
+    }
+  ],
+  "checks": [
+    {
+      "label": "alice.cashflowfi.testnet received",
+      "got": "5000000",
+      "want": "5000000",
+      "ok": true
+    },
+    {
+      "label": "alice.cashflowfi.testnet refused",
+      "got": "true",
+      "want": "true",
+      "ok": true
+    },
+    {
+      "label": "carol.cashflowfi.testnet received",
+      "got": "1375000",
+      "want": "1375000",
+      "ok": true
+    },
+    {
+      "label": "senior claimed in total",
+      "got": "6375000",
+      "want": "6375000",
+      "ok": true
+    },
+    {
+      "label": "bob.cashflowfi.testnet refused",
+      "got": "true",
+      "want": "true",
+      "ok": true
+    },
+    {
+      "label": "carol.cashflowfi.testnet received",
+      "got": "2125000",
+      "want": "2125000",
+      "ok": true
+    },
+    {
+      "label": "seller of the junior NFT received nothing more",
+      "got": "0",
+      "want": "0",
+      "ok": true
+    }
+  ],
+  "order_id": 18,
+  "pool_id": 12,
+  "senior_token": "12-21",
+  "junior_token": "12-22",
+  "ok": true,
+  "finished_at": "2026-11-12T15:08:39.516Z"
+}

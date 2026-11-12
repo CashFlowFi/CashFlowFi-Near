@@ -1,74 +1,58 @@
 {
+  "scenario": "happy path",
   "network": "testnet",
   "contract": "cashflow.cashflowfi.testnet",
-  "token": "usdc.tidepool-sandbox.testnet",
-  "started_at": "2026-11-12T12:14:03.952Z",
+  "started_at": "2026-11-12T15:04:59.681Z",
   "steps": [
     {
-      "step": "1. merchant creates order",
-      "signer": "merchant.cashflowfi.testnet",
-      "method": "cashflow.cashflowfi.testnet.create_order",
-      "tx": "9yN6ZSSncdbHLtRCgENieDTmsZK8JBjfYX1YpFFFbuMX",
-      "explorer": "https://testnet.nearblocks.io/txns/9yN6ZSSncdbHLtRCgENieDTmsZK8JBjfYX1YpFFFbuMX"
+      "step": "merchant creates order",
+      "tx": "ChqWyCQt1v5WP6RNSkrZG4LqcFaPUShgTyex2fQ3tcRH",
+      "explorer": "https://testnet.nearblocks.io/txns/ChqWyCQt1v5WP6RNSkrZG4LqcFaPUShgTyex2fQ3tcRH",
+      "order_id": 16
     },
     {
-      "step": "2. customer approves receipt",
-      "signer": "customer.cashflowfi.testnet",
-      "method": "cashflow.cashflowfi.testnet.approve_receipt",
-      "tx": "AjiEcS8AQ2mjRj2hoatSH52f3k13sLA6fRZs3PDrtD7Y",
-      "explorer": "https://testnet.nearblocks.io/txns/AjiEcS8AQ2mjRj2hoatSH52f3k13sLA6fRZs3PDrtD7Y"
+      "step": "customer approves receipt",
+      "tx": "HCjn19wSgNztkTbwmYia3kaWCLaJdGjwsRcA4SWK9B2M",
+      "explorer": "https://testnet.nearblocks.io/txns/HCjn19wSgNztkTbwmYia3kaWCLaJdGjwsRcA4SWK9B2M"
     },
     {
-      "step": "3. agent attests verdict on-chain",
-      "signer": "agent.cashflowfi.testnet",
-      "method": "cashflow.cashflowfi.testnet.attest_receipt",
-      "tx": "2Scu7EPzbyxKjuMx3hx43j9mGAN2Wf5cSX8Eej9WWRoU",
-      "explorer": "https://testnet.nearblocks.io/txns/2Scu7EPzbyxKjuMx3hx43j9mGAN2Wf5cSX8Eej9WWRoU",
+      "step": "agent attests Approve (score 92)",
+      "tx": "46xnqub5s6cNESuF5nDu6hrgiaPfautLSv29t9ycxyxo",
+      "explorer": "https://testnet.nearblocks.io/txns/46xnqub5s6cNESuF5nDu6hrgiaPfautLSv29t9ycxyxo",
       "verdict": "Approve",
-      "score": 95,
+      "score": 92,
       "model": "Qwen/Qwen3.6-35B-A3B-FP8"
     },
     {
-      "step": "4. merchant opens pool",
-      "signer": "merchant.cashflowfi.testnet",
-      "method": "cashflow.cashflowfi.testnet.create_pool",
-      "tx": "CnxL8rK7MX6KfB9hT2iKvVaFp6qVxhiW8BVphZSGbvXL",
-      "explorer": "https://testnet.nearblocks.io/txns/CnxL8rK7MX6KfB9hT2iKvVaFp6qVxhiW8BVphZSGbvXL"
+      "step": "merchant opens pool",
+      "tx": "GqmFWQSLzKoP7fSir6nZy1KWTpqPFf4ePi9Q8H3p84SF",
+      "explorer": "https://testnet.nearblocks.io/txns/GqmFWQSLzKoP7fSir6nZy1KWTpqPFf4ePi9Q8H3p84SF",
+      "pool_id": 10
     },
     {
-      "step": "5a. investor funds senior tranche",
-      "signer": "alice.cashflowfi.testnet",
-      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
-      "tx": "Ch9WP5RMQinowFKv7jNFBTKeRZPXF68WEp3CibjYLajf",
-      "explorer": "https://testnet.nearblocks.io/txns/Ch9WP5RMQinowFKv7jNFBTKeRZPXF68WEp3CibjYLajf"
+      "step": "senior investor funds",
+      "tx": "4mGd5Zr9eH3Hwr4ypct7qPwiSDBJhY1gKtVMQYcQujzN",
+      "explorer": "https://testnet.nearblocks.io/txns/4mGd5Zr9eH3Hwr4ypct7qPwiSDBJhY1gKtVMQYcQujzN"
     },
     {
-      "step": "5b. investor funds junior tranche (activates pool, pays advance)",
-      "signer": "bob.cashflowfi.testnet",
-      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
-      "tx": "EenGn6W12EkKdj8UirnGdZyTJ8SdBBq4LFQKyxW5pbCp",
-      "explorer": "https://testnet.nearblocks.io/txns/EenGn6W12EkKdj8UirnGdZyTJ8SdBBq4LFQKyxW5pbCp"
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "ArtPxeqjcd9hSgXLgJ96Kq5cn2Mp5d7dYjw1AFbr6ehU",
+      "explorer": "https://testnet.nearblocks.io/txns/ArtPxeqjcd9hSgXLgJ96Kq5cn2Mp5d7dYjw1AFbr6ehU"
     },
     {
-      "step": "6. customer pays invoice (waterfall)",
-      "signer": "customer.cashflowfi.testnet",
-      "method": "usdc.tidepool-sandbox.testnet.ft_transfer_call",
-      "tx": "BwUcf7dbNBRRabkrm8PUTDLERBMYumV2CU3JEpU3EkGz",
-      "explorer": "https://testnet.nearblocks.io/txns/BwUcf7dbNBRRabkrm8PUTDLERBMYumV2CU3JEpU3EkGz"
+      "step": "customer pays invoice (waterfall)",
+      "tx": "4KohCJs42A4H1P4auEjaYHW92E9DsGFXm9oBx8EXDwdx",
+      "explorer": "https://testnet.nearblocks.io/txns/4KohCJs42A4H1P4auEjaYHW92E9DsGFXm9oBx8EXDwdx"
     },
     {
-      "step": "7a. senior holder claims",
-      "signer": "alice.cashflowfi.testnet",
-      "method": "cashflow.cashflowfi.testnet.claim",
-      "tx": "J4Tnp7wEPoiCUebWegRH2nmyYRxP6yDwgrYMAhS119hP",
-      "explorer": "https://testnet.nearblocks.io/txns/J4Tnp7wEPoiCUebWegRH2nmyYRxP6yDwgrYMAhS119hP"
+      "step": "senior holder claims",
+      "tx": "GWVsqkuUrGAUa5ZppjTGNpJuauabHEUiVTktu55FeRL",
+      "explorer": "https://testnet.nearblocks.io/txns/GWVsqkuUrGAUa5ZppjTGNpJuauabHEUiVTktu55FeRL"
     },
     {
-      "step": "7b. junior holder claims",
-      "signer": "bob.cashflowfi.testnet",
-      "method": "cashflow.cashflowfi.testnet.claim",
-      "tx": "DLtY5MNZQRyziDx4YZZ4RERgBu1o35gKCncE5zX9ZpbV",
-      "explorer": "https://testnet.nearblocks.io/txns/DLtY5MNZQRyziDx4YZZ4RERgBu1o35gKCncE5zX9ZpbV"
+      "step": "junior holder claims",
+      "tx": "GFQNCf9SQyAW2yZb5NgtsWefqPq6Y49yDvGFpcebvjfk",
+      "explorer": "https://testnet.nearblocks.io/txns/GFQNCf9SQyAW2yZb5NgtsWefqPq6Y49yDvGFpcebvjfk"
     }
   ],
   "checks": [
@@ -82,6 +66,12 @@
       "label": "merchant received advance - fee",
       "got": "7920000",
       "want": "7920000",
+      "ok": true
+    },
+    {
+      "label": "order status",
+      "got": "Paid",
+      "want": "Paid",
       "ok": true
     },
     {
@@ -109,20 +99,20 @@
       "ok": true
     },
     {
-      "label": "alice.cashflowfi.testnet claim",
+      "label": "alice.cashflowfi.testnet received",
       "got": "6375000",
       "want": "6375000",
       "ok": true
     },
     {
-      "label": "bob.cashflowfi.testnet claim",
+      "label": "bob.cashflowfi.testnet received",
       "got": "2125000",
       "want": "2125000",
       "ok": true
     }
   ],
-  "order_id": 4,
-  "pool_id": 2,
-  "finished_at": "2026-11-12T12:14:56.782Z",
-  "ok": true
+  "order_id": 16,
+  "pool_id": 10,
+  "ok": true,
+  "finished_at": "2026-11-12T15:05:47.290Z"
 }

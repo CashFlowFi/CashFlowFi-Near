@@ -3,41 +3,41 @@
   "standard": "NEP-366",
   "contract": "cashflow.cashflowfi.testnet",
   "relayer": "cashflowfi.testnet",
-  "order_id": 9,
-  "ran_at": "2026-11-12T14:32:00.922Z",
+  "order_id": 19,
+  "ran_at": "2026-11-12T15:08:53.306Z",
   "steps": [
     {
       "step": "1. merchant creates order (gasless)",
       "user": "merchant.cashflowfi.testnet",
       "method": "cashflow.cashflowfi.testnet.create_order",
-      "tx": "83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio",
-      "explorer": "https://testnet.nearblocks.io/txns/83wmLDunDHwRwT5QLskLLbuJr46euD7tyBm893M17oio",
+      "tx": "Gs4XcfVFPnPCMeq5m4arnt52oaHg7om22oku6GgojHTs",
+      "explorer": "https://testnet.nearblocks.io/txns/Gs4XcfVFPnPCMeq5m4arnt52oaHg7om22oku6GgojHTs",
       "tx_signer": "cashflowfi.testnet",
       "receipt_predecessor": "merchant.cashflowfi.testnet",
-      "receipt_id": "8Yp8kxHUfGrSsgMfSYwvgBMvrT3sP1TesaxzR6PpVZVD",
+      "receipt_id": "CLaBgWANR5oaDpZ8k7XBpm74KAPwwnS93Sjt7iDyaBiy",
       "user_balance_yocto": {
-        "before": "296128278861438700000000",
-        "after": "296128278861438700000000"
+        "before": "791713182781742900000000",
+        "after": "791713182781742900000000"
       },
       "checks": {
         "tx_signer_is_relayer": true,
         "receipt_predecessor_is_user": true,
         "user_balance_unchanged": true
       },
-      "value": 9
+      "value": 19
     },
     {
       "step": "2. customer approves receipt (gasless)",
       "user": "customer.cashflowfi.testnet",
       "method": "cashflow.cashflowfi.testnet.approve_receipt",
-      "tx": "Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG",
-      "explorer": "https://testnet.nearblocks.io/txns/Bk8X9mtjMghG9SvWdmHCwqED6wR16AASukFzpj4r8aBG",
+      "tx": "5K1FC241RhHU9GAeiDDZL8vV1y7Sv6Tp6gvancFZYogv",
+      "explorer": "https://testnet.nearblocks.io/txns/5K1FC241RhHU9GAeiDDZL8vV1y7Sv6Tp6gvancFZYogv",
       "tx_signer": "cashflowfi.testnet",
       "receipt_predecessor": "customer.cashflowfi.testnet",
-      "receipt_id": "4sHt5NwHkjtUpvnPNs1qaasL7m4PJcDJd25zgN5LYuAM",
+      "receipt_id": "3Ktg8dnLJtjqHqjRY42f42qSn7Mw9XJuVKyjdQH21EPj",
       "user_balance_yocto": {
-        "before": "595684418377711199999997",
-        "after": "595684418377711199999997"
+        "before": "585789691441657299999988",
+        "after": "585789691441657299999988"
       },
       "checks": {
         "tx_signer_is_relayer": true,
@@ -62,9 +62,9 @@
     }
   ],
   "relayer_balance_yocto": {
-    "before": "580727512098125299999999",
-    "after": "580133775598687099999999",
-    "spent": "593736499438200000000"
+    "before": "8669262290162835499999998",
+    "after": "8668667289434510799999998",
+    "spent": "595000728324700000000"
   },
   "relayer_health": {
     "ok": true,

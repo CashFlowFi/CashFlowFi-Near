@@ -19,7 +19,8 @@
     "demo": "bash scripts/demo.sh",
     "attacks": "node scripts/attacks/prompt-injection.mjs",
     "attacks:onchain": "node scripts/attacks/onchain.mjs",
-    "match": "node --env-file-if-exists=.env scripts/match.mjs"
+    "match": "node --env-file-if-exists=.env scripts/match.mjs",
+    "e2e": "node --env-file-if-exists=.env scripts/e2e.mjs"
   },
   "dependencies": {
     "@phala/dcap-qvl": "0.7.0",
