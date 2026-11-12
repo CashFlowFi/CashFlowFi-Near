@@ -2,7 +2,7 @@
 // Tidepool testnet accepts customRecipientMsg but delivers with a plain ft_transfer (verified live, order 5),
 // so pay quotes deliver to a forwarder account (forwardQuoteRequest) and watcher/forwarder.mjs moves the
 // verified delivery into the contract with ft_transfer_call {"pay":{"order_id":N}}.
-// Lessons carried over from Wavefund: verify the quote signature, never trust provider SUCCESS alone,
+// Delivery rules: verify the quote signature, never trust provider SUCCESS alone,
 // the destination-hash list can mix NEAR and EVM hashes, and executable quotes are never auto-retried.
 import { createQuoteSignatureVerifier, stableStringify } from '../lib/quote-signature.mjs';
 
