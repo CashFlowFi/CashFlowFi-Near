@@ -8,6 +8,13 @@ import {
   type QuoteResponse, type QuoteView, type StatusView,
 } from "@/lib/payapi";
 import type { Order } from "@/lib/types";
+import { erc20TransferUri } from "@/lib/share";
+import { QrCode } from "@/components/share/QrCode";
+
+const ARB_SEPOLIA_CHAIN_ID = 421614;
+const payUri = (to: string, amount: string | bigint): string | null => {
+  try { return erc20TransferUri(ARB_SEPOLIA_USDC, ARB_SEPOLIA_CHAIN_ID, to, amount); } catch { return null; }
+};
 
 const POLL_MS = 7000;
 const BTN = "rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-accent-ink hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50";
@@ -117,6 +124,10 @@ export function ArbitrumPay({ order }: { order: Order }) {
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
+          {payUri(quote.depositAddress, quote.amountIn) && <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+            <QrCode value={payUri(quote.depositAddress, quote.amountIn)!} label="Scan with an EVM wallet to send the exact USDC amount" size={148} />
+            <p className="text-xs text-muted">Scan with MetaMask mobile or another EVM wallet: it opens a USDC transfer of exactly this amount to the deposit address on Arbitrum Sepolia.</p>
+          </div>}
           <p className="text-xs text-muted">Quote valid until {quote.deadline.replace("T", " ").slice(0, 16)} UTC.</p>
           {!tracking && (
             <form className="space-y-2" onSubmit={(e) => { e.preventDefault(); if (isEvmTxHash(txHash)) track(); }}>

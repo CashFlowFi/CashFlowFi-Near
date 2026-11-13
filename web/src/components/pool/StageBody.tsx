@@ -7,6 +7,7 @@ import type { Order } from "@/lib/types";
 import { useVerdict } from "@/lib/verdict";
 import { Account, Info, Rows, Usdc } from "@/components/ui";
 import type { WorkspaceProps } from "./PoolWorkspace";
+import { TeeChecks, teeRecordFor } from "@/components/TeeChecks";
 
 type Props = WorkspaceProps & { stage: StageKey; state: StageState; settled: boolean };
 
@@ -108,6 +109,7 @@ function VerdictCard({ order }: { order: Order }) {
           ],
         ]}
       />
+      {verified && <TeeChecks privacy={teeRecordFor(order.id)} />}
       {v.kind === "ok" && v.data.reasons && v.data.reasons.length > 0 && (
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted">
           {v.data.reasons.map((r, i) => <li key={i}>{r}</li>)}

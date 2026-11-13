@@ -4,16 +4,15 @@ import { useState } from "react";
 import { CONTRACT, TOKEN } from "@/lib/config";
 import { checkInvoice, msToNs } from "@/lib/merchant";
 import { createOrderTx, parseUsdcInput } from "@/lib/tx";
+import { customerHashOf } from "@/lib/share";
+import { ShareInvoice } from "@/components/share/ShareInvoice";
+import { useWallet } from "@/components/wallet/WalletProvider";
 import { useTx } from "@/components/actions/useTx";
 import { TxResultView } from "@/components/actions/TxResultView";
 
 const C = { cashflow: CONTRACT, token: TOKEN };
 const INPUT = "mt-1 w-full rounded-md border border-line bg-bg px-3 py-2 text-sm";
 
-async function customerHash(ref: string): Promise<string> {
-  const bytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ref.trim().toLowerCase())));
-  return "sha256:" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
 
 const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
@@ -25,6 +24,9 @@ export function NewInvoiceForm({ onDone }: { onDone: () => void }) {
   const [customerRef, setCustomerRef] = useState("");
   const [touched, setTouched] = useState(false);
   const tx = useTx();
+  const { accountId } = useWallet();
+  const [sentAmount, setSentAmount] = useState<string | null>(null);
+  const [sentNo, setSentNo] = useState("");
 
   // Due at the end of the chosen day, UTC.
   const dueMs = due ? Date.parse(`${due}T23:59:00Z`) : null;
@@ -42,7 +44,9 @@ export function NewInvoiceForm({ onDone }: { onDone: () => void }) {
         e.preventDefault();
         setTouched(true);
         if (!valid) return;
-        tx.run(async () => [createOrderTx(C, { amount: draft.amount!, currency, dueNs: msToNs(draft.dueMs!), invoiceNo, customerHash: await customerHash(customerRef) })]).then(onDone);
+        setSentAmount(draft.amount!.toString());
+        setSentNo(invoiceNo);
+        tx.run(async () => [createOrderTx(C, { amount: draft.amount!, currency, dueNs: msToNs(draft.dueMs!), invoiceNo, customerHash: await customerHashOf(customerRef) })]).then(onDone);
       }}
     >
       <div className="grid grid-cols-[1fr_6rem] gap-2">
@@ -64,10 +68,11 @@ export function NewInvoiceForm({ onDone }: { onDone: () => void }) {
         {tx.busy ? "Waiting for wallet…" : "Create invoice"}
       </button>
       {tx.results && <TxResultView results={tx.results} onDismiss={tx.clear} />}
-      {created !== undefined && (
-        <p className="text-sm">
-          Send your customer this link to approve it: <Link className="underline" href={`/invoices/${created}`}>/invoices/{created}</Link>
-        </p>
+      {created !== undefined && sentAmount !== null && accountId && (
+        <div className="space-y-2 border-t border-line pt-4">
+          <p className="text-sm font-medium">Send it to your customer · <Link className="font-normal underline" href={`/invoices/${created}`}>invoice #{created}</Link></p>
+          <ShareInvoice order={{ id: created, invoice_no: sentNo, amount: sentAmount, merchant: accountId }} step="approve" />
+        </div>
       )}
     </form>
   );

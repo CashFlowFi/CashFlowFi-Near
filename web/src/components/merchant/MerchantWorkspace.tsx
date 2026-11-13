@@ -14,6 +14,8 @@ import { useTx } from "@/components/actions/useTx";
 import { TxResultView } from "@/components/actions/TxResultView";
 import { ErrorPanel, Info, Rows, StatusBadge, Usdc } from "@/components/ui";
 import { NewInvoiceForm } from "./NewInvoiceForm";
+import { invoicesCsv } from "@/lib/csv";
+import { API_URL } from "@/lib/config";
 
 const DEMO = "merchant.cashflowfi.testnet";
 const C = { cashflow: CONTRACT, token: TOKEN };
@@ -121,7 +123,10 @@ function Invoices({ data, own, onDone }: { data: Data; own: boolean; onDone: () 
 
   return (
     <section className="card">
-      <h2 className="px-5 pt-5 font-semibold">Invoices</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-5">
+        <h2 className="font-semibold">Invoices</h2>
+        {data.orders.length > 0 && <CsvButtons orders={data.orders} />}
+      </div>
       {data.orders.length === 0 ? (
         <p className="px-5 pb-5 pt-2 text-sm text-muted">Your invoices appear here once created.</p>
       ) : (
@@ -244,5 +249,24 @@ function Pools({ pools }: { pools: Pool[] }) {
         </div>
       )}
     </section>
+  );
+}
+
+function CsvButtons({ orders }: { orders: Order[] }) {
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([invoicesCsv(orders)], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cashflow-invoices-${orders[0].merchant}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  return (
+    <div className="flex flex-wrap gap-2 text-xs">
+      <button type="button" onClick={download} className="rounded-md border border-line px-2.5 py-1.5 hover:bg-sunken">Invoices CSV ↓</button>
+      {API_URL && (
+        <a href={`${API_URL}/api/ledger/payments?format=csv`} className="rounded-md border border-line px-2.5 py-1.5 hover:bg-sunken">Cross-chain payments CSV ↓</a>
+      )}
+    </div>
   );
 }

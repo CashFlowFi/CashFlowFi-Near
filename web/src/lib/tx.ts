@@ -129,6 +129,8 @@ export interface TxResult {
   /** For ft_transfer_call: amount sent, amount the contract kept, amount refunded. */
   transfer: { sent: bigint; used: bigint; refunded: bigint } | null;
   events: CashflowEvent[];
+  /** Gas paid by the Cashflow Fi relayer (NEP-366), not the user. */
+  gasless?: boolean;
 }
 
 type Status = { SuccessValue?: string; SuccessReceiptId?: string; Failure?: unknown } | string;

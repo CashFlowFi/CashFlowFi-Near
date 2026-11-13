@@ -4,6 +4,8 @@ export const CONTRACT = process.env.NEXT_PUBLIC_CASHFLOW_CONTRACT ?? "cashflow.c
 export const TOKEN = process.env.NEXT_PUBLIC_TOKEN_CONTRACT ?? "usdc.tidepool-sandbox.testnet";
 /** Off-chain API (verdicts, pay quote/status, matching). Optional: screens degrade to "unavailable". */
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
+/** NEP-366 relayer (gas-free calls). Optional: without it every call is signed and paid by the wallet. */
+export const RELAYER_URL = process.env.NEXT_PUBLIC_RELAYER_URL ?? "";
 export const EXPLORER = "https://testnet.nearblocks.io";
 export const REPO_URL = "https://github.com/CashFlowFi/CashFlowFi-Near";
 export const FEATURED_POOL = 22;

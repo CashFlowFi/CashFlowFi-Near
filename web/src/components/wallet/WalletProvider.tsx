@@ -6,6 +6,7 @@ import type { WalletSelectorModal } from "@near-wallet-selector/modal-ui";
 import { CONTRACT, NETWORK, RPC_URL } from "@/lib/config";
 import { friendlyError, readOutcome, type TxResult, type TxSpec } from "@/lib/tx";
 import { txStatus } from "@/lib/chain";
+import { RelayUnavailable, canRelay, relayTxs } from "@/lib/relay";
 import "@near-wallet-selector/modal-ui/styles.css";
 
 interface WalletCtx {
@@ -90,8 +91,21 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const send = useCallback(async (txs: TxSpec[]) => {
     const s = selectorRef.current;
     if (!s || !accountId) throw new Error("Sign in first.");
-    const { actionCreators } = await import("@near-wallet-selector/core");
     const wallet = await s.wallet();
+    // Gas-free first: zero-deposit contract calls signed by MyNearWallet's function-call key, gas paid by our relayer.
+    if (wallet.id === "my-near-wallet" && canRelay(txs)) {
+      try {
+        const results = await relayTxs(accountId, txs);
+        router.refresh();
+        return results;
+      } catch (e) {
+        if (!(e instanceof RelayUnavailable)) {
+          return [{ hash: null, ok: false, error: friendlyError((e as Error).message ?? String(e)), transfer: null, events: [] }];
+        }
+        // Nothing was submitted: fall through to normal wallet signing.
+      }
+    }
+    const { actionCreators } = await import("@near-wallet-selector/core");
     const toTx = (t: TxSpec) => ({
       signerId: accountId,
       receiverId: t.receiverId,

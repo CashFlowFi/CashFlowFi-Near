@@ -53,5 +53,197 @@
    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
    "file": "evidence/collections/5.json"
   }
- ]
+ ],
+ "tee": {
+  "22": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "23": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "24": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "25": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "27": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "28": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "29": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "30": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "31": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "32": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "34": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "35": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "36": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "37": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "38": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "39": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "40": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "42": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "43": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  }
+ }
 }

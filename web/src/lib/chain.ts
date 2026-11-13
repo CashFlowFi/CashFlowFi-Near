@@ -100,3 +100,15 @@ export async function txStatus(hash: string, sender: string): Promise<unknown> {
   if (body.error) throw new ChainError(body.error?.cause?.name ?? "RPC error");
   return body.result;
 }
+
+/** Access-key nonce and the block height it was read at (for signing a delegate action). */
+export async function viewAccessKey(accountId: string, publicKey: string): Promise<{ nonce: number; block_height: number }> {
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: "cf", method: "query", params: { request_type: "view_access_key", finality: "final", account_id: accountId, public_key: publicKey } }),
+  });
+  const body = await res.json();
+  if (body.error || body.result?.error) throw new ChainError(String(body.error?.cause?.name ?? body.result?.error ?? "RPC error"));
+  return body.result;
+}

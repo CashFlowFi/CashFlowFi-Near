@@ -39,6 +39,7 @@ export function TxResultView({ results, onDismiss }: { results: TxResult[]; onDi
               </p>
             )}
             {[...new Set(r.events.map((e) => e.event))].map((e) => <p key={e} className="text-muted">{EVENT_TEXT[e] ?? e}</p>)}
+            {r.gasless && r.ok && <p className="text-muted">Gas paid by the Cashflow Fi relayer (NEP-366). You paid no NEAR.</p>}
             {r.hash && (
               <a href={txUrl(r.hash)} target="_blank" rel="noreferrer" className="font-mono text-xs underline">{shortHash(r.hash)}</a>
             )}

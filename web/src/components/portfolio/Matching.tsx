@@ -3,13 +3,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { API_URL } from "@/lib/config";
 import { Info, Usdc } from "@/components/ui";
+import { TeeChecks } from "@/components/TeeChecks";
+import type { PrivacyBlock } from "@/lib/tee";
 
 interface Suggestion { rank: number; pool_id: number; tranche: string; amount: string; reason: string }
 interface MatchResponse {
   source: "model" | "fallback";
   suggestions: Suggestion[];
   candidates: number;
-  privacy: { model: string | null; verified_private: boolean };
+  privacy: PrivacyBlock & { model: string | null; verified_private: boolean };
 }
 
 /** Private matching: the intent goes to the API only, never stored here or logged. */
@@ -69,6 +71,7 @@ export function Matching() {
             {res.privacy.verified_private && <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 font-medium text-ai"><span aria-hidden="true">◆</span>Verified private (TEE)</span>}
             <span>{res.source === "model" ? `Ranked by ${res.privacy.model ?? "the model"}` : "Ranked by underwriter score, tier and term"}</span>
           </p>
+          {res.privacy.verified_private && <TeeChecks privacy={res.privacy} title="What was verified for this answer" />}
           {res.suggestions.length === 0 ? (
             <p className="text-sm text-muted">Every open tranche is fully funded right now. New pools appear on the Pools page.</p>
           ) : (
