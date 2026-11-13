@@ -14,6 +14,7 @@ export const FEATURED_POOL = 22;
 export const DEMO_ACCOUNTS: Record<string, string> = {
   "merchant.cashflowfi.testnet": "demo merchant",
   "customer.cashflowfi.testnet": "demo customer",
+  "buyer.cashflowfi.testnet": "demo customer",
   "alice.cashflowfi.testnet": "demo investor",
   "bob.cashflowfi.testnet": "demo investor",
   "carol.cashflowfi.testnet": "demo investor",

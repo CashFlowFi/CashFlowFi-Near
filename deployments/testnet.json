@@ -6,7 +6,7 @@
   "agent": "agent.cashflowfi.testnet",
   "dao": "dao.cashflowfi.testnet",
   "merchant": "merchant.cashflowfi.testnet",
-  "customer": "customer.cashflowfi.testnet",
+  "customer": "buyer.cashflowfi.testnet",
   "investors": [
     "alice.cashflowfi.testnet",
     "bob.cashflowfi.testnet"

@@ -17,7 +17,7 @@ The frontend builds against this file. Everything below is deployed on NEAR test
 | Insurance DAO | `dao.cashflowfi.testnet` | Sputnik DAO v2.3.1; calls `approve_cover` |
 | Payment forwarder | `payments.cashflowfi.testnet` | Receives Tidepool deliveries and pays orders |
 | Owner / relayer | `cashflowfi.testnet` | Contract owner; also pays gas for relayed calls |
-| Demo users | `merchant.`, `customer.`, `alice.`, `bob.`, `carol.cashflowfi.testnet` | Used by the scripts and evidence |
+| Demo users | `merchant.`, `customer.`, `buyer.`, `alice.`, `bob.`, `carol.cashflowfi.testnet` | Used by the scripts and evidence. `buyer.` is the customer in new script runs (clean record); `customer.` paid and defaulted in the earlier runs |
 
 ## Enums
 
