@@ -6,6 +6,7 @@ import { deriveStages, type Stage, type StageKey } from "@/lib/stages";
 import { remaining, sum, toBig } from "@/lib/amount";
 import { TIER_LTV, type Config, type Order, type Pool, type Position } from "@/lib/types";
 import type { ReceiptRun } from "@/lib/receipts";
+import type { CustomerRecord, MerchantRecord } from "@/lib/records";
 import { formatNs } from "@/lib/format";
 import { Account, Info, Rows, StatusBadge, Usdc } from "@/components/ui";
 import { StageBody } from "./StageBody";
@@ -27,6 +28,8 @@ export interface WorkspaceProps {
   positions: Position[] | null;
   config: Config;
   receipts: ReceiptRun[];
+  /** Track records read from chain, best effort. */
+  records?: { customer: string | null; customerRec: CustomerRecord | null; merchantRec: MerchantRecord; tier: string } | null;
 }
 
 export function PoolWorkspace(props: WorkspaceProps) {

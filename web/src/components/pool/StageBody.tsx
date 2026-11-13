@@ -8,6 +8,7 @@ import { useVerdict } from "@/lib/verdict";
 import { Account, Info, Rows, Usdc } from "@/components/ui";
 import type { WorkspaceProps } from "./PoolWorkspace";
 import { TeeChecks, teeRecordFor } from "@/components/TeeChecks";
+import { TrackRecord } from "@/components/TrackRecord";
 
 type Props = WorkspaceProps & { stage: StageKey; state: StageState; settled: boolean };
 
@@ -77,11 +78,16 @@ function ApprovedStage({ orders, state }: Props) {
   );
 }
 
-function UnderwrittenStage({ orders, state }: Props) {
+function UnderwrittenStage({ orders, state, records, pool }: Props) {
   return (
     <>
       <Head title="Underwritten by AI" state={state} line="The AI underwriter scored the invoice and wrote its verdict on-chain." tip="Approve at 70 or more, Flag 40–69, Reject below 40. Only approved invoices can be pooled." />
       <div className="space-y-6">{orders.map((o) => <VerdictCard key={o.id} order={o} />)}</div>
+      {records && (
+        <div className="mt-6 border-t border-line pt-5">
+          <TrackRecord customer={records.customer} customerRec={records.customerRec} merchant={pool.merchant} merchantRec={records.merchantRec} tier={records.tier} />
+        </div>
+      )}
     </>
   );
 }

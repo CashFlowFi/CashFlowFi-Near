@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { underwrite, decide, parseModelAnswer, merchantTier, createUnderwriterModel, hardRules, SYSTEM_PROMPT, MAX_AMOUNT } from './underwriter.mjs';
+import { underwrite, decide, parseModelAnswer, merchantTier, createUnderwriterModel, hardRules, habitualDefaulter, SYSTEM_PROMPT, MAX_AMOUNT } from './underwriter.mjs';
 
 const DAY = 86_400_000_000_000n;
 const nowNs = 1_800_000_000n * 1_000_000_000n;
@@ -111,4 +111,26 @@ test('TEE model: an unverified completion is refused (Flag, never Approve) but i
   assert.deepEqual(r.evidence.tee.privacy, { verified_private: false });
   const ok = await underwrite({ order, complete: createUnderwriterModel({ chat: fakeChat('{"score":100,"reasons":["ok"]}') }), nowNs });
   assert.deepEqual([ok.args.verdict, ok.evidence.tee.privacy.verified_private], ['Approve', true]);
+});
+
+test('habitual defaulter: at least 2 defaults and more defaults than payments', () => {
+  assert.equal(habitualDefaulter({ paid: 0, defaults: 2 }), true);
+  assert.equal(habitualDefaulter({ paid: 2, defaults: 3 }), true);
+  assert.equal(habitualDefaulter({ paid: 2, defaults: 2 }), false, 'equal is not more');
+  assert.equal(habitualDefaulter({ paid: 0, defaults: 1 }), false, 'one default is not a habit');
+  assert.equal(habitualDefaulter({ paid: 16, defaults: 6 }), false, 'the demo customer record goes to the model');
+  assert.equal(habitualDefaulter(), false);
+});
+
+test('decide rejects a habitual defaulter even with a perfect model score', () => {
+  const d = decide({ order, model: { score: 100, reasons: ['x'] }, nowNs, customer: { paid: 1, defaults: 3 } });
+  assert.equal(d.verdict, 'Reject');
+  assert.equal(d.source, 'rules');
+  assert.deepEqual(d.reasons, ['Customer defaulted on 3 prior invoices and paid 1 in full']);
+  assert.equal(decide({ order, model: { score: 100, reasons: ['x'] }, nowNs, customer: { paid: 16, defaults: 6 } }).verdict, 'Approve');
+});
+
+test('the prompt tells the model to weigh the customer record and short terms', () => {
+  assert.match(SYSTEM_PROMPT, /customer_prior_defaults/);
+  assert.match(SYSTEM_PROMPT, /under one day/);
 });

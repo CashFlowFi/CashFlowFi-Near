@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, writeFile, readdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { runOnce, fetchAll, loadConfig, exposureByMerchant } from './run.mjs';
+import { runOnce, fetchAll, loadConfig, exposureByMerchant, historyByCustomer } from './run.mjs';
 import { reasonHash } from './underwriter.mjs';
 
 const NOW = 1_700_000_000_000_000_000n;
@@ -188,4 +188,48 @@ test('exposureByMerchant counts open approvals minus payments', () => {
     { merchant: 'a', status: 'Paid', verdict: 'Approve', amount: '999', paid: '999' },
   ]);
   assert.equal(m.get('a'), 130n);
+});
+
+test('customer record: paid in full, defaulted (in a Defaulted pool), open; per customer', () => {
+  const pools = [{ id: 1, status: 'Repaid' }, { id: 2, status: 'Defaulted' }, { id: 3, status: 'Active' }];
+  const orders = [
+    order(1, 'Paid', { pool_id: 1, paid: '1000000000' }),
+    order(2, 'Pooled', { pool_id: 2, paid: '700000000' }),
+    order(3, 'Pooled', { pool_id: 3 }),
+    order(4, 'CustomerApproved'),
+    order(5, 'Paid', { customer: 'bob.testnet', pool_id: 1 }),
+    order(6, 'Pending', { customer: null }),
+  ];
+  const h = historyByCustomer(orders, pools);
+  assert.deepEqual(h.get('alice.testnet'), { paid: 1, defaults: 1, open: 1 });
+  assert.deepEqual(h.get('bob.testnet'), { paid: 1, defaults: 0, open: 0 });
+  assert.equal(h.size, 2);
+});
+
+test('a habitual defaulter is rejected by the rules and the model is never asked', async () => {
+  const pools = [{ id: 2, status: 'Defaulted' }, { id: 9, status: 'Defaulted' }];
+  const f = fakes({ orders: [
+    order(1, 'Pooled', { pool_id: 2 }), order(2, 'Pooled', { pool_id: 9 }), order(3, 'CustomerApproved'),
+  ], pools });
+  const ev = await dir();
+  await runOnce(base(f, ev));
+  assert.equal(f.calls.complete, 0);
+  assert.equal(f.calls.sign[0][1].verdict, 'Reject');
+  const rec = JSON.parse(await readFile(path.join(ev, '3.json'), 'utf8'));
+  assert.equal(rec.source, 'rules');
+  assert.deepEqual(rec.reasons, ['Customer defaulted on 2 prior invoices and paid 0 in full']);
+});
+
+test('the model sees the customer record; a mostly-paying customer still reaches the model', async () => {
+  const pools = [{ id: 2, status: 'Defaulted' }, { id: 1, status: 'Repaid' }];
+  const seen = [];
+  const f = fakes({ orders: [
+    order(1, 'Pooled', { pool_id: 2 }), order(2, 'Paid', { pool_id: 1 }), order(3, 'Paid', { pool_id: 1 }), order(4, 'CustomerApproved'),
+  ], pools });
+  const inner = f.complete;
+  await runOnce({ ...base(f, await dir()), complete: async (ctx) => { seen.push(ctx.history); return inner(ctx); } });
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].customer_prior_paid_orders, 2);
+  assert.equal(seen[0].customer_prior_defaults, 1);
+  assert.equal(seen[0].customer_open_invoices, 0);
 });

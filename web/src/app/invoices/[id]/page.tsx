@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getOrder, getPool } from "@/lib/chain";
+import { getAllOrders, getAllPools, getOrder, getPool, getTier } from "@/lib/chain";
+import { customerRecord, merchantRecord } from "@/lib/records";
+import { TrackRecord } from "@/components/TrackRecord";
 import { InvoiceActions } from "@/components/actions/InvoiceActions";
 import { remaining } from "@/lib/amount";
 import { formatNs, shortHash } from "@/lib/format";
@@ -30,6 +32,14 @@ export default async function InvoicePage({ params }: Props) {
   }
   if (!order) notFound();
   const pool = order.pool_id === null ? null : await getPool(order.pool_id).catch(() => null);
+  // Track records are best effort: the invoice itself never waits on them.
+  const records = await Promise.all([getAllOrders(), getAllPools(), getTier(order.merchant)])
+    .then(([orders, pools, tier]) => ({
+      customer: order.customer ? customerRecord(orders, pools, order.customer, order.id) : null,
+      merchant: merchantRecord(pools, order.merchant),
+      tier,
+    }))
+    .catch(() => null);
   return (
     <div className="max-w-2xl">
       <p className="eyebrow mb-2"><Link href="/invoices" className="hover:text-ink">Invoices</Link> / #{order.id}</p>
@@ -37,6 +47,11 @@ export default async function InvoicePage({ params }: Props) {
       <div className="mt-6 card p-5">
         <InvoiceActions order={order} pool={pool} />
       </div>
+      {records && (
+        <div className="mt-4 card p-5">
+          <TrackRecord customer={order.customer} customerRec={records.customer} merchant={order.merchant} merchantRec={records.merchant} tier={records.tier} />
+        </div>
+      )}
       <div className="mt-4 card p-5">
         <Rows
           rows={[

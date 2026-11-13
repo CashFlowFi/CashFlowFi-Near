@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getConfig, getOrder, getPool, getPoolPositions } from "@/lib/chain";
+import { getAllOrders, getAllPools, getConfig, getOrder, getPool, getPoolPositions } from "@/lib/chain";
+import { customerRecord, merchantRecord } from "@/lib/records";
 import { poolReceipts } from "@/lib/receipts";
 import type { Order } from "@/lib/types";
 import { ErrorPanel } from "@/components/ui";
@@ -36,6 +37,15 @@ export default async function PoolPage({ params }: Props) {
   }
   // Positions are best effort: without them the workspace shows "unavailable", never a guess.
   const positions = await getPoolPositions(id).catch(() => null);
+  const customer = orders.find((o) => o.customer)?.customer ?? null;
+  const records = await Promise.all([getAllOrders(), getAllPools()])
+    .then(([all, pools]) => ({
+      customer,
+      customerRec: customer ? customerRecord(all, pools, customer) : null,
+      merchantRec: merchantRecord(pools, pool.merchant),
+      tier: pool.tier,
+    }))
+    .catch(() => null);
 
-  return <PoolWorkspace pool={pool} orders={orders} positions={positions} config={config} receipts={poolReceipts(id)} />;
+  return <PoolWorkspace pool={pool} orders={orders} positions={positions} config={config} receipts={poolReceipts(id)} records={records} />;
 }

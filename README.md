@@ -10,7 +10,7 @@ Merchants who sell on credit wait 30 to 90 days for payment. Cashflow Fi finance
 
 1. Merchant calls `create_order` (amount, currency, due date, invoice number).
 2. Customer calls `approve_receipt` from their own account, confirming the sale. The merchant cannot approve its own order.
-3. The underwriter agent applies deterministic hard rules, scores the order with an LLM inside a verified NEAR AI Cloud TEE, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
+3. The underwriter agent applies deterministic hard rules (a customer with 2 or more defaults and more defaults than invoices paid is rejected), scores the order with an LLM inside a verified NEAR AI Cloud TEE that sees the customer's and the merchant's on-chain repayment records, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
 4. Merchant calls `create_pool` on approved orders. Terms come from the merchant tier (LTV A/B/C/D = 85/80/70/60 %).
 5. Investors fund senior (75 %) and junior (25 %) of the advance with `ft_transfer_call`. Each investment mints a NEP-171 position NFT.
 6. When both tranches are full, the merchant receives the advance minus a 1 % fee (half to insurance, half to treasury).
@@ -41,7 +41,7 @@ Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D 
 | Contract | `contracts/cashflow` | NEAR contract: orders, pools, NEP-171 positions, insurance; near-workspaces sandbox tests in `tests/` (one file per area, shared fixture in `tests/common/`) |
 | Pool engine | `contracts/cashflow-core` | Pure Rust pool accounting (terms, waterfall, cover), unit-tested natively |
 | Test token | `contracts/test-token` | NEP-141 used only by the sandbox tests |
-| Underwriter agent | `agent/underwriter.mjs`, `agent/run.mjs` | Hard rules, verified TEE call, strict parse, signs `attest_receipt` |
+| Underwriter agent | `agent/underwriter.mjs`, `agent/run.mjs` | Hard rules, the customer's record (paid, defaulted, open) and the merchant's pools from chain, verified TEE call, strict parse, signs `attest_receipt` |
 | Collections agent | `agent/collections.mjs`, `agent/reminder.mjs` | Personalised reminder worded in the verified TEE before the due date (must quote the exact amount and pay link, no other link; template otherwise), `mark_default` after due date plus grace |
 | Tier reasons | `agent/tier-reason.mjs` | Rules choose the merchant tier; the TEE model only explains the change. Reason and its sha256 are stored next to the `set_merchant_tier` tx |
 | Tidepool client | `watcher/tidepool.mjs`, `lib/quote-signature.mjs` | Builds quotes, verifies the 1Click quote signature, checks delivery on NEAR |
@@ -94,7 +94,7 @@ The app reads the live testnet contract directly, so these steps need no keys. F
 |---|---|
 | Open `/` | Live protocol numbers read from the chain (USDC repaid, pools, invoices scored by AI, insurance fund) and where the AI agents work |
 | Click **Explore a pool** (pool 22) | The stage selector Invoice → Approved → Underwritten → Funded → Paid → Claimed, opened on the result: 6.375 USDC claimed of 6.375 paid out. **Replay this pool** steps through each stage |
-| Click **Underwritten** | Verdict Approve, score 92 and the reason hash from chain. With the API: **TEE verified** and **What was verified** listing 5/5 checks (nonce, Intel TDX quote, NVIDIA GPU, response signature, attested signer) |
+| Click **Underwritten** | Verdict Approve, score 92, the reason hash, and the customer's and merchant's track records the AI weighs, all from chain. With the API: **TEE verified** and **What was verified** listing 5/5 checks (nonce, Intel TDX quote, NVIDIA GPU, response signature, attested signer) |
 | Click **Activity & receipts** | Every transaction of that pool with explorer links, from `evidence/` |
 | Open `/pools/25` | A defaulted pool: Paid (5.179687 of 10), Default, Cover 0.796875 approved by the Sputnik DAO, every payout claimed |
 | Open `/invoices/41`, sign in as the merchant | A QR and WhatsApp / Telegram / copy links for the customer. Signed in as any other account: **Approve invoice** (the contract rejects the merchant's own approval) |
@@ -103,7 +103,7 @@ The app reads the live testnet contract directly, so these steps need no keys. F
 | Open `/merchant?account=merchant.cashflowfi.testnet` | The demo merchant's invoices with AI verdicts, tier D (60 % advance), pools, and **Invoices CSV** for an accountant |
 | Open `/agents` and `/insurance` | Underwriter verdicts, the tier change B → D, TEE-written reminders; the insurance fund, defaulted pools and DAO proposals |
 
-`cd web && npm test` runs 72 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
+`cd web && npm test` runs 75 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
 
 ## Reproduce
 
@@ -113,7 +113,7 @@ Requirements: Node 22 or newer, then `npm ci`. For contracts: Rust stable (pinne
 
 | Run | See |
 |---|---|
-| `npm test` | `tests 154`, `pass 154`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
+| `npm test` | `tests 160`, `pass 160`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
 | `cd contracts/cashflow && cargo test --tests` | every `test result: ok`: 13 sandbox tests across 7 files plus 2 unit tests (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
 | `npm run test:contracts` | `test result: ok. 14 passed` (pure pool engine) |
 | `npm run attacks` | 16 cases, each `[HELD]` with the defense; rewrites `evidence/attacks/offchain.json` |
@@ -149,7 +149,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | API (`api/`) | Built and tested (`api/app.test.mjs`) |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
 | Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
-| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; 72 tests |
+| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; 75 tests |
 
 ## Security
 

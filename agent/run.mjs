@@ -26,11 +26,24 @@ export function exposureByMerchant(orders) {
   return m;
 }
 
-/** Orders each customer has paid in full (on-chain status Paid). */
-export function paidByCustomer(orders) {
-  const m = new Map();
-  for (const o of orders) if (o.status === 'Paid' && o.customer) m.set(o.customer, (m.get(o.customer) ?? 0) + 1);
-  return m;
+/**
+ * Per-customer record from on-chain orders and pools: paid in full (status Paid), defaulted (in a Defaulted pool
+ * and not fully paid) and open (pooled, pool still Active or Funding). The order being scored is CustomerApproved,
+ * so it never counts toward its own record.
+ */
+export function historyByCustomer(orders, pools) {
+  const poolStatus = new Map(pools.map((p) => [p.id, p.status]));
+  const h = new Map();
+  for (const o of orders) {
+    if (!o.customer) continue;
+    const c = h.get(o.customer) ?? { paid: 0, defaults: 0, open: 0 };
+    const ps = o.pool_id === null || o.pool_id === undefined ? null : poolStatus.get(o.pool_id);
+    if (o.status === 'Paid') c.paid++;
+    else if (ps === 'Defaulted') c.defaults++;
+    else if (o.status === 'Pooled') c.open++;
+    h.set(o.customer, c);
+  }
+  return h;
 }
 
 /** Per-merchant repayment history from on-chain pools. */
@@ -56,9 +69,10 @@ export async function runOnce({ view, sign, complete, model, contract, agent, ev
   writeReason = createTierReasonWriter({ chat: null }), tiersDir = TIERS_DIR }) {
   const summary = { attested: [], skipped: [], failed: [], tiers: [] };
   const orders = await fetchAll(view, 'get_orders', pageSize);
-  const history = historyByMerchant(await fetchAll(view, 'get_pools', pageSize));
+  const pools = await fetchAll(view, 'get_pools', pageSize);
+  const history = historyByMerchant(pools);
   const exposure = exposureByMerchant(orders);
-  const customerPaid = paidByCustomer(orders);
+  const customers = historyByCustomer(orders, pools);
 
   for (const order of orders) {
     if (order.status !== 'CustomerApproved') continue;
@@ -67,7 +81,7 @@ export async function runOnce({ view, sign, complete, model, contract, agent, ev
       if (existsSync(file)) { summary.skipped.push(order.id); continue; } // attested, RPC may lag
       const outstanding = exposure.get(order.merchant) ?? 0n;
       const { args, evidence } = await underwrite({ order, history: { ...(history.get(order.merchant) ?? {}), outstanding,
-        customerPaidOrders: customerPaid.get(order.customer) ?? 0 }, complete, nowNs: nowNs() });
+        customer: customers.get(order.customer) ?? { paid: 0, defaults: 0, open: 0 } }, complete, nowNs: nowNs() });
       const { txHash } = await sign('attest_receipt', args);
       // Count this approval before the next order of the same merchant is scored.
       if (args.verdict === 'Approve') exposure.set(order.merchant, outstanding + BigInt(order.amount));
