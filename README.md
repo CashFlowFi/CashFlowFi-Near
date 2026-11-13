@@ -31,7 +31,7 @@ Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D 
 | NEAR AI Cloud TEE (verified inference) | `agent/tee.mjs`, `agent/tee-quote.mjs` | Every model call (underwriter and investor matching) goes to `cloud-api.near.ai` (model `Qwen/Qwen3.6-35B-A3B-FP8` in the runs) only after a nonce-bound attestation and Intel TDX quote check; the response signature must recover to the attested key |
 | Verdict proof | `agent/verdict-proof.mjs` | `/api/agent/verdicts` returns `verified: true` only after re-checking the saved signature and binding the signed answer to the on-chain score, reason hash and order |
 | Sputnik DAO v2.3.1 | `dao.cashflowfi.testnet` | Council of 2, threshold 2 of 2; only the DAO can call `approve_cover` |
-| NEP-366 meta transactions | `relayer/` | Gasless relayer with a method allowlist, spend cap and rate limit |
+| NEP-366 meta transactions | `relayer/`, `web/src/lib/gasless.ts` | Gasless relayer with a method allowlist, spend cap and rate limit. The web app signs zero-deposit contract calls (`create_order`, `approve_receipt`, `create_pool`, `claim`) with MyNearWallet's function-call key and sends them to the relayer |
 | Intents 1Click flow via Tidepool | `watcher/`, `scripts/tidepool.mjs` | Tidepool is a community testnet of the NEAR Intents 1Click flow; used because Intents has no testnet |
 
 ## Architecture
@@ -50,6 +50,7 @@ Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D 
 | Relayer | `relayer/` | NEP-366 relayer service and client |
 | Scripts | `scripts/` | Live testnet runs (`demo.mjs`, `insurance-demo.mjs`, `tidepool.mjs`, `dao.mjs`), attack suites |
 | Evidence | `evidence/`, `deployments/testnet.json` | JSON records of every live run with tx hashes |
+| Web app | `web/` | Next.js app: pool workspace with stage selector, invoices with QR sharing, merchant desk, portfolio, agents, insurance; reads the chain over RPC and signs with NEAR wallet-selector |
 | Interface | `docs/INTERFACE.md` | Methods, types, events, `msg` formats |
 
 ## Verified on testnet
@@ -68,6 +69,7 @@ Contract `cashflow.cashflowfi.testnet`, token `usdc.tidepool-sandbox.testnet`. E
 | Sputnik DAO deployed and wired | `deployments/testnet.json` | [DAO deploy](https://testnet.nearblocks.io/txns/9UTeteha2PXgeMSTAUZqXVtX1Dry3iu5VJXphJ2JbFkM) |
 | Underwriter verdict from a verified TEE (order 42: Approve, score 92), re-proved against the on-chain verdict | `evidence/tee-underwrite-run.json`, `evidence/attestations/42.json` | [agent attest](https://testnet.nearblocks.io/txns/49G6MguB6GvYQH7CUHNtvvnvevsFPKseQ18uT3MwfNxG); `GET /api/agent/verdicts?order_id=42` returns `verified: true` |
 | Private pool matching: NEAR AI TEE attestation (nonce, Intel TDX quote, NVIDIA GPU) and response signature verified | `evidence/privacy/match-run.json` | Re-check offline, no keys: `node scripts/verify-match.mjs` recomputes both hashes and recovers the attested signer |
+| Web app transaction builders (`web/src/lib/tx.ts`) on pool 1: two investments fill the pool, the customer pays 10 USDC, both holders claim; pool 1 is now `Repaid` | — | [senior invest](https://testnet.nearblocks.io/txns/efEiHghfrqf6zXTNeKJonuNQZDZ2uS1YpNm14EjbA9G), [junior invest + advance](https://testnet.nearblocks.io/txns/HHaCS9XkU4NXEpgwaLQyaZP7Mr8SNkPtf1k1y95eMXV4), [payment](https://testnet.nearblocks.io/txns/CgNKMGukfbKonzwqjj1228WnhVtBuizSn8RhB47ccu5Y), [claim](https://testnet.nearblocks.io/txns/HeYFToPP5wgft4ShVABHejXfDaJpjNw9Q6nZtfVhzBzs) |
 | Gasless calls via the NEP-366 relayer (order 40: merchant creates, customer approves; neither pays gas) | `evidence/relayer-run.json` | [create_order](https://testnet.nearblocks.io/txns/AbkC4U5sw7HtefofRrCYingRNvhZ2899uHg79PsGagKj), [approve_receipt](https://testnet.nearblocks.io/txns/5gvUFCGqJ5aLvSCdVbtLgX7yYD7PyS1fdE1V94H7se3e) |
 
 One end-to-end run (`npm run e2e`, evidence `evidence/e2e-run.json`, `"ok": true`) first checks that the deployment matches this repo (config, on-chain code hash, Sputnik version), then runs all eight scenarios in a row against the deployed contracts with every party involved: merchant, customer, two investors, a secondary NFT buyer, the underwriter and collections agents, the forwarder, the relayer, the DAO council and an outside attacker. It passes only if each scenario writes fresh evidence that meets its check: happy path on NEAR, happy path from Arbitrum via Tidepool and the forwarder, position NFTs sold mid-payout (`evidence/nft-transfer-run.json`), gasless relayer calls, all 7 on-chain attacks blocked (including a non-owner claim on a real position), private matching with `verified_private: true`, an underwriter verdict from a verified TEE re-proved offline against the chain, and a TEE-written reminder followed by default and Sputnik DAO cover.
@@ -79,6 +81,29 @@ near contract call-function as-read-only cashflow.cashflowfi.testnet get_pool js
 ```
 
 Expected: `"status": "Repaid"`, `"senior_repaid": "6375000"`, `"junior_repaid": "2125000"`. Pool 5 shows `"status": "Defaulted"`, `"insurance_paid": "1000000"`.
+
+## Try the web app
+
+```sh
+cd web && npm ci && npm run build && npm start      # http://localhost:3000
+```
+
+The app reads the live testnet contract directly, so these steps need no keys. For the AI verification badges, matching and cross-chain quotes, also run the API from the repo root (`CORS_ORIGIN=http://localhost:3000 npm run api`) and build the app with `NEXT_PUBLIC_API_URL=http://localhost:8787`. Optional: `NEXT_PUBLIC_RELAYER_URL=http://localhost:8788` with `npm run relayer` for gas-free calls.
+
+| Do | See |
+|---|---|
+| Open `/` | Live protocol numbers read from the chain (USDC repaid, pools, invoices scored by AI, insurance fund) and where the AI agents work |
+| Click **Explore a pool** (pool 22) | The stage selector Invoice → Approved → Underwritten → Funded → Paid → Claimed, opened on the result: 6.375 USDC claimed of 6.375 paid out. **Replay this pool** steps through each stage |
+| Click **Underwritten** | Verdict Approve, score 92 and the reason hash from chain. With the API: **TEE verified** and **What was verified** listing 5/5 checks (nonce, Intel TDX quote, NVIDIA GPU, response signature, attested signer) |
+| Click **Activity & receipts** | Every transaction of that pool with explorer links, from `evidence/` |
+| Open `/pools/25` | A defaulted pool: Paid (5.179687 of 10), Default, Cover 0.796875 approved by the Sputnik DAO, every payout claimed |
+| Open `/invoices/41`, sign in as the merchant | A QR and WhatsApp / Telegram / copy links for the customer. Signed in as any other account: **Approve invoice** (the contract rejects the merchant's own approval) |
+| Open `/invoices/5` | **Pay on NEAR** (`ft_transfer_call` with the pay msg) and **Pay from Arbitrum** through the NEAR Intents 1Click flow on Tidepool: a labelled preview, or with `TIDEPOOL_LIVE=1` a deposit address and an EIP-681 QR for the exact USDC amount |
+| Open `/portfolio` | Position NFTs of the demo investors, each card a live SVG rendered by the contract. Signed in: **Claim** and **Transfer**. With the API: **Find a tranche** returns ranked suggestions marked **Verified private (TEE)** |
+| Open `/merchant?account=merchant.cashflowfi.testnet` | The demo merchant's invoices with AI verdicts, tier D (60 % advance), pools, and **Invoices CSV** for an accountant |
+| Open `/agents` and `/insurance` | Underwriter verdicts, the tier change B → D, TEE-written reminders; the insurance fund, defaulted pools and DAO proposals |
+
+`cd web && npm test` runs 72 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
 
 ## Reproduce
 
@@ -124,7 +149,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | API (`api/`) | Built and tested (`api/app.test.mjs`) |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
 | Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
-| Frontend | Built against `docs/INTERFACE.md` |
+| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; 72 tests |
 
 ## Security
 
@@ -151,6 +176,9 @@ Attack demos with the defense that stopped each one: [`scripts/attacks/README.md
 | `viem` 2.57.13 | Arbitrum Sepolia deposits in `scripts/tidepool.mjs` |
 | `lib/quote-signature.mjs` | 1Click quote-signature verification, reused from Wavefund (`runtime/intents/signature.mjs`); re-implements the check from `@defuse-protocol/one-click-sdk-typescript` 0.1.26 without adding that dependency |
 | Sputnik DAO v2.3.1 | Deployed as the insurance governance DAO (code hash in `deployments/testnet.json`) |
+| Next.js 15.5, Tailwind CSS 4 | Web app |
+| `@near-wallet-selector` 10.1.4 | Wallet sign-in and signing in the web app |
+| `qrcode` 1.5.4 | Invoice and payment QR codes |
 
 ## License
 
