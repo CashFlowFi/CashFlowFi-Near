@@ -1,15 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { underwrite, decide, parseModelAnswer, merchantTier, createUnderwriterModel, hardRules, habitualDefaulter, SYSTEM_PROMPT, MAX_AMOUNT } from './underwriter.mjs';
+import { underwrite, decide, parseModelAnswer, merchantTier, createUnderwriterModel, hardRules, habitualDefaulter, reviewRules, modelContext, SYSTEM_PROMPT, MAX_AMOUNT, NEW_CUSTOMER_LIMIT, CUSTOMER_EXPOSURE_CAP } from './underwriter.mjs';
 
 const DAY = 86_400_000_000_000n;
 const nowNs = 1_800_000_000n * 1_000_000_000n;
 const order = { id: 7, merchant: 'shop.testnet', customer: 'alice.testnet', amount: '1000000000', currency: 'USDC',
   due_date: String(nowNs + 30n * DAY), created_at: String(nowNs), invoice_no: 'INV-7' };
 const model = (text) => async () => ({ text });
+// A customer with a clean paid record, for tests that are about something other than the customer rules.
+const known = { customer: { paid: 3, defaults: 0, open: 0, outstanding: 0n } };
 
 test('approves on a good model score', async () => {
-  const r = await underwrite({ order, complete: model('{"score":82,"reasons":["Repeat customer"]}'), nowNs });
+  const r = await underwrite({ order, history: known, complete: model('{"score":82,"reasons":["Repeat customer"]}'), nowNs });
   assert.equal(r.args.verdict, 'Approve');
   assert.equal(r.args.score, 82);
   assert.match(r.args.reason_hash, /^[0-9a-f]{64}$/);
@@ -109,7 +111,7 @@ test('TEE model: an unverified completion is refused (Flag, never Approve) but i
   assert.equal(r.args.verdict, 'Flag');
   assert.equal(r.evidence.model_error, 'TEE_NOT_VERIFIED');
   assert.deepEqual(r.evidence.tee.privacy, { verified_private: false });
-  const ok = await underwrite({ order, complete: createUnderwriterModel({ chat: fakeChat('{"score":100,"reasons":["ok"]}') }), nowNs });
+  const ok = await underwrite({ order, history: known, complete: createUnderwriterModel({ chat: fakeChat('{"score":100,"reasons":["ok"]}') }), nowNs });
   assert.deepEqual([ok.args.verdict, ok.evidence.tee.privacy.verified_private], ['Approve', true]);
 });
 
@@ -133,4 +135,33 @@ test('decide rejects a habitual defaulter even with a perfect model score', () =
 test('the prompt tells the model to weigh the customer record and short terms', () => {
   assert.match(SYSTEM_PROMPT, /customer_prior_defaults/);
   assert.match(SYSTEM_PROMPT, /under one day/);
+});
+
+test('new customer: up to 20 USDC can be approved, above it the best outcome is Flag', () => {
+  const at = (amount, customer) => decide({ order: { ...order, amount: String(amount) }, model: { score: 95, reasons: ['ok'] }, nowNs, customer });
+  assert.equal(at(NEW_CUSTOMER_LIMIT, { paid: 0 }).verdict, 'Approve', 'exactly at the limit');
+  const over = at(NEW_CUSTOMER_LIMIT + 1n, { paid: 0 });
+  assert.deepEqual([over.verdict, over.score, over.source], ['Flag', 69, 'model+review']);
+  assert.match(over.reasons[0], /New customer/);
+  assert.equal(at(NEW_CUSTOMER_LIMIT + 1n, { paid: 1 }).verdict, 'Approve', 'one paid invoice lifts the limit');
+  assert.equal(at(NEW_CUSTOMER_LIMIT + 1n, {}).verdict, 'Flag', 'no record means new');
+  // never upgrades: a low model score stays a Reject
+  assert.equal(decide({ order: { ...order, amount: String(NEW_CUSTOMER_LIMIT + 1n) }, model: { score: 10, reasons: ['x'] }, nowNs, customer: { paid: 0 } }).verdict, 'Reject');
+  assert.deepEqual(reviewRules({ ...order, amount: String(NEW_CUSTOMER_LIMIT) }, { customer: { paid: 0 } }), []);
+});
+
+test('customer exposure cap: what one customer owes across all merchants', () => {
+  const at = (amount, outstanding) => hardRules({ ...order, amount: String(amount) }, { nowNs, customer: { paid: 5, outstanding } });
+  assert.deepEqual(at(CUSTOMER_EXPOSURE_CAP - 1n, 1n), [], 'exactly at the cap');
+  assert.deepEqual(at(CUSTOMER_EXPOSURE_CAP, 1n), ['Customer exposure cap exceeded (100,000 USDC open across all merchants)']);
+  assert.equal(decide({ order: { ...order, amount: String(CUSTOMER_EXPOSURE_CAP) }, model: { score: 100, reasons: ['x'] }, nowNs, customer: { paid: 5, outstanding: 1n } }).verdict, 'Reject');
+});
+
+test('the model sees whether the customer is new and how much they already owe', () => {
+  const ctx = modelContext(order, { customer: { paid: 0, defaults: 0, open: 2, outstanding: 35_000_000n } });
+  assert.equal(ctx.history.customer_is_new, true);
+  assert.equal(ctx.history.customer_open_exposure_usdc, 35);
+  assert.equal(modelContext(order, { customer: { paid: 0, defaults: 1 } }).history.customer_is_new, false, 'a defaulter is not "new"');
+  assert.match(SYSTEM_PROMPT, /customer_is_new/);
+  assert.match(SYSTEM_PROMPT, /customer_open_exposure_usdc/);
 });

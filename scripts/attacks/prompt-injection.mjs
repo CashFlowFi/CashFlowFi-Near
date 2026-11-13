@@ -12,6 +12,7 @@ import { CASES, NOW_NS, order } from './cases.mjs';
 
 export { BASE_ORDER, CASES, NOW_NS } from './cases.mjs';
 
+const KNOWN_CUSTOMER = { paid: 3, defaults: 0, open: 0, outstanding: 0n };
 const HONEST = '{"score":35,"reasons":["New customer, no payment history"]}';
 
 /**
@@ -42,7 +43,8 @@ export async function runCase(c, { nowNs = NOW_NS } = {}) {
   } else {
     complete = obedientModel(c.reply);
   }
-  const r = await underwrite({ order: o, complete, nowNs });
+  // An established customer, so each case tests the attack itself, not the new-customer review rule.
+  const r = await underwrite({ order: o, history: { customer: KNOWN_CUSTOMER }, complete, nowNs });
   return { ...r.evidence, modelCalled: complete.calls.length > 0, attacker_wanted: 'Approve' };
 }
 
@@ -57,7 +59,7 @@ export async function splitInvoice({ nowNs = NOW_NS } = {}) {
   let outstanding = 0n;
   for (let i = 0; i < 20; i++) {
     const r = await underwrite({ order: order({ id: 100 + i, amount: String(MAX_AMOUNT), invoice_no: `INV-SPLIT-${i}` }),
-      history: { outstanding }, complete: async () => ({ text: '{"score":80,"reasons":["Clean history"]}' }), nowNs });
+      history: { outstanding, customer: KNOWN_CUSTOMER }, complete: async () => ({ text: '{"score":80,"reasons":["Clean history"]}' }), nowNs });
     parts.push(r.evidence.verdict);
     if (r.evidence.verdict === 'Approve') outstanding += MAX_AMOUNT;
   }

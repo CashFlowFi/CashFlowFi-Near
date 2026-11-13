@@ -51,7 +51,7 @@ test('only CustomerApproved orders are attested', async () => {
 });
 
 test('attest args match underwriter output; Approve at 85', async () => {
-  const f = fakes({ orders: [order(3, 'CustomerApproved')] });
+  const f = fakes({ orders: [order(90, 'Paid'), order(3, 'CustomerApproved')] });
   await runOnce(base(f, await dir()));
   assert.deepEqual(f.calls.sign[0], ['attest_receipt',
     { id: 3, verdict: 'Approve', score: 85, reason_hash: reasonHash(['Clean history']) }]);
@@ -80,7 +80,7 @@ test('low model score gives Reject and is attested', async () => {
 });
 
 test('evidence file has the full record and no secrets', async () => {
-  const f = fakes({ orders: [order(7, 'CustomerApproved')] });
+  const f = fakes({ orders: [order(90, 'Paid'), order(7, 'CustomerApproved')] });
   const ev = await dir();
   await runOnce(base(f, ev));
   const raw = await readFile(path.join(ev, '7.json'), 'utf8');
@@ -173,7 +173,7 @@ test('config refuses mainnet and missing vars', () => {
 test('exposure accumulates across orders of one merchant in a single pass', async () => {
   // Two orders at the per-order cap from the same merchant: the first fills the exposure cap.
   const big = (id) => order(id, 'CustomerApproved', { amount: (100_000n * 1_000_000n).toString(), invoice_no: `INV-${id}` });
-  const f = fakes({ orders: [big(20), big(21)] });
+  const f = fakes({ orders: [order(90, 'Paid'), big(20), big(21)] });
   const s = await runOnce(base(f, await dir()));
   assert.deepEqual(s.attested, [20, 21]);
   assert.equal(f.calls.sign[0][1].verdict, 'Approve');
@@ -201,8 +201,9 @@ test('customer record: paid in full, defaulted (in a Defaulted pool), open; per 
     order(6, 'Pending', { customer: null }),
   ];
   const h = historyByCustomer(orders, pools);
-  assert.deepEqual(h.get('alice.testnet'), { paid: 1, defaults: 1, open: 1 });
-  assert.deepEqual(h.get('bob.testnet'), { paid: 1, defaults: 0, open: 0 });
+  // outstanding: only order 3 (pooled, pool Active, nothing paid); order 2's pool defaulted.
+  assert.deepEqual(h.get('alice.testnet'), { paid: 1, defaults: 1, open: 1, outstanding: 1000000000n });
+  assert.deepEqual(h.get('bob.testnet'), { paid: 1, defaults: 0, open: 0, outstanding: 0n });
   assert.equal(h.size, 2);
 });
 
@@ -232,4 +233,19 @@ test('the model sees the customer record; a mostly-paying customer still reaches
   assert.equal(seen[0].customer_prior_paid_orders, 2);
   assert.equal(seen[0].customer_prior_defaults, 1);
   assert.equal(seen[0].customer_open_invoices, 0);
+});
+
+test('customer outstanding counts approved-unpaid invoices and grows within one pass', async () => {
+  const pools = [{ id: 1, status: 'Active' }];
+  const orders = [
+    order(90, 'Paid'),                                                       // established customer
+    order(91, 'Pooled', { pool_id: 1, amount: '60000000000', paid: '0' }), // 60k open
+    order(92, 'CustomerApproved', { amount: '30000000000' }),             // 30k: 90k total, under the cap
+    // another merchant, so only the customer cap can stop it: 20k more is 110k for this customer
+    order(93, 'CustomerApproved', { amount: '20000000000', merchant: 'other.testnet' }),
+  ];
+  assert.equal(historyByCustomer(orders, pools).get('alice.testnet').outstanding, 60000000000n);
+  const f = fakes({ orders, pools });
+  await runOnce(base(f, await dir()));
+  assert.deepEqual(f.calls.sign.map(([, a]) => [a.id, a.verdict]), [[92, 'Approve'], [93, 'Reject']]);
 });

@@ -36,11 +36,14 @@ export function historyByCustomer(orders, pools) {
   const h = new Map();
   for (const o of orders) {
     if (!o.customer) continue;
-    const c = h.get(o.customer) ?? { paid: 0, defaults: 0, open: 0 };
+    const c = h.get(o.customer) ?? { paid: 0, defaults: 0, open: 0, outstanding: 0n };
     const ps = o.pool_id === null || o.pool_id === undefined ? null : poolStatus.get(o.pool_id);
     if (o.status === 'Paid') c.paid++;
     else if (ps === 'Defaulted') c.defaults++;
     else if (o.status === 'Pooled') c.open++;
+    // Approved-but-unpaid amount: attested Approve (not yet pooled) or pooled in a pool still Funding or Active.
+    const approvedOpen = (o.status === 'Attested' && o.verdict === 'Approve') || (o.status === 'Pooled' && ps !== 'Defaulted');
+    if (approvedOpen) c.outstanding += BigInt(o.amount) - BigInt(o.paid ?? '0');
     h.set(o.customer, c);
   }
   return h;
@@ -81,8 +84,13 @@ export async function runOnce({ view, sign, complete, model, contract, agent, ev
       if (existsSync(file)) { summary.skipped.push(order.id); continue; } // attested, RPC may lag
       const outstanding = exposure.get(order.merchant) ?? 0n;
       const { args, evidence } = await underwrite({ order, history: { ...(history.get(order.merchant) ?? {}), outstanding,
-        customer: customers.get(order.customer) ?? { paid: 0, defaults: 0, open: 0 } }, complete, nowNs: nowNs() });
+        customer: customers.get(order.customer) ?? { paid: 0, defaults: 0, open: 0, outstanding: 0n } }, complete, nowNs: nowNs() });
       const { txHash } = await sign('attest_receipt', args);
+      // Count this approval before the next order of the same customer is scored.
+      if (args.verdict === 'Approve' && order.customer) {
+        const c = customers.get(order.customer) ?? { paid: 0, defaults: 0, open: 0, outstanding: 0n };
+        customers.set(order.customer, { ...c, outstanding: c.outstanding + BigInt(order.amount) });
+      }
       // Count this approval before the next order of the same merchant is scored.
       if (args.verdict === 'Approve') exposure.set(order.merchant, outstanding + BigInt(order.amount));
       await writeJsonAtomic(file, { ...evidence, reason_hash: args.reason_hash, model, contract, agent,

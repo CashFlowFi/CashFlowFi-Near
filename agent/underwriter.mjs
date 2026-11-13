@@ -8,6 +8,10 @@ export const FLAG_AT = 40;
 export const MAX_AMOUNT = 100_000n * 1_000_000n; // 100k test USDC per receivable
 // Total approved-but-unpaid exposure per merchant, so one large invoice cannot be split into many.
 export const MERCHANT_EXPOSURE_CAP = MAX_AMOUNT;
+// What one customer may owe across all merchants (approved, unpaid, including this invoice).
+export const CUSTOMER_EXPOSURE_CAP = MAX_AMOUNT;
+// A customer who has never paid an invoice is auto-approved only up to this amount; above it, at most Flag.
+export const NEW_CUSTOMER_LIMIT = 20n * 1_000_000n;
 // Free-text fields the model sees. A strict format leaves no room for instructions (no spaces, quotes or braces).
 export const INVOICE_NO = /^[A-Za-z0-9][A-Za-z0-9._\/#-]{0,63}$/;
 export const CURRENCY = /^[A-Z]{3,5}$/;
@@ -22,7 +26,8 @@ export const SYSTEM_PROMPT = [
   'history means a new relationship and is neutral, not evidence of fraud; score it on amount, term and the history present.',
   'The customer\'s own record (customer_prior_paid_orders, customer_prior_defaults, customer_open_invoices) predicts this payment',
   'better than the merchant\'s: weigh prior defaults by this customer heavily. A term under one day (days_to_due 0) is unusual',
-  'for a trade invoice and is not by itself a sign of low risk.',
+  'for a trade invoice and is not by itself a sign of low risk. customer_is_new means no invoice paid yet: a new customer with a',
+  'large invoice, or a customer whose customer_open_exposure_usdc is already high, deserves a lower score.',
   'Answer with JSON only: {"score": <integer 0-100>, "reasons": [<1-4 short strings>]}.',
 ].join(' ');
 
@@ -45,6 +50,7 @@ export const habitualDefaulter = ({ paid = 0, defaults = 0 } = {}) => defaults >
 export function hardRules(order, { nowNs, outstanding = 0n, customer = {} }) {
   const reasons = [];
   if (habitualDefaulter(customer)) reasons.push(`Customer defaulted on ${customer.defaults} prior invoices and paid ${customer.paid ?? 0} in full`);
+  if (BigInt(customer.outstanding ?? 0n) + BigInt(order.amount) > CUSTOMER_EXPOSURE_CAP) reasons.push('Customer exposure cap exceeded (100,000 USDC open across all merchants)');
   if (relatedAccounts(order.customer, order.merchant)) reasons.push('Customer and merchant are the same account or sub-accounts of each other');
   if (!INVOICE_NO.test(order.invoice_no ?? '') || !CURRENCY.test(order.currency ?? '')) reasons.push('Invoice number or currency has a disallowed format');
   if (BigInt(order.amount) <= 0n || BigInt(order.amount) > MAX_AMOUNT) reasons.push('Amount outside the allowed range');
@@ -74,12 +80,24 @@ export function reasonHash(reasons) {
   return createHash('sha256').update(JSON.stringify(reasons)).digest('hex');
 }
 
+/** Rules that never reject but stop an automatic approval: the invoice goes to human review (Flag). */
+export function reviewRules(order, { customer = {} } = {}) {
+  const reasons = [];
+  if ((customer.paid ?? 0) === 0 && BigInt(order.amount) > NEW_CUSTOMER_LIMIT) reasons.push('New customer: invoices above 20 USDC need human review until one is paid');
+  return reasons;
+}
+
 /** Combine hard rules and the model score into the on-chain verdict. */
 export function decide({ order, model, nowNs, outstanding = 0n, customer = {} }) {
   const hard = hardRules(order, { nowNs, outstanding, customer });
   if (hard.length) return { verdict: 'Reject', score: 0, reasons: hard, source: 'rules' };
   if (!model) return { verdict: 'Flag', score: 0, reasons: ['Model unavailable; human review required'], source: 'fallback' };
   const verdict = model.score >= APPROVE_AT ? 'Approve' : model.score >= FLAG_AT ? 'Flag' : 'Reject';
+  const review = reviewRules(order, { customer });
+  if (verdict === 'Approve' && review.length) {
+    // Keep the score within the Flag band so the on-chain verdict and score agree.
+    return { verdict: 'Flag', score: Math.min(model.score, APPROVE_AT - 1), reasons: [...review, ...model.reasons].slice(0, 4), source: 'model+review' };
+  }
   return { verdict, score: model.score, reasons: model.reasons, source: 'model' };
 }
 
@@ -108,6 +126,8 @@ export function modelContext(order, history) {
       customer_prior_paid_orders: history.customerPaidOrders ?? history.customer?.paid ?? 0,
       customer_prior_defaults: history.customer?.defaults ?? 0,
       customer_open_invoices: history.customer?.open ?? 0,
+      customer_open_exposure_usdc: Number(BigInt(history.customer?.outstanding ?? 0n) / 1_000_000n),
+      customer_is_new: (history.customer?.paid ?? 0) === 0 && (history.customer?.defaults ?? 0) === 0,
     },
   };
 }

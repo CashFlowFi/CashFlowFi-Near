@@ -10,7 +10,7 @@ Merchants who sell on credit wait 30 to 90 days for payment. Cashflow Fi finance
 
 1. Merchant calls `create_order` (amount, currency, due date, invoice number).
 2. Customer calls `approve_receipt` from their own account, confirming the sale. The merchant cannot approve its own order.
-3. The underwriter agent applies deterministic hard rules (a customer with 2 or more defaults and more defaults than invoices paid is rejected), scores the order with an LLM inside a verified NEAR AI Cloud TEE that sees the customer's and the merchant's on-chain repayment records, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
+3. The underwriter agent applies deterministic rules first (a customer with 2 or more defaults and more defaults than invoices paid is rejected; so is a customer owing more than 100,000 USDC across all merchants; a new customer's invoice above 20 USDC can at most be flagged for human review), scores the order with an LLM inside a verified NEAR AI Cloud TEE that sees the customer's and the merchant's on-chain repayment records, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
 4. Merchant calls `create_pool` on approved orders. Terms come from the merchant tier (LTV A/B/C/D = 85/80/70/60 %).
 5. Investors fund senior (75 %) and junior (25 %) of the advance with `ft_transfer_call`. Each investment mints a NEP-171 position NFT.
 6. When both tranches are full, the merchant receives the advance minus a 1 % fee (half to insurance, half to treasury).
@@ -106,7 +106,7 @@ The app reads the live testnet contract directly, so these steps need no keys. F
 | Open `/merchant?account=merchant.cashflowfi.testnet` | The demo merchant's invoices with AI verdicts, tier D (60 % advance), pools, and **Invoices CSV** for an accountant |
 | Open `/agents` and `/insurance` | Underwriter verdicts, the tier change B → D, TEE-written reminders; the insurance fund, defaulted pools and DAO proposals |
 
-`cd web && npm test` runs 85 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
+`cd web && npm test` runs 86 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
 
 ## Reproduce
 
@@ -116,7 +116,7 @@ Requirements: Node 22 or newer, then `npm ci`. For contracts: Rust stable (pinne
 
 | Run | See |
 |---|---|
-| `npm test` | `tests 160`, `pass 160`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
+| `npm test` | `tests 164`, `pass 164`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
 | `cd contracts/cashflow && cargo test --tests` | every `test result: ok`: 13 sandbox tests across 7 files plus 2 unit tests (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
 | `npm run test:contracts` | `test result: ok. 14 passed` (pure pool engine) |
 | `npm run attacks` | 16 cases, each `[HELD]` with the defense; rewrites `evidence/attacks/offchain.json` |
@@ -152,7 +152,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | API (`api/`) | Built and tested (`api/app.test.mjs`) |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
 | Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
-| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; in-app proof viewer for every evidence record; 85 tests |
+| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; in-app proof viewer for every evidence record; 86 tests |
 
 ## Security
 
