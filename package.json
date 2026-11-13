@@ -7,7 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test watcher/*.test.mjs agent/*.test.mjs api/*.test.mjs scripts/attacks/*.test.mjs relayer/*.test.mjs",
+    "test": "node --test watcher/*.test.mjs agent/*.test.mjs api/*.test.mjs scripts/attacks/*.test.mjs scripts/serve.test.mjs relayer/*.test.mjs",
     "test:contracts": "cd contracts/cashflow-core && cargo test",
     "test:sandbox": "cd contracts/cashflow && cargo test --tests",
     "api": "node --env-file-if-exists=.env api/server.mjs",
@@ -20,7 +20,8 @@
     "attacks": "node scripts/attacks/prompt-injection.mjs",
     "attacks:onchain": "node scripts/attacks/onchain.mjs",
     "match": "node --env-file-if-exists=.env scripts/match.mjs",
-    "e2e": "node --env-file-if-exists=.env scripts/e2e.mjs"
+    "e2e": "node --env-file-if-exists=.env scripts/e2e.mjs",
+    "serve": "node --env-file-if-exists=.env scripts/serve.mjs"
   },
   "dependencies": {
     "@phala/dcap-qvl": "0.7.0",
