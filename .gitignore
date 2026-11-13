@@ -5,3 +5,7 @@ target/
 !.env.example
 CLAUDE.md
 claude.md
+
+# Vercel CLI link (local only)
+.vercel
+.vercelignore
