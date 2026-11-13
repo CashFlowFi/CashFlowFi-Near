@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { CONTRACT, accountUrl, repoFileUrl, txUrl } from "@/lib/config";
+import { CONTRACT, accountUrl, txUrl } from "@/lib/config";
+import { ProofLink } from "@/components/proof/ProofProvider";
 import { shortHash } from "@/lib/format";
 import type { ReceiptRun } from "@/lib/receipts";
 import type { Order, Pool } from "@/lib/types";
@@ -39,7 +40,7 @@ export function ReceiptsDrawer({ open, onClose, pool, orders, receipts }: { open
                 <h3 className="font-medium">{r.scenario || "Recorded run"}</h3>
                 <p className="text-xs text-muted">
                   {r.finished_at ? `${new Date(r.finished_at).toISOString().replace("T", " ").slice(0, 16)} UTC · ` : ""}
-                  <a className="underline" href={repoFileUrl(r.file)} target="_blank" rel="noreferrer">{r.file}</a>
+                  <ProofLink path={r.file}>View proof · {r.file.split("/").pop()}</ProofLink>
                 </p>
                 <ol className="mt-3 space-y-2 border-l border-line pl-4">
                   {r.steps.map((s) => (

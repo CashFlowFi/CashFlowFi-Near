@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Eyebrow } from "@/components/Ambient";
 import type { Metadata } from "next";
 import { getAllOrders } from "@/lib/chain";
-import { API_URL, repoFileUrl, txUrl } from "@/lib/config";
+import { API_URL, txUrl } from "@/lib/config";
+import { ProofLink } from "@/components/proof/ProofProvider";
 import { shortHash } from "@/lib/format";
 import type { Reminder, TierChange } from "@/lib/agents";
 import data from "@/data/agents.json";
@@ -90,7 +91,7 @@ export default async function AgentsPage() {
                 <p className="mt-2 text-xs text-muted">
                   {iso(t.timestamp)}
                   {t.tx_hash && <> · <a className="font-mono underline" href={txUrl(t.tx_hash)} target="_blank" rel="noreferrer">{shortHash(t.tx_hash)}</a></>}
-                  {" · "}<a className="underline" href={repoFileUrl(t.file)} target="_blank" rel="noreferrer">evidence</a>
+                  {" · "}<ProofLink path={t.file}>proof</ProofLink>
                 </p>
               </li>
             ))}
@@ -118,7 +119,7 @@ export default async function AgentsPage() {
                 </div>
                 <p className="mt-2 text-xs text-muted">
                   {r.model && <>{r.model} · </>}
-                  <a className="underline" href={repoFileUrl(r.file)} target="_blank" rel="noreferrer">evidence</a>
+                  <ProofLink path={r.file}>proof</ProofLink>
                   {r.pool_id !== null && <> · <Link className="underline" href={`/pools/${r.pool_id}`}>pool #{r.pool_id}</Link></>}
                 </p>
               </li>

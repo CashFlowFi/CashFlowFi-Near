@@ -97,6 +97,7 @@ The app reads the live testnet contract directly, so these steps need no keys. F
 | Click **Explore a pool** (pool 22) | The stage selector Invoice → Approved → Underwritten → Funded → Paid → Claimed, opened on the result: 6.375 USDC claimed of 6.375 paid out. **Replay this pool** steps through each stage |
 | Click **Underwritten** | Verdict Approve, score 92, the reason hash, and the customer's and merchant's track records the AI weighs, all from chain. With the API: **TEE verified** and **What was verified** listing 5/5 checks (nonce, Intel TDX quote, NVIDIA GPU, response signature, attested signer) |
 | Click **Activity & receipts** | Every transaction of that pool with explorer links, from `evidence/` |
+| Click **proof** next to **TEE verified**, or **View proof** in the receipts | The proof viewer: what the record proves in plain words on the left, the raw evidence JSON on the right; hovering a point highlights its fields |
 | Open `/pools/25` | A defaulted pool: Paid (5.179687 of 10), Default, Cover 0.796875 approved by the Sputnik DAO, every payout claimed |
 | Open `/invoices/41`, sign in as the merchant | A QR and WhatsApp / Telegram / copy links for the customer. Signed in as any other account: **Approve invoice** (the contract rejects the merchant's own approval) |
 | Open `/invoices/5` | **Pay on NEAR** (`ft_transfer_call` with the pay msg) and **Pay from Arbitrum** through the NEAR Intents 1Click flow on Tidepool: a labelled preview, or with `TIDEPOOL_LIVE=1` a deposit address and an EIP-681 QR for the exact USDC amount |
@@ -104,7 +105,7 @@ The app reads the live testnet contract directly, so these steps need no keys. F
 | Open `/merchant?account=merchant.cashflowfi.testnet` | The demo merchant's invoices with AI verdicts, tier D (60 % advance), pools, and **Invoices CSV** for an accountant |
 | Open `/agents` and `/insurance` | Underwriter verdicts, the tier change B → D, TEE-written reminders; the insurance fund, defaulted pools and DAO proposals |
 
-`cd web && npm test` runs 75 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
+`cd web && npm test` runs 83 tests on the stage mapping, BigInt amounts, transaction builders and real outcomes, gas-free signing checked against the relayer's own decoder and policy, TEE checks, CSV and sharing.
 
 ## Reproduce
 
@@ -150,7 +151,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | API (`api/`) | Built and tested (`api/app.test.mjs`) |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
 | Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
-| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; 75 tests |
+| Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; in-app proof viewer for every evidence record; 83 tests |
 
 ## Security
 

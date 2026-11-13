@@ -3,6 +3,7 @@ import { Geist, IBM_Plex_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Ambient } from "@/components/Ambient";
+import { ProofProvider } from "@/components/proof/ProofProvider";
 import { WalletProvider } from "@/components/wallet/WalletProvider";
 import { ReturnedResults } from "@/components/actions/TxResultView";
 import "./globals.css";
@@ -30,12 +31,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <Ambient />
         <WalletProvider>
+          <ProofProvider>
           <Nav />
           <main id="main" className="relative z-10 mx-auto w-full max-w-6xl flex-1 px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
             <ReturnedResults />
             {children}
           </main>
           <Footer />
+          </ProofProvider>
         </WalletProvider>
       </body>
     </html>
