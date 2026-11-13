@@ -27,3 +27,16 @@ export function ProofLink({ path, children, className = "underline decoration-li
     </button>
   );
 }
+
+/** Proof link styled as a pill that pairs with the "TEE verified" badge. */
+export function ProofChip({ path, label = "Proof" }: { path: string; label?: string }) {
+  return (
+    <ProofLink
+      path={path}
+      className="inline-flex items-center gap-1 rounded-full border border-ai/40 px-2 py-0.5 text-xs font-medium text-ai transition-colors hover:border-ai hover:bg-ai-soft"
+    >
+      {label}
+      <span aria-hidden="true">›</span>
+    </ProofLink>
+  );
+}

@@ -1,6 +1,6 @@
 "use client";
 import { formatUsdc, remaining, sum, toBig } from "@/lib/amount";
-import { ProofLink } from "@/components/proof/ProofProvider";
+import { ProofChip } from "@/components/proof/ProofProvider";
 import { formatDuration, formatNs, shortHash } from "@/lib/format";
 import type { StageKey, StageState } from "@/lib/stages";
 import type { Order } from "@/lib/types";
@@ -109,7 +109,7 @@ function VerdictCard({ order }: { order: Order }) {
               : verified ? (
                 <span key="t" className="inline-flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai"><span aria-hidden="true">◆</span>TEE verified</span>
-                  {v.data.attestation?.report_url && <ProofLink path={v.data.attestation.report_url} className="text-xs underline">proof</ProofLink>}
+                  {v.data.attestation?.report_url && <ProofChip path={v.data.attestation.report_url} />}
                 </span>
               ) : <span key="n" className="text-muted">not verified</span>,
           ],

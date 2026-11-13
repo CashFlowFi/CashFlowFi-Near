@@ -3,7 +3,7 @@ import { Eyebrow } from "@/components/Ambient";
 import type { Metadata } from "next";
 import { getAllOrders } from "@/lib/chain";
 import { API_URL, txUrl } from "@/lib/config";
-import { ProofLink } from "@/components/proof/ProofProvider";
+import { ProofChip } from "@/components/proof/ProofProvider";
 import { shortHash } from "@/lib/format";
 import type { Reminder, TierChange } from "@/lib/agents";
 import data from "@/data/agents.json";
@@ -86,12 +86,12 @@ export default async function AgentsPage() {
                   <Account id={t.merchant} />
                   <span className="font-medium">Tier {t.old_tier} → {t.new_tier}</span>
                   {t.teeVerified && <TeeBadge />}
+                  <ProofChip path={t.file} />
                 </div>
                 <p className="mt-2">{t.reason}</p>
                 <p className="mt-2 text-xs text-muted">
                   {iso(t.timestamp)}
                   {t.tx_hash && <> · <a className="font-mono underline" href={txUrl(t.tx_hash)} target="_blank" rel="noreferrer">{shortHash(t.tx_hash)}</a></>}
-                  {" · "}<ProofLink path={t.file}>proof</ProofLink>
                 </p>
               </li>
             ))}
@@ -111,6 +111,7 @@ export default async function AgentsPage() {
                   <Link href={`/invoices/${r.order_id}`} className="font-medium underline decoration-line underline-offset-2">Invoice #{r.order_id}</Link>
                   <Usdc value={r.amount_due} />
                   {r.teeVerified && <TeeBadge />}
+                  <ProofChip path={r.file} />
                 </div>
                 <p className="mt-1 text-xs text-muted">To <Account id={r.customer} link={false} /> · {iso(r.reminded_at)}</p>
                 <div className="mt-3 rounded-md bg-sunken p-3">
@@ -118,9 +119,8 @@ export default async function AgentsPage() {
                   <p className="mt-2 whitespace-pre-line text-muted">{r.body}</p>
                 </div>
                 <p className="mt-2 text-xs text-muted">
-                  {r.model && <>{r.model} · </>}
-                  <ProofLink path={r.file}>proof</ProofLink>
-                  {r.pool_id !== null && <> · <Link className="underline" href={`/pools/${r.pool_id}`}>pool #{r.pool_id}</Link></>}
+                  {r.model && <>{r.model}</>}
+                  {r.pool_id !== null && <>{r.model ? " · " : ""}<Link className="underline" href={`/pools/${r.pool_id}`}>pool #{r.pool_id}</Link></>}
                 </p>
               </li>
             ))}

@@ -1,5 +1,5 @@
 "use client";
-import { ProofLink } from "@/components/proof/ProofProvider";
+import { ProofChip } from "@/components/proof/ProofProvider";
 import { useVerdict } from "@/lib/verdict";
 
 /** Attestation cell: the badge appears only when the API re-verified the TEE signature for this on-chain verdict. */
@@ -12,7 +12,7 @@ export function VerdictAttestation({ orderId }: { orderId: number }) {
     <span className="inline-flex flex-wrap items-center gap-2">
       <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai"><span aria-hidden="true">◆</span>TEE verified</span>
       {v.data.attestation.report_url && (
-        <ProofLink path={v.data.attestation.report_url} className="text-xs underline">proof</ProofLink>
+        <ProofChip path={v.data.attestation.report_url} />
       )}
     </span>
   );
