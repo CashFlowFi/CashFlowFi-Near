@@ -254,6 +254,26 @@
    "verified_private": true,
    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
    "signature_kind": "provider_tee"
+  },
+  "45": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
+  },
+  "46": {
+   "nonce_bound": true,
+   "tdx_quote_verified": true,
+   "gpu_attested": true,
+   "signature_valid": true,
+   "signer_matches_attestation": true,
+   "verified_private": true,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "signature_kind": "provider_tee"
   }
  }
 }

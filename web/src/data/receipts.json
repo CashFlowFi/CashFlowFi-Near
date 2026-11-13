@@ -268,6 +268,56 @@
      }
     ]
    }
+  ],
+  "27": [
+   {
+    "file": "evidence/open-pools/27.json",
+    "scenario": "pool opened for investors (10 USDC, 30 days)",
+    "finished_at": "2026-11-13T11:00:08.397Z",
+    "steps": [
+     {
+      "step": "merchant creates order",
+      "tx": "2hRxxo4ZCVqxKU5JbEhirwmta2zZyXm9q9zFKSH9sYSt"
+     },
+     {
+      "step": "customer approves receipt",
+      "tx": "91kA3J7rG3XaPbGN27p4LPFvwcJSz8YsQB65aEsfXP1T"
+     },
+     {
+      "step": "agent attests Approve (score 92)",
+      "tx": "HEoQDmnt7M3Am4oxvFZuZRt38vMe8mDffX1jscAyx4Jr"
+     },
+     {
+      "step": "merchant opens pool",
+      "tx": "EungmtzjthPn3Q1xWG4drjetG1wBvLEKY1G2wRA8YfAo"
+     }
+    ]
+   }
+  ],
+  "28": [
+   {
+    "file": "evidence/open-pools/28.json",
+    "scenario": "pool opened for investors (25 USDC, 60 days)",
+    "finished_at": "2026-11-13T11:00:29.795Z",
+    "steps": [
+     {
+      "step": "merchant creates order",
+      "tx": "HcQhbMqCENWDHwXv6AfojCgGkyVfVgMrKg7pz5UwLGzT"
+     },
+     {
+      "step": "customer approves receipt",
+      "tx": "DHLZwHQ13L4Kc42xkQymKEPCYkP2J33gRAWCG9BgR3pG"
+     },
+     {
+      "step": "agent attests Approve (score 92)",
+      "tx": "H4E9n5uXGDSmWGPSoYM42Ke1UgZxK5GPWjbRFMZmHiFj"
+     },
+     {
+      "step": "merchant opens pool",
+      "tx": "2LZw58y3KTz1ZoNgMcZ6wdqtrweaxuoqYgHv9Fwaiqto"
+     }
+    ]
+   }
   ]
  },
  "orders": {
