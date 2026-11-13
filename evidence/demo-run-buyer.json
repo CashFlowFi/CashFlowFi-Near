@@ -1,0 +1,118 @@
+{
+  "scenario": "happy path",
+  "network": "testnet",
+  "contract": "cashflow.cashflowfi.testnet",
+  "started_at": "2026-11-13T09:31:45.240Z",
+  "steps": [
+    {
+      "step": "merchant creates order",
+      "tx": "AQ2ofrCDSRmXsfyTAyGK667xiuYjbgwJzekD36h2e77h",
+      "explorer": "https://testnet.nearblocks.io/txns/AQ2ofrCDSRmXsfyTAyGK667xiuYjbgwJzekD36h2e77h",
+      "order_id": 44
+    },
+    {
+      "step": "customer approves receipt",
+      "tx": "49QjPMW7xtVdRNJHuxn9UEwG8fCsjV934YHhh6SD3V7u",
+      "explorer": "https://testnet.nearblocks.io/txns/49QjPMW7xtVdRNJHuxn9UEwG8fCsjV934YHhh6SD3V7u"
+    },
+    {
+      "step": "agent attests Approve (score 85)",
+      "tx": "Ah5yzkmUK3aeZb5EpECxmemsfESn8kiZzBDjQF9m2jsg",
+      "explorer": "https://testnet.nearblocks.io/txns/Ah5yzkmUK3aeZb5EpECxmemsfESn8kiZzBDjQF9m2jsg",
+      "verdict": "Approve",
+      "score": 85,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8"
+    },
+    {
+      "step": "merchant opens pool",
+      "tx": "5CYowqnasoFsUQutddsXaGVeocAu7pyLorz2SX5nXEnp",
+      "explorer": "https://testnet.nearblocks.io/txns/5CYowqnasoFsUQutddsXaGVeocAu7pyLorz2SX5nXEnp",
+      "pool_id": 26
+    },
+    {
+      "step": "senior investor funds",
+      "tx": "9adKSAE9HBLczP4sqf9VuEubTMNbqMbaAiDJpuVVnwbh",
+      "explorer": "https://testnet.nearblocks.io/txns/9adKSAE9HBLczP4sqf9VuEubTMNbqMbaAiDJpuVVnwbh"
+    },
+    {
+      "step": "junior investor funds (activates pool, pays advance)",
+      "tx": "8q8tnTzzsDhCnGgkHXYdJq96gr4r8rtoRUtqZ1nzQX58",
+      "explorer": "https://testnet.nearblocks.io/txns/8q8tnTzzsDhCnGgkHXYdJq96gr4r8rtoRUtqZ1nzQX58"
+    },
+    {
+      "step": "customer pays invoice (waterfall)",
+      "tx": "ErGXhKTZcg9fDpk2EVFQoCn69Y7ABzUgMcZCTedQTihw",
+      "explorer": "https://testnet.nearblocks.io/txns/ErGXhKTZcg9fDpk2EVFQoCn69Y7ABzUgMcZCTedQTihw"
+    },
+    {
+      "step": "senior holder claims",
+      "tx": "5jKEcEyU5D8nyr8p7sqFNeYyDKXPK5j5jVvCRbM1nnHh",
+      "explorer": "https://testnet.nearblocks.io/txns/5jKEcEyU5D8nyr8p7sqFNeYyDKXPK5j5jVvCRbM1nnHh"
+    },
+    {
+      "step": "junior holder claims",
+      "tx": "54EvZ1fJCFrjvnu9AAMKWEqFFdHqwZDPdQJEGyWuJLyC",
+      "explorer": "https://testnet.nearblocks.io/txns/54EvZ1fJCFrjvnu9AAMKWEqFFdHqwZDPdQJEGyWuJLyC"
+    }
+  ],
+  "checks": [
+    {
+      "label": "pool status",
+      "got": "Active",
+      "want": "Active",
+      "ok": true
+    },
+    {
+      "label": "merchant received advance - fee",
+      "got": "5940000",
+      "want": "5940000",
+      "ok": true
+    },
+    {
+      "label": "order status",
+      "got": "Paid",
+      "want": "Paid",
+      "ok": true
+    },
+    {
+      "label": "pool status",
+      "got": "Repaid",
+      "want": "Repaid",
+      "ok": true
+    },
+    {
+      "label": "senior repaid",
+      "got": "4781250",
+      "want": "4781250",
+      "ok": true
+    },
+    {
+      "label": "junior repaid",
+      "got": "1593750",
+      "want": "1593750",
+      "ok": true
+    },
+    {
+      "label": "merchant residual",
+      "got": "3625000",
+      "want": "3625000",
+      "ok": true
+    },
+    {
+      "label": "alice.cashflowfi.testnet received",
+      "got": "4781250",
+      "want": "4781250",
+      "ok": true
+    },
+    {
+      "label": "bob.cashflowfi.testnet received",
+      "got": "1593750",
+      "want": "1593750",
+      "ok": true
+    }
+  ],
+  "order_id": 44,
+  "pool_id": 26,
+  "ok": true,
+  "finished_at": "2026-11-13T09:32:41.034Z"
+}
