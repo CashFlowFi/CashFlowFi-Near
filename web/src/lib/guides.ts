@@ -26,7 +26,7 @@ export const GUIDES: Guide[] = [
     pitch: "Turn an unpaid invoice into cash today.",
     steps: [
       { title: "Create an invoice", line: "Amount, due date and your customer's email. Sign in with a NEAR testnet wallet first.", cta: { label: "Open merchant desk", href: "/merchant" } },
-      { title: "Send it to your customer", line: "A QR code and WhatsApp / Telegram links appear as soon as the invoice is created.", cta: { label: "See an example", href: "/invoices/41" } },
+      { title: "Send it to your customer", line: "A QR code and WhatsApp / Telegram links appear as soon as the invoice is created.", cta: { label: "See an example", href: "/invoices/55" } },
       { title: "The AI checks it", line: "After your customer approves, the underwriter scores it in a verified TEE, usually within a minute.", cta: { label: "See AI verdicts", href: "/agents" }, ai: true },
       { title: "Open a pool, get your advance", line: "Pick approved invoices. When investors fill the pool, the advance lands in your wallet.", cta: { label: "Open merchant desk", href: "/merchant" } },
       { title: "Receive the rest", line: "When your customer pays, investors are repaid first and the remainder comes back to you.", cta: { label: "See a repaid pool", href: "/pools/22" } },
@@ -38,8 +38,8 @@ export const GUIDES: Guide[] = [
     emoji: "🧾",
     pitch: "Confirm a purchase and pay from any chain.",
     steps: [
-      { title: "Open the merchant's link", line: "Scan the QR or tap the link the merchant sent you.", cta: { label: "See an invoice", href: "/invoices/41" } },
-      { title: "Approve it with your wallet", line: "Your signature confirms the sale on-chain. The merchant cannot approve its own invoice.", cta: { label: "Approve an invoice", href: "/invoices/41" } },
+      { title: "Open the merchant's link", line: "Scan the QR or tap the link the merchant sent you.", cta: { label: "See an invoice", href: "/invoices/55" } },
+      { title: "Approve it with your wallet", line: "Your signature confirms the sale on-chain. The merchant cannot approve its own invoice.", cta: { label: "Approve an invoice", href: "/invoices/55" } },
       { title: "Pay when it's due", line: "Pay on NEAR, or from Arbitrum through NEAR Intents. Any overpayment is refunded automatically.", cta: { label: "See the pay page", href: "/invoices/5" } },
     ],
   },

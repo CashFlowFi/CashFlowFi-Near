@@ -127,8 +127,8 @@ function VerdictCard({ order }: { order: Order }) {
 
 function FundedStage({ pool, positions, state }: Props) {
   const tranches = [
-    { name: "Senior", tip: "Paid first.", target: pool.senior_target, funded: pool.senior_funded, face: pool.senior_face },
-    { name: "Junior", tip: "Takes the first loss, earns more.", target: pool.junior_target, funded: pool.junior_funded, face: pool.junior_face },
+    { name: "Senior", tip: "Paid first", target: pool.senior_target, funded: pool.senior_funded, face: pool.senior_face },
+    { name: "Junior", tip: "Earns more, takes the first loss", target: pool.junior_target, funded: pool.junior_funded, face: pool.junior_face },
   ];
   const full = tranches.every((t) => toBig(t.funded) >= toBig(t.target));
   const line = state === "done"
@@ -153,7 +153,7 @@ function FundedStage({ pool, positions, state }: Props) {
           <tbody className="divide-y divide-line border-t border-line">
             {tranches.map((t) => (
               <tr key={t.name}>
-                <th scope="row" className="py-2 text-left font-medium">{t.name}<Info text={t.tip} /></th>
+                <th scope="row" className="py-2 text-left align-top font-medium">{t.name}<span className="block text-xs font-normal text-muted">{t.tip}</span></th>
                 <td className="py-2 text-right"><Usdc value={t.funded} unit={false} /></td>
                 <td className="py-2 text-right"><Usdc value={t.target} unit={false} /></td>
                 <td className="py-2 text-right"><Usdc value={remaining(t.target, t.funded)} unit={false} /></td>

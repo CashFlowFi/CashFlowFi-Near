@@ -48,7 +48,7 @@ export default async function InsurancePage() {
       <header>
         <Eyebrow>Protection fund and DAO</Eyebrow>
 <h1 className="text-3xl sm:text-4xl tracking-tight">Insurance</h1>
-        <p className="mt-1 text-sm text-muted">Half of every pool fee funds investor cover, and larger covers are approved by the insurance DAO.</p>
+        <p className="mt-1 text-sm text-muted">Half of every pool fee funds investor cover, and larger covers are approved by the insurance DAO, a Sputnik DAO on NEAR.</p>
       </header>
 
       <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
