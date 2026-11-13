@@ -3,6 +3,7 @@ import { FEATURED_POOL } from "@/lib/config";
 import { getAllOrders, getAllPools, getInsurance } from "@/lib/chain";
 import { sum } from "@/lib/amount";
 import { Usdc } from "@/components/ui";
+import { RoleChooser } from "@/components/RoleChooser";
 
 export const revalidate = 30;
 
@@ -75,7 +76,12 @@ export default async function Welcome() {
         </aside>
       </section>
 
-      <section aria-labelledby="flow" className="relative mt-4">
+      <section aria-labelledby="who" className="relative mt-2">
+        <h2 id="who" className="eyebrow">I am a…</h2>
+        <div className="mt-3"><RoleChooser /></div>
+      </section>
+
+      <section aria-labelledby="flow" className="relative mt-10">
         <h2 id="flow" className="eyebrow">How a pool moves</h2>
         <ol className="ledger-grid mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3 lg:grid-cols-6">
           {STEPS.map((st, i) => (
