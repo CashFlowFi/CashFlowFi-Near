@@ -4,19 +4,55 @@ Merchant receivables financing on NEAR testnet. A merchant turns customer-confir
 
 Built for NEAR HACKATHON (2026-11-01 to 2026-11-14). Testnet only; all tokens are test tokens.
 
+**Live demo:** https://cashflowfi-near.vercel.app. In 60 seconds: pick **Just looking** under *I am a…*, open **pool 22**, click **Underwritten**, then **Proof** to see the AI verdict, its TEE checks and the raw record.
+
+## At a glance
+
+| NEAR feature | What it does in Cashflow Fi | Proof |
+|---|---|---|
+| **NEAR Intents (1Click)** | Customers pay invoices from Arbitrum; USDC is settled by the Intents verifier and lands in the contract | Order 38 / pool 23 below |
+| **NEAR AI Cloud TEE** | The underwriter scores every invoice, writes reminders and ranks pools for investors inside verified hardware; each answer is signature-checked and bound to the on-chain verdict | Orders 42 and 44, `evidence/privacy/match-run.json` |
+| **Sputnik DAO** | Governs the insurance fund: covers above 0.5 USDC need a DAO vote before investors are paid | Pool 25, proposal 5 |
+| **NEP-171 position NFTs** | Each investment is an NFT that owns its payout; sell it mid-payout and the buyer collects | Pool 24, `evidence/nft-transfer-run.json` |
+| **NEP-366 meta transactions** | A relayer pays gas for invoice, approval, pool and claim calls | Order 40, `evidence/relayer-run.json` |
+| **Function-call access keys** | The AI agent can only call `attest_receipt` and `set_merchant_tier`; it cannot move funds | `agent.cashflowfi.testnet` |
+
 ## Problem and flow
 
 Merchants who sell on credit wait 30 to 90 days for payment. Cashflow Fi finances those receivables:
 
 1. Merchant calls `create_order` (amount, currency, due date, invoice number).
 2. Customer calls `approve_receipt` from their own account, confirming the sale. The merchant cannot approve its own order.
-3. The underwriter agent applies deterministic rules first (a customer with 2 or more defaults and more defaults than invoices paid is rejected; so is a customer owing more than 100,000 USDC across all merchants; a new customer's invoice above 20 USDC can at most be flagged for human review), scores the order with an LLM inside a verified NEAR AI Cloud TEE that sees the customer's and the merchant's on-chain repayment records, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
+3. The underwriter agent applies the rules below, scores the order with an LLM inside a verified NEAR AI Cloud TEE that sees the customer's and the merchant's on-chain repayment records, and writes `attest_receipt` (verdict, score, reason hash) on-chain. A completion that fails TEE verification is never used to approve.
 4. Merchant calls `create_pool` on approved orders. Terms come from the merchant tier (LTV A/B/C/D = 85/80/70/60 %).
 5. Investors fund senior (75 %) and junior (25 %) of the advance with `ft_transfer_call`. Each investment mints a NEP-171 position NFT.
 6. When both tranches are full, the merchant receives the advance minus a 1 % fee (half to insurance, half to treasury).
 7. The customer pays from Arbitrum Sepolia through Tidepool, or directly on NEAR.
 8. The waterfall pays senior face, then junior face, then refills any insurance cover the pool received, then the merchant residual. Position owners `claim`; payouts follow the current NFT owner.
 9. After due date plus grace, anyone (here: the collections agent) calls `mark_default`. Insurance covers `min(50 % of junior face, 10 % of receivable)`. A cover above `dao_threshold` waits for `approve_cover` from the Sputnik DAO.
+
+### Underwriting rules
+
+| Rule | Result |
+|---|---|
+| Customer and merchant are the same account (or sub-accounts), bad invoice format, amount outside 0–100,000 USDC, due date past or beyond 180 days, merchant owes over 100,000 USDC | Reject before the model is asked |
+| Customer defaulted at least twice and more often than they paid | Reject before the model is asked |
+| Customer would owe over 100,000 USDC across all merchants | Reject before the model is asked |
+| New customer (nothing paid yet) and invoice above 20 USDC | At most Flag (human review), whatever the model scores |
+| Model score (TEE-verified) | 70+ Approve, 40–69 Flag, under 40 Reject |
+
+The model sees the invoice, the merchant's tier and pools, and the customer's paid, defaulted and open invoices and open exposure. Its reasons are hashed on-chain with the verdict.
+
+### Insurance and Sputnik DAO
+
+Half of every 1 % pool fee goes to the insurance fund. On a default the fund covers `min(50 % of junior face, 10 % of receivable)`. A cover up to `dao_threshold` (0.5 USDC on testnet) is paid automatically; above it the cover waits in `pending_cover` until the Sputnik DAO (`dao.cashflowfi.testnet`, council of 2, 2 of 2) passes an `approve_cover` proposal. Pool 25 shows the full path: default, proposal 5, both votes, cover 0.796875 paid, claims.
+
+### Paying from another chain (NEAR Intents)
+
+1. The API requests a 1Click quote from Tidepool and verifies the quote's ed25519 signature against the published key (`lib/quote-signature.mjs`).
+2. The customer sends Arbitrum Sepolia USDC to the quote's deposit address (the web app shows an EIP-681 QR for the exact amount).
+3. The Intents verifier (`verifier.tidepool-sandbox.testnet`) settles and delivers USDC on NEAR to `payments.cashflowfi.testnet`.
+4. The forwarder checks the delivery against our own NEAR receipt, then pays the order with `ft_transfer_call {"pay"}`; the contract runs the waterfall.
 
 Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D after 3 defaults, see below): advance 6, merchant net 5.94, senior 4.5 in / 4.78125 back, junior 1.5 in / 1.59375 back, merchant residual 3.625. Default run: customer paid 5.179687, cover 0.796875, senior got 4.78125, junior got 1.195312 (cover included). At tier B the same receivable gives advance 8 and senior/junior faces 6.375/2.125.
 
@@ -85,6 +121,8 @@ Expected: `"status": "Repaid"`, `"senior_repaid": "6375000"`, `"junior_repaid": 
 
 ## Try the web app
 
+Hosted: https://cashflowfi-near.vercel.app. To run it locally:
+
 ```sh
 cd web && npm ci && npm run build && npm start      # http://localhost:3000
 ```
@@ -116,9 +154,10 @@ Requirements: Node 22 or newer, then `npm ci`. For contracts: Rust stable (pinne
 
 | Run | See |
 |---|---|
-| `npm test` | `tests 164`, `pass 164`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
+| `npm test` | `tests 166`, `pass 166`, `fail 0` (agent, private matching and TEE checks, API, watcher, forwarder, relayer, attack cases) |
 | `cd contracts/cashflow && cargo test --tests` | every `test result: ok`: 13 sandbox tests across 7 files plus 2 unit tests (near-workspaces sandbox: order rules, pool terms, waterfall, claims follow the NFT, NFT transfer mid-payout, default cover, DAO threshold, agent-only calls, SVG card) |
 | `npm run test:contracts` | `test result: ok. 14 passed` (pure pool engine) |
+| `npm run serve` | Whole backend in one process (API, relayer, underwriter and collections agents, forwarder) on `PORT`; `GET /healthz` lists each process |
 | `npm run attacks` | 16 cases, each `[HELD]` with the defense; rewrites `evidence/attacks/offchain.json` |
 
 ### Live on testnet
