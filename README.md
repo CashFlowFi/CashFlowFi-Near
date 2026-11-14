@@ -6,12 +6,31 @@ Built for NEAR HACKATHON (2026-11-01 to 2026-11-14). Testnet only; all tokens ar
 
 **Live demo:** https://cashflowfi-near.vercel.app. In 60 seconds: pick **Just looking** under *I am a…*, open **pool 22**, click **Underwritten**, then **Proof** to see the AI verdict, its TEE checks and the raw record.
 
+## Hackathon tracks and evidence
+
+**Primary track: Real-World Money (`realworld`).** Cashflow Fi connects customer-confirmed invoices, upfront merchant financing, cross-chain repayment and investor-owned payout rights in one receivables workflow. The table maps implemented features to the [official track descriptions](https://nearhackathon.com/HACKATHON.md#tracks).
+
+| Track ID | What Cashflow Fi contributes | Judge walkthrough and evidence |
+|---|---|---|
+| **`realworld` — Real-World Money** | Merchant invoicing, customer approval, stablecoin advances, repayment links, accounting CSV and gas-sponsored calls | [Invoices](https://cashflowfi-near.vercel.app/invoices), [merchant desk](https://cashflowfi-near.vercel.app/merchant?account=merchant.cashflowfi.testnet); [paid invoice](evidence/demo-run-buyer.json), [NEP-366 calls](evidence/relayer-run.json) |
+| **`defi` — Unstoppable DeFi** | Senior/junior receivables financing, tier-based advance limits, an on-chain repayment waterfall and cross-chain collections using the 1Click-compatible Tidepool route | [Pool 22](https://cashflowfi-near.vercel.app/pools/22); [NEAR repayment](evidence/demo-run.json), [Arbitrum-to-NEAR repayment](evidence/demo-run-tidepool.json), [pool engine](contracts/cashflow-core/src/lib.rs) |
+| **`privacy` — Privacy & Private AI** | NEAR AI Cloud inference with nonce-bound hardware attestation checks and signed responses for underwriting, reminders and investor matching | [Portfolio → Find a tranche](https://cashflowfi-near.vercel.app/portfolio); [matching record](evidence/privacy/match-run.json), [underwriting record](evidence/attestations/42.json), [verification code](agent/tee-quote.mjs) |
+| **`security` — AI Security & Defense** | Deterministic invoice/exposure rules constrain the model; method-restricted agent keys, relayer limits and contract authorization guards constrain execution | [Attack demonstrations and defenses](scripts/attacks/README.md), [on-chain attack receipts](evidence/attacks/onchain.json), [restricted agent key setup](scripts/add-agent-key.md), [relayer policy](relayer/) |
+| **`nfts` — NFTs That Do Something** | Each NEP-171 position carries the right to its tranche payout; transferring it moves future claims to the new owner, with a dynamic on-chain SVG | [Portfolio](https://cashflowfi-near.vercel.app/portfolio); [pool 24 transfer mid-payout](evidence/nft-transfer-run.json), [contract implementation](contracts/cashflow/src/lib.rs) |
+| **`social` — Social Money** | A shared insurance reserve funded by protocol fees; above-threshold cover is authorized by an existing Sputnik DAO council | [Insurance](https://cashflowfi-near.vercel.app/insurance), [pool 25](https://cashflowfi-near.vercel.app/pools/25); [default, council votes and cover](evidence/insurance-run.json), [DAO deployment](deployments/testnet.json) |
+| **`business` — Autonomous Business** | Underwriting and collections agents operate the receivables lifecycle within fixed rules: assess invoices, update merchant tiers, prepare reminders and mark overdue pools for default processing | [Agents](https://cashflowfi-near.vercel.app/agents); [underwriter loop](agent/run.mjs), [collections loop](agent/collections.mjs), [reminder evidence](evidence/collections/43.json), [tier decision](evidence/tiers/merchant.cashflowfi.testnet.D.json) |
+| **`open` — Open Innovation** | Combines AI-assessed receivables, transferable cash-flow positions and DAO-governed insurance in one NEAR application | [End-to-end evidence](evidence/e2e-run.json), [interface](docs/INTERFACE.md), and the complete workflow below |
+
+### Development provenance
+
+This repository began on **12 November 2026**, within the hackathon development window. The [initial README](https://github.com/CashFlowFi/CashFlowFi-Near/commit/a70a924a26900a28f2e1421c4c7fdea135448eb1) and [implementation diff through the submitted UI merge](https://github.com/CashFlowFi/CashFlowFi-Near/compare/a70a924a26900a28f2e1421c4c7fdea135448eb1...47f85ec5bb4fcf43b160db43f833d8b8a3789343) identify the contract, agents, payments, insurance, position NFTs and frontend work. Shared dependencies and the reused quote-verification utility are attributed under **Disclosures → Libraries**.
+
 ## At a glance
 
 | NEAR feature | What it does in Cashflow Fi | Proof |
 |---|---|---|
 | **NEAR Intents (1Click)** | Customers pay invoices from Arbitrum; USDC is settled by the Intents verifier and lands in the contract | Order 38 / pool 23 below |
-| **NEAR AI Cloud TEE** | The underwriter scores every invoice, writes reminders and ranks pools for investors inside verified hardware; each answer is signature-checked and bound to the on-chain verdict | Orders 42 and 44, `evidence/privacy/match-run.json` |
+| **NEAR AI Cloud TEE** | Scores eligible invoices, words collection reminders and ranks pools for investors; inference responses are signature-checked, and saved underwriting scores and reasons are compared with the on-chain record | Orders 42 and 44, `evidence/privacy/match-run.json` |
 | **Sputnik DAO** | Governs the insurance fund: covers above 0.5 USDC need a DAO vote before investors are paid | Pool 25, proposal 5 |
 | **NEP-171 position NFTs** | Each investment is an NFT that owns its payout; sell it mid-payout and the buyer collects | Pool 24, `evidence/nft-transfer-run.json` |
 | **NEP-366 meta transactions** | A relayer pays gas for invoice, approval, pool and claim calls | Order 40, `evidence/relayer-run.json` |
@@ -65,7 +84,7 @@ Numbers from the latest testnet run (10 USDC receivable; the merchant is tier D 
 | NEP-171 | inside `cashflow` | Position NFTs; `metadata.media` is a live on-chain SVG card; `claim` pays the current owner |
 | Function-call access key | `agent.cashflowfi.testnet` | Agent key limited to `attest_receipt` and `set_merchant_tier` on the contract, 0 deposit |
 | NEAR AI Cloud TEE (verified inference) | `agent/tee.mjs`, `agent/tee-quote.mjs` | Every model call (underwriter and investor matching) goes to `cloud-api.near.ai` (model `Qwen/Qwen3.6-35B-A3B-FP8` in the runs) only after a nonce-bound attestation and Intel TDX quote check; the response signature must recover to the attested key |
-| Verdict proof | `agent/verdict-proof.mjs` | `/api/agent/verdicts` returns `verified: true` only after re-checking the saved signature and binding the signed answer to the on-chain score, reason hash and order |
+| Verdict proof | `agent/verdict-proof.mjs` | `/api/agent/verdicts` re-checks the saved response signature, matches the score and reason hash to the chain, and compares the signed request's invoice number and whole-USDC amount with the order |
 | Sputnik DAO v2.3.1 | `dao.cashflowfi.testnet` | Council of 2, threshold 2 of 2; only the DAO can call `approve_cover` |
 | NEP-366 meta transactions | `relayer/`, `web/src/lib/gasless.ts` | Gasless relayer with a method allowlist, spend cap and rate limit. The web app signs zero-deposit contract calls (`create_order`, `approve_receipt`, `create_pool`, `claim`) with MyNearWallet's function-call key and sends them to the relayer |
 | Intents 1Click flow via Tidepool | `watcher/`, `scripts/tidepool.mjs` | Tidepool is a community testnet of the NEAR Intents 1Click flow; used because Intents has no testnet |
@@ -121,13 +140,18 @@ Expected: `"status": "Repaid"`, `"senior_repaid": "6375000"`, `"junior_repaid": 
 
 ## Try the web app
 
-Hosted: https://cashflowfi-near.vercel.app. To run it locally:
+Hosted: https://cashflowfi-near.vercel.app. The hosted API is https://cashflowfi-near-backend.onrender.com; the portfolio's **Find a tranche** and saved underwriting verification are connected to it. Open **Portfolio**, enter “Short-dated senior tranches, about 5 USDC”, click **Match**, then review the ranked pool and its verification panel. The free API instance wakes on request; allow about a minute after inactivity.
+
+To run the frontend locally with direct chain reads:
 
 ```sh
-cd web && npm ci && npm run build && npm start      # http://localhost:3000
+cd web
+npm ci
+npm run build
+npm start                                        # http://localhost:3000
 ```
 
-The app reads the live testnet contract directly, so these steps need no keys. For the AI verification badges, matching and cross-chain quotes, also run the API from the repo root (`CORS_ORIGIN=http://localhost:3000 npm run api`) and build the app with `NEXT_PUBLIC_API_URL=http://localhost:8787`. Optional: `NEXT_PUBLIC_RELAYER_URL=http://localhost:8788` with `npm run relayer` for gas-free calls.
+The app reads the live testnet contract directly. For local API features, run `npm ci` from the repo root, then `CORS_ORIGIN=http://localhost:3000 npm run api`, and build the app with `NEXT_PUBLIC_API_URL=http://localhost:8787` instead. Put `NEARAI_API_KEY` in the root `.env` for fresh model-ranked matching. Optional: `NEXT_PUBLIC_RELAYER_URL=http://localhost:8788` with `npm run relayer` for gas-free calls. The hosted service runs the API; the operator runs the signing agents, forwarder and relayer using the account setup below. Hosted cross-chain quotes use `TIDEPOOL_LIVE=0`; the executable route is reproduced with the live setup below.
 
 | Do | See |
 |---|---|
@@ -188,7 +212,7 @@ Without our keys, a judge can verify the runs through the explorer links and vie
 | Collections agent | Live: TEE-written reminders (orders 5, 43), `mark_default` on pool 25 |
 | Insurance + Sputnik DAO cover | Live run done (pool 25, proposal 5) |
 | Attack suites | Off-chain in `npm test`; on-chain run on testnet |
-| API (`api/`) | Built and tested (`api/app.test.mjs`) |
+| API (`api/`) | Deployed on Render and connected to the Vercel frontend; matching and saved verdict verification available through the hosted app (`api/app.test.mjs`) |
 | Relayer (NEP-366) | Built, tested and run live (`evidence/relayer-run.json`, `npm run relay:demo`) |
 | Private pool matching with TEE verification | Built, tested and run live (`evidence/privacy/match-run.json`, `verified_private: true`). |
 | Web app (`web/`) | Built: all screens above, wallet sign-in (MyNearWallet, Meteor), invest, pay, claim, transfer, approve, create invoice, open pool, withdraw; in-app proof viewer for every evidence record; 86 tests |
@@ -216,6 +240,7 @@ Attack demos with the defense that stopped each one: [`scripts/attacks/README.md
 | `cargo-near` | Wasm build (used by `near_workspaces::compile_project`) |
 | `near-api-js` 7.4.0 | Agent, forwarder, relayer, scripts |
 | `viem` 2.57.13 | Arbitrum Sepolia deposits in `scripts/tidepool.mjs` |
+| `@phala/dcap-qvl` 0.7.0 | Intel TDX quote verification against signed collateral |
 | `lib/quote-signature.mjs` | 1Click quote-signature verification, reused from Wavefund (`runtime/intents/signature.mjs`); re-implements the check from `@defuse-protocol/one-click-sdk-typescript` 0.1.26 without adding that dependency |
 | Sputnik DAO v2.3.1 | Deployed as the insurance governance DAO (code hash in `deployments/testnet.json`) |
 | Next.js 15.5, Tailwind CSS 4 | Web app |
