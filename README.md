@@ -226,7 +226,7 @@ Attack demos with the defense that stopped each one: [`scripts/attacks/README.md
 
 ## Disclosures
 
-- **Related project:** the author also submits [Wavefund](https://github.com/WaveFund/wavefund-near), an independent project. One intents-verification utility from it is reused here and listed as a library below.
+- **Related project (hackathon rule Q-015):** the author also submits **Wavefund**, an independent project: [public repository](https://github.com/WaveFund/wavefund-near) · [live application](https://wavefund-near.vercel.app/). Cashflow Fi finances merchant receivables; Wavefund uses strategy markets to select treasury allocations. Each has its own repository and application. One intents-verification utility from Wavefund is reused here and attributed in the libraries table below.
 - **Tidepool** is community-operated and runs the unmodified `defuse` verifier at `verifier.tidepool-sandbox.testnet`. It is not affiliated with NEAR.
 - AI coding assistants were used during development.
 
