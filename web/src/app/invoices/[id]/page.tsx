@@ -8,6 +8,7 @@ import { InvoiceActions } from "@/components/actions/InvoiceActions";
 import { remaining } from "@/lib/amount";
 import { formatNs, shortHash } from "@/lib/format";
 import { Account, ErrorPanel, Rows, Usdc } from "@/components/ui";
+import { VerdictBadge } from "@/components/VerdictBadge";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ id: string }> };
@@ -62,7 +63,7 @@ export default async function InvoicePage({ params }: Props) {
             ["Due", formatNs(order.due_date)],
             ["Merchant", <Account key="m" id={order.merchant} />],
             ["Customer", <Account key="c" id={order.customer} />],
-            ["Verdict", order.verdict ? `${order.verdict} · ${order.score} / 100` : "not scored yet"],
+            ["Verdict", <VerdictBadge key="vb" verdict={order.verdict} score={order.score} />],
             ["Reason hash", order.reason_hash ? <span key="h" className="font-mono text-xs" title={order.reason_hash}>{shortHash(order.reason_hash, 8)}</span> : "—"],
             ["Pool", order.pool_id === null ? "not pooled" : <Link key="pl" className="underline" href={`/pools/${order.pool_id}`}>#{order.pool_id}</Link>],
           ]}
