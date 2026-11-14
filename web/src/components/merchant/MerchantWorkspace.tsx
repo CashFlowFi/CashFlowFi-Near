@@ -16,6 +16,7 @@ import { ErrorPanel, Info, Rows, StatusBadge, Usdc } from "@/components/ui";
 import { NewInvoiceForm } from "./NewInvoiceForm";
 import { invoicesCsv } from "@/lib/csv";
 import { API_URL } from "@/lib/config";
+import { VerdictBadge } from "@/components/VerdictBadge";
 
 const DEMO = "merchant.cashflowfi.testnet";
 const C = { cashflow: CONTRACT, token: TOKEN };
@@ -159,7 +160,7 @@ function Invoices({ data, own, onDone }: { data: Data; own: boolean; onDone: () 
                       <Link href={`/invoices/${o.id}`} className="font-mono text-xs underline decoration-line underline-offset-2 hover:decoration-ink">{o.invoice_no}</Link>
                     </td>
                     <td className="whitespace-nowrap px-3 py-2">{o.pool_id !== null ? <Link className="underline decoration-line" href={`/pools/${o.pool_id}`}>{o.status} · #{o.pool_id}</Link> : o.status}</td>
-                    <td className="whitespace-nowrap px-3 py-2">{o.verdict ? `${o.verdict} · ${o.score}` : <span className="text-muted">—</span>}</td>
+                    <td className="whitespace-nowrap px-3 py-2"><VerdictBadge verdict={o.verdict} score={o.score} /></td>
                     <td className="px-3 py-2 text-right"><Usdc value={o.amount} unit={false} /></td>
                     <td className="whitespace-nowrap px-5 py-2 text-muted">{formatNs(o.due_date)}</td>
                   </tr>

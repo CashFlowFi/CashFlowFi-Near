@@ -9,6 +9,7 @@ import type { Reminder, TierChange } from "@/lib/agents";
 import data from "@/data/agents.json";
 import { Account, ErrorPanel, Info, Usdc } from "@/components/ui";
 import { VerdictAttestation } from "@/components/agents/VerdictAttestation";
+import { VerdictBadge } from "@/components/VerdictBadge";
 
 export const metadata: Metadata = { title: "Agents" };
 export const dynamic = "force-dynamic";
@@ -62,7 +63,7 @@ export default async function AgentsPage() {
                       <Link href={`/invoices/${o.id}`} className="font-medium underline decoration-line underline-offset-2 hover:decoration-ink">#{o.id}</Link>
                       <span className="ml-2 font-mono text-xs text-muted">{o.invoice_no}</span>
                     </td>
-                    <td className="px-4 py-3">{o.verdict}</td>
+                    <td className="px-4 py-3"><VerdictBadge verdict={o.verdict} /></td>
                     <td className="num px-4 py-3 text-right">{o.score ?? "—"}</td>
                     <td className="px-4 py-3 text-right"><Usdc value={o.amount} /></td>
                     {API_URL && <td className="px-4 py-3"><VerdictAttestation orderId={o.id} /></td>}

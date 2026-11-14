@@ -9,6 +9,7 @@ import { Account, Info, Rows, Usdc } from "@/components/ui";
 import type { WorkspaceProps } from "./PoolWorkspace";
 import { TeeChecks, teeRecordFor } from "@/components/TeeChecks";
 import { TrackRecord } from "@/components/TrackRecord";
+import { VerdictBadge } from "@/components/VerdictBadge";
 
 type Props = WorkspaceProps & { stage: StageKey; state: StageState; settled: boolean };
 
@@ -100,7 +101,7 @@ function VerdictCard({ order }: { order: Order }) {
     <div>
       <Rows
         rows={[
-          ["Verdict", <span key="v" className="font-medium">{order.verdict ?? "none yet"}</span>],
+          ["Verdict", <VerdictBadge key="v" verdict={order.verdict} />],
           ["Score", order.score === null ? "—" : <span key="s" className="num">{order.score} / 100</span>],
           ["Reason hash", order.reason_hash ? <span key="h" className="font-mono text-xs" title={order.reason_hash}>{shortHash(order.reason_hash, 8)}</span> : "—"],
           [

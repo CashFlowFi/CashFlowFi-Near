@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
 import { WalletButton } from "./wallet/WalletButton";
-import { LogoMark } from "./Logo";
+import Image from "next/image";
 
 const LINKS = [
   { href: "/pools", label: "Pools" },
@@ -17,7 +17,7 @@ export function Nav() {
     <header className="sticky top-0 z-40 border-b border-line bg-bg/80 backdrop-blur-md">
       <nav aria-label="Main" className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6 sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <LogoMark />
+          <Image src="/logo.jpg" alt="" width={28} height={28} priority className="h-7 w-7 rounded-md" />
           <span className="hidden leading-none sm:block">
             <span className="block text-[15px] font-semibold tracking-tight">Cashflow Fi</span>
             <span className="block font-mono text-[10px] text-accent">on NEAR</span>
