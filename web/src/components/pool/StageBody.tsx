@@ -95,6 +95,7 @@ function UnderwrittenStage({ orders, state, records, pool }: Props) {
 function VerdictCard({ order }: { order: Order }) {
   const v = useVerdict(order.id);
   const verified = v.kind === "ok" && v.data.attestation?.verified === true;
+  const recordedPrivacy = teeRecordFor(order.id);
   return (
     <div>
       <Rows
@@ -105,7 +106,12 @@ function VerdictCard({ order }: { order: Order }) {
           [
             "Attestation",
             v.kind === "loading" ? <span key="l" className="text-muted">checking…</span>
-              : v.kind === "unavailable" ? <span key="u" className="text-muted">details unavailable ({v.reason})</span>
+              : v.kind === "unavailable" ? (
+                <span key="u" className="inline-flex flex-wrap items-center gap-2">
+                  <span className="text-muted">{recordedPrivacy ? "Recorded underwriting evidence" : "Awaiting verification details"}</span>
+                  {recordedPrivacy && <ProofChip path={`evidence/attestations/${order.id}.json`} />}
+                </span>
+              )
               : verified ? (
                 <span key="t" className="inline-flex items-center gap-2">
                   <span className="inline-flex items-center gap-1 rounded-full bg-ai-soft px-2 py-0.5 text-xs font-medium text-ai"><span aria-hidden="true">◆</span>TEE verified</span>

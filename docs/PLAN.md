@@ -45,7 +45,7 @@ The FE dev builds against [`INTERFACE.md`](INTERFACE.md) with the mock fixture. 
 | 6 | **Sputnik DAO insurance governance** | social | S–M | Uses an existing DAO instead of a new multisig |
 | 7 | **Position NFTs with on-chain SVG** showing the pool, tranche and claimable amount | nfts | S | "NFT that owns cash flow" |
 
-Not pursued: `swarms` (bolting on 3 agents doesn't make a market), `business`, `thesis`, `games`, `memecoins`.
+Current track coverage centres on receivables financing (`defi`, `realworld`), agent controls and attack demonstrations (`security`), TEE inference (`privacy`), DAO-governed insurance (`social`), and transferable payout positions (`nfts`). Final track selection follows the workflows demonstrated in the submission.
 
 ## Working rules
 
